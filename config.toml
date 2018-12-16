@@ -1,0 +1,4 @@
+baseURL = "http://adoptingerlang.org/"
+languageCode = "en-us"
+title = "Adopting Erlang"
+theme = "ananke"
