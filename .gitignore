@@ -1,2 +1,6 @@
+content/docs/*.md
+adoptingerlang.*
+!adoptingerlang.org
+
 # Hugo default output directory
 /public
