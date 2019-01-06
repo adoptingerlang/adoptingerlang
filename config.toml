@@ -3,7 +3,6 @@ languageCode = "en-us"
 title = "Adopting Erlang"
 theme = "book"
 
-
-# [params]
-# BookMenuBundle="/docs/menu"
-# BookSection="docs"
+[params]
+BookMenuBundle="/docs/menu"
+# BookSection="chapters"

@@ -1,0 +1,73 @@
+#+TITLE:     Adopting Erlang
+#+AUTHOR:    Tristan Sloughter
+#+DRAWERS: HIDDEN HINT SOLUTION
+#+EMAIL:     t@crashfast.com
+#+DATE:      \today
+#+DESCRIPTION: Adopting Erlang.
+#+KEYWORDS: erlang
+
+\setcounter{secnumdepth}{-1}
+
+#+LATEX_CLASS: book
+#+ATTR_LATEX: :width 4in
+
+#+HUGO_BASE_DIR: .
+#+HUGO_SECTION: docs
+
+* Introduction
+:PROPERTIES:
+:EXPORT_FILE_NAME: introduction
+:END:
+** Section 1
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras lorem nisi, tincidunt tempus sem nec, elementum feugiat ipsum. Nulla in diam libero. Nunc tristique ex a nibh egestas sollicitudin.
+
+pulvinar a posuere id, luctus vitae leo. Sed ac imperdiet orci, non elementum leo. Nullam molestie congue placerat. Phasellus tempor et libero maximus commodo.
+
+** Section 2
+
+more Content
+
+* Development
+:PROPERTIES:
+:EXPORT_FILE_NAME: development
+:END:
+** OTP Applications
+
+ALSO
+
+** Dependencies
+** Projects with Multiple Applications
+** Rebar3 Shell
+** Configuration
+** Documentation
+** Testing
+*** Common Test
+*** Coverage
+*** Dialyzer
+*** XRef
+* Production
+:PROPERTIES:
+:EXPORT_FILE_NAME: production
+:END:
+** Not sure of title yet
+*** SSL Configuration
+** Releases
+*** Runtime Configuration
+** Deployment
+*** Release building
+*** Docker Containers
+*** Kubernetes
+**** Deployment
+**** Service
+**** StatefulSet
+**** Resources
+***** CPUs
+****** Active Schedulers
+** Operations
+*** Remote access
+*** Metrics
+**** VM
+**** Libraries
+**** Custom
+*** Distributed tracing
