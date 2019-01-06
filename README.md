@@ -28,3 +28,12 @@ The side menu is setup in `content/docs/menu/index.md`.
 
 Exporting to latex is done with `M-x org-latex-export-to-latex`.
 
+## LaTex to PDF
+
+Easiest way to convert to a pdf is to just use a LaTeX docker image:
+
+``` shell
+$ docker run --rm -it -v .:/source schickling/latex
+# pdflatex adoptingerlang.tex
+```
+
