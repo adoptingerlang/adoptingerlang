@@ -31,8 +31,8 @@ jobs:
       - attach_workspace:
           at: .
       - run: |
-          npm install netlify-cli -g --unsafe-perm
-          netlify deploy --deploy --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
+          sudo npm install netlify-cli -g --unsafe-perm
+          netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
 workflows:
   version: 2.1
   hugo_export:
