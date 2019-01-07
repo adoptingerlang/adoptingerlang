@@ -25,20 +25,25 @@ jobs:
             - public
   deploy:
     docker:
-      - image: jorrite/docker-netlify
+      - image: node:8.15.0-alpine
         entrypoint: /bin/sh
     steps:
       - attach_workspace:
           at: .
       - run: |
-          netlify deploy --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
+          npm install netlify-cli -g --unsafe-perm
+          netlify deploy --deploy --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
 workflows:
   version: 2.1
   hugo_export:
     jobs:
       - export
-      - build
+      - build:
+          requires:
+            - export
       - deploy:
+          requires:
+            - build
           filters:
             branches:
               only: master
