@@ -30,7 +30,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: netlify deploy
+      - run: |
+          netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
 workflows:
   version: 2.1
   hugo_export:
