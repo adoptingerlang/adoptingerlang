@@ -5,36 +5,11 @@ jobs:
       - image: silex/emacs:26.2-alpine
     steps:
       - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            apk --update add git
-            git submodule init
-            git submodule update --remote
       - run: emacs -batch adoptingerlang.org -q -l export.el
       - persist_to_workspace:
           root: .
           paths:
             - content
-  build:
-    docker:
-      - image: klakegg/hugo:0.53-alpine
-        entrypoint: /bin/sh
-    steps:
-      - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            apk --update add git
-            git submodule init
-            git submodule update --remote
-      - attach_workspace:
-          at: .
-      - run: hugo --gc --minify
-      - persist_to_workspace:
-          root: .
-          paths:
-            - public
   deploy:
     docker:
       - image: circleci/node
