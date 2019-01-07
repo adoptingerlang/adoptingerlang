@@ -32,6 +32,11 @@ jobs:
       - attach_workspace:
           at: .
       - run: |
+          mkdir -p bin
+          curl -L https://github.com/gohugoio/hugo/releases/download/v0.53/hugo_0.53_Linux-64bit.tar.gz -o hugo.tar.gz
+          tar -xvf bin/hugo.tar.gz -C ./bin
+          bin/hugo --gc --minify
+
           sudo npm install netlify-cli -g --unsafe-perm
           netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
 workflows:
@@ -39,12 +44,9 @@ workflows:
   hugo_export:
     jobs:
       - export
-      - build:
-          requires:
-            - export
       - deploy:
           requires:
-            - build
+            - export
           filters:
             branches:
               only: master
