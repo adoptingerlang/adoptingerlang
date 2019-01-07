@@ -25,7 +25,7 @@ jobs:
             - public
   deploy:
     docker:
-      - image: node:8.15.0-alpine
+      - image: circleci/node
         entrypoint: /bin/sh
     steps:
       - attach_workspace:
