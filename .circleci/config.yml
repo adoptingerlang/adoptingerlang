@@ -6,11 +6,38 @@ jobs:
     steps:
       - checkout
       - run: emacs -batch adoptingerlang.org -q -l export.el
+      - persist_to_workspace:
+          root: .
+          paths:
+            - content
+  build:
+    docker:
+      - image: klakegg/hugo:0.53-alpine
+        entrypoint: /bin/sh
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: hugo --gc --minify
+      - persist_to_workspace:
+          root: .
+          paths:
+            - public
+  deploy:
+    docker:
+      - image: jorrite/docker-netlify
+        entrypoint: /bin/sh
+    steps:
+      - attach_workspace:
+          at: .
+      - run: netlify deploy
 workflows:
   version: 2.1
   hugo_export:
     jobs:
-      - export:
+      - export
+      - build
+      - deploy:
           filters:
             branches:
               only: master
