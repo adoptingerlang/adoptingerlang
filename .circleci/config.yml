@@ -28,6 +28,7 @@ jobs:
       - image: circleci/node
         entrypoint: /bin/sh
     steps:
+      - checkout
       - attach_workspace:
           at: .
       - run: |
