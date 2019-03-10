@@ -8,17 +8,23 @@ git clone --recursive https://github.com/tsloughter/adoptingerlang
 
 ## Requirements
 
-Two emacs packages are required for converting `adoptingerlang.org` to pages for the Hugo website or LaTeX for conversion to pdf, mobi, etc:
+Two emacs packages are required for converting `adoptingerlang.org` to pages for the Hugo website or LaTeX for conversion to pdf, mobi, etc. The following can be added to the beginning of your `~/.emacs.d/init.el` file if you have one or create that file with this content:
 
 ``` emacs-lisp
-(eval-when-compile
-  (require 'use-package)
-  (require 'package))
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+(package-initialize)
 
 ;; Bootstrap `use-package'
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package)
+  (require 'package))
 
 (dolist (package '(use-package))
    (unless (package-installed-p package)
