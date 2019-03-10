@@ -2,6 +2,6 @@
 headless: true
 ---
 
-- [**Introduction**]({{< ref "/" >}})
+- [Introduction]({{< ref "/docs/introduction.md" >}})
 - [Development]({{< ref "/docs/development.md" >}})
 - [Production]({{< ref "/docs/production.md" >}})
