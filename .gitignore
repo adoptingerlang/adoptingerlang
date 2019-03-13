@@ -1,6 +1,9 @@
 content/docs/*.md
 adoptingerlang.*
 !adoptingerlang.org
-
+output
+.netlify
+*.swo
+*.swp
 # Hugo default output directory
 /public

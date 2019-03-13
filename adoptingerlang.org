@@ -13,20 +13,90 @@
 
 #+HUGO_BASE_DIR: .
 #+HUGO_SECTION: docs
+#+HUGO_PAIRED_SHORTCODES: alert
 
 * Introduction
 :PROPERTIES:
 :EXPORT_FILE_NAME: introduction
 :END:
-** Section 1
+** OTP at a High Level
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras lorem nisi, tincidunt tempus sem nec, elementum feugiat ipsum. Nulla in diam libero. Nunc tristique ex a nibh egestas sollicitudin.
+*** The Erlang Run-Time System
 
-pulvinar a posuere id, luctus vitae leo. Sed ac imperdiet orci, non elementum leo. Nullam molestie congue placerat. Phasellus tempor et libero maximus commodo.
+Erlang/OTP is different from most programming environments out there, even those that also use a virtual machine. You may have heard people comparing Erlang to an operating system and that is an apt comparison. It's not that Erlang provides low-level primitives and drivers that let you run without an operating system--you'll still need that. Rather, it is that Erlang has a strong opinion about how your applications should be structured, the level of isolation they should have, and a separation between what Erlang's VM can do, and what your softwafe can do.
 
-** Section 2
+The foundational block for everything is the Erlang virtual machine itself, called BEAM. BEAM is technically a single implementation of the Erlang virtual machine, as there could be others. For example, Erllvm is an implementation over LLVM (using some custom patches to make everything possible), and an older implementation in the 90s was called JAM. The Erlang VM is implemented in C, and contains a lot of fancy stuff: schedulers to run processes, garbage collection, memory allocators, a timer wheel for events, a bunch of smart switches to abstract over operating system features and provide unified interfaces (such as over time management, file-handling drivers, and so on), a few built-in functions that go faster than what Erlang can do on its own (BIFs) and an interface for functions implemented natively in other languages (NIFs) along with special schedulures for them. There's obviously a lot more, but you can think of all that stuff the way you would with the kernel in BSD or Linux: low level stuff that you need in order to build fancier stuff.
 
-more Content
+If all you have is the virtual machine with nothing else, you can't run Erlang code. You don't have a standard library, you don't have libraries to even load code. There's some odd bootstrapping going on that we don't need to understand. Just know that there's a limited set of pre-loaded Erlang modules that ship with the virtual machine, and those can be used to set up networking and file-handling stuff that allows to further load and run modules. If you're interested in knowing more though, please consult [The BEAM Book](https://happi.github.io/theBeamBook/) or [BEAM Wisdoms](http://beam-wisdoms.clau.se/en/latest/).
+
+If you take the virtual machine and the pre-loaded stuff, along with all the little utilities that make code-loading possible, you have what is essentially called the _Erlang Run-Time System_ (ERTS). The Run-Time System, when starting, follows the values of a thing called a _boot script_ (which nobody writes by hand) that specifies what to start. Erlang, by default, provides boot scripts that load code described in the next section as part of its boot sequence.
+
+With this basic stuff in place, we fall into Erlang's space, something akin to userspace if we want to keep the comparison operating systems.
+
+*** Erlang/OTP
+
+If what we have right now is equivalent to the kernel, we need the foundational blocks for the userspace components. In Erlang, this is essentially what OTP is about. OTP specifies how "components" that run on the virtual machine should be structured. From the first start, there is more than just "processes and messages", there's one way to structure your code.
+
+#+attr_shortcode: info
+#+begin_alert
+OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
+#+end_alert
+
+> OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
+
+This is done through the use of components named _OTP Applications_. Every Erlang install that you use ships with a few of them, because it would be way too much trouble not to. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and regular _OTP Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
+
+- _Library Applications_: stateless collections of modules
+- _Runnable Applications_: OTP applications that start stateful supervision tree structures with processes running in them
+- _OTP Applications_: either _Library_ or _Runnable Applications, interchangeably
+
+By default, the two OTP applications everyone includes are called =stdlib=, which is a library application that contains the core standard library modules such as =list= or =maps=, and =kernel=, which is a runnable application and sets up the core structure for an Erlang system that relies on OTP applications to work.
+
+The way things go is that the modules from all required OTP applications are loaded in memory. Then =kernel= is started. Kernel manages the lifecycle of the system from this point on. All other OTP applications and their configuration are handled through it, and so are unique features like distribution and hot code updates. If we go back to the operating system comparison, you can think of the =kernel= OTP application a bit like you could think of =systemd= for the Linux kernel (or =init= if you hate =systemd= or use a BSD -- Windows users can think of it as the service that runs other services)
+
+In fact, kernel and stdlib are the only two applications you need for a basic working Erlang shell. When you type in =erl= (or start =werl= on Windows), this boots up the VM, along with kernel, with =stdlib= pre-loaded. Everything else is optional and can be loaded at a later time.
+
+The standard Erlang distribution contains applications such as:
+
+- kernel
+- stdlib
+- crypto (cryptographic primitives)
+- ssl (TLS termination library)
+- inets (network services such as FTP or HTTP clients)
+- ct (Common Test framework)
+- wx (graphic toolkit)
+- observer (a control panel to manage your Erlang node, building on =wx=)
+- compiler (the Erlang compiler to build your own project)
+- and so on
+
+All of these are put together into what is called an Erlang _release_. A release is a collection of OTP applications, possibly bundled together with a full virtual machine. As such, when you download and install Erlang, you just get a release whose name is something like _Erlang/OTP-21.3.2_. You're free to build your own releases, which will take some of the OTP applications in the standard distribution, and then bundle them with some of your own apps.
+
+So if we to write an app named =proxy= that relies on =ssh= and =ssl= (which themselves depend on =public_key=, =crypto=, =stdlib=, and =kernel=), we make a release with all of these components in it:
+
+- ERTS
+- kernel
+- stdlib
+- crypto
+- public_key
+- ssl
+- ssh
+- proxy
+
+A visual representation of this can be seen in [[fig:proxy_release]].
+
+#+CAPTION: Visual representation of building the =proxy= release
+#+NAME:   fig:proxy_release
+[[./img/proxy_release_draft.png]]
+
+Essentially, building an Erlang system is re-bundling the VM, along with some standard applications provided with the default distribution, together with your own apps and libraries.
+
+*** Living in Erlang/OTP
+
+Standard tools developed and used by the community such as rebar3 basically operate on the idea that what you write and publish are OTP applications, and contains all the functionality required to deal with them. That's a big shift from a lot of programming languages that only ask of you to have a function named =main()= somewhere in one of your files. This is why the programming language is often called =Erlang/OTP= rather than just 'Erlang': it's not just a programming language, it's a general development framework that mandates some basic structure for everything you do.
+
+And everyone follows it, whether they are writing embedded software, blockchain systems, or distributed databases. It's OTP or nothing. Whereas other languages usually mandate nothing specific to get started, but then add some requirements later on (such as when integrating with a package manager), Erlang--and its entire community--expects you to just write OTP applications, which the rest of the tools can handle.
+
+So the key to getting started fast in Erlang is to know the framework, which is often kept as more advanced material. Here we're going to do things upside down and start from a fully functional release, and then dig down into its structure.
 
 * Development
 :PROPERTIES:
@@ -46,6 +116,7 @@ ALSO
 *** Coverage
 *** Dialyzer
 *** XRef
+** Handling Unicode
 * Production
 :PROPERTIES:
 :EXPORT_FILE_NAME: production
