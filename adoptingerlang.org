@@ -54,7 +54,7 @@ By default, the two OTP applications everyone includes are called =stdlib=, whic
 
 The way things go is that the modules from all required OTP applications are loaded in memory. Then =kernel= is started. Kernel manages the lifecycle of the system from this point on. All other OTP applications and their configuration are handled through it, and so are unique features like distribution and hot code updates. If we go back to the operating system comparison, you can think of the =kernel= OTP application a bit like you could think of =systemd= for the Linux kernel (or =init= if you hate =systemd= or use a BSD -- Windows users can think of it as the service that runs other services)
 
-In fact, kernel and stdlib are the two only applications you need for a basic working Erlang shell. When you type in =erl= (or start =werl= on Windows), this boots up the VM, along with kernel, with =stdlib= pre-loaded. Everything else is optional and can be loaded at a later time.
+In fact, kernel and stdlib are the only two applications you need for a basic working Erlang shell. When you type in =erl= (or start =werl= on Windows), this boots up the VM, along with kernel, with =stdlib= pre-loaded. Everything else is optional and can be loaded at a later time.
 
 The standard Erlang distribution contains applications such as:
 
