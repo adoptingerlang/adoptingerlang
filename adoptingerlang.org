@@ -71,7 +71,7 @@ The standard Erlang distribution contains applications such as:
 
 All of these are put together into what is called an Erlang _release_. A release is a collection of OTP applications, possibly bundled together with a full virtual machine. As such, when you download and install Erlang, you just get a release whose name is something like _Erlang/OTP-21.3.2_. You're free to build your own releases, which will take some of the OTP applications in the standard distribution, and then bundle them with some of your own apps.
 
-So if I were to write an app named =proxy= that relies on =ssh= and =ssl= (which themselves depend on =public_key=, =crypto=, =stdlib=, and =kernel=), I may make a release with all of these components in it:
+So if we to write an app named =proxy= that relies on =ssh= and =ssl= (which themselves depend on =public_key=, =crypto=, =stdlib=, and =kernel=), we make a release with all of these components in it:
 
 - ERTS
 - kernel
