@@ -3,5 +3,7 @@ adoptingerlang.*
 !adoptingerlang.org
 output
 .netlify
+*.swo
+*.swp
 # Hugo default output directory
 /public
