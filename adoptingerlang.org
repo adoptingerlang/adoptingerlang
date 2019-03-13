@@ -47,10 +47,10 @@ OTP stands for _Open Telecom Platform_, which is literally a meaningless name th
 This is done through the use of components named _OTP Applications_. Every Erlang install that you use ships with a few of them, because it would be way too much trouble not to. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and regular _OTP Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
 
 - _Library Applications_: stateless collections of modules
-- _Stateful Applications_: OTP applications that start a stateful supervision tree structure
-- _OTP Applications_: either _Library_ or _Stateful_ Applications, interchangeably.
+- _Runnable Applications_: OTP applications that start stateful supervision tree structures with processes running in them
+- _OTP Applications_: either _Library_ or _Runnable Applications, interchangeably
 
-By default, the two OTP applications everyone includes are called =stdlib=, which is a library application that contains the core standard library modules such as =list= or =maps=, and =kernel=, which is a stateful application and sets up the core structure for an Erlang system that relies on OTP applications to work.
+By default, the two OTP applications everyone includes are called =stdlib=, which is a library application that contains the core standard library modules such as =list= or =maps=, and =kernel=, which is a runnable application and sets up the core structure for an Erlang system that relies on OTP applications to work.
 
 The way things go is that the modules from all required OTP applications are loaded in memory. Then =kernel= is started. Kernel manages the lifecycle of the system from this point on. All other OTP applications and their configuration are handled through it, and so are unique features like distribution and hot code updates. If we go back to the operating system comparison, you can think of the =kernel= OTP application a bit like you could think of =systemd= for the Linux kernel (or =init= if you hate =systemd= or use a BSD -- Windows users can think of it as the service that runs other services)
 
