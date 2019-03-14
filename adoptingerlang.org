@@ -30,17 +30,11 @@ TODO: explain what this book is for; do it last.
 The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
 
 ** Setup
-:PROPERTIES:
-:EXPORT_FILE_NAME: setup
-:END:
 
 TODO: instructions to install Erlang/OTP on all kinds of platforms
 TODO: instructions to install rebar3 on all platforms
 
 ** OTP at a High Level
-:PROPERTIES:
-:EXPORT_FILE_NAME: high_level_otp
-:END:
 
 *** The Erlang Run-Time System
 
@@ -121,9 +115,6 @@ So the key to getting started fast in Erlang is to know the framework, which is 
 
 
 ** OTP Applications
-:PROPERTIES:
-:EXPORT_FILE_NAME: otp_applications
-:END:
 
 Since every component to be shipped in an Erlang/OTP release needs to be an OTP Application, it will do you a great good to understand what they are and how they work. In this chapter, we'll go over the basic structure of an OTP application, and what that means for your project.
 
