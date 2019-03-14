@@ -122,7 +122,7 @@ $ ls /usr/local/Cellar/openssl/
 
 Note the full path this gives you for the local openssl install, here being =/usr/local/Cellar/openssl/1.0.2q/=
 
-You can set the follwoing options in your environment:
+You can set the following options in your environment:
 
 #+NAME: kerlcfg_osx
 #+BEGIN_SRC sh
@@ -156,7 +156,51 @@ Any installed version can then be activated on-demand. If you want to set a defa
 
 **** Linux
 
-TODO
+Linux distributions pretty much all have package managers that let you install pre-built copies of Erlang, or you can still use [Erlang Solutions Ltd. packages](https://www.erlang-solutions.com/resources/download.html). Much like with OSX though, you should only do so if you're trying things out the first time around. If you're planning on doing actual development for the longer haul, you'll instead want to be able to handle multiple versions at once.
+
+The most commonly supported tool for this is [kerl](https://github.com/kerl/kerl). Kerl is a wrapper around downloading, compiling, and loading various Erlang/OTP versions on a single system, and will abstract away most annoying operations.
+
+You can install kerl by calling:
+
+#+NAME: linux_kerl
+#+BEGIN_SRC sh
+$ curl -O https://raw.githubusercontent.com/kerl/kerl/master/kerl
+$ chmod a+x kerl
+#+END_SRC
+
+And then moving kerl to your path. Kerl will automatically check and warn you about missing dependencies you might be needing when building libraries, so you can just go ahead and run the following commands, and listen to its directions as you go.
+
+First, you can set options as follows in your environment:
+
+#+NAME: kerlcfg_linux
+#+BEGIN_SRC sh
+export KERL_BUILD_BACKEND="git"
+export KERL_CONFIGURE_OPTIONS="--without-javac"
+#+END_SRC
+
+And ensure it's active (for example, call =source ~/.bashrc=). These options specify what is accepted or expected from the build tool. The one here disables Java bindings, but they would be skipped automatically anyway. You can look at the [Build Instructions](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#configuring-1) for more configuration options.
+
+If you want to add more content, such as =Wx= (which lets you use and build GUIs), the [Build instructions for Wx](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#building-with-wxerlang) contain further details to guide you.
+
+From that point on, you can download and install your own Erlang/OTP versions:
+
+#+NAME: kerl_linux
+#+BEGIN_SRC sh
+$ kerl update releases
+...
+# kerl build <release> <build name>
+$ kerl build 21.3 21.3
+...
+# kerl install <build name> <target path>
+$ kerl install 21.3 ~/bin/erls/21.3/
+...
+# make that version active
+$ . ~/bin/erls/21.3/activate
+# or alternatively
+$ source ~/bin/erls/21.3/activate
+#+END_SRC
+
+Any installed version can then be activated on-demand. If you want to set a default version, you can put the activation command in your =.bashrc= configuration file (or any shell profile you might have).
 
 **** FreeBSD
 
