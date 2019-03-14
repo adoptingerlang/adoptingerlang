@@ -19,6 +19,21 @@
 :PROPERTIES:
 :EXPORT_FILE_NAME: introduction
 :END:
+
+TODO: explain what this book is for; do it last.
+
+* Development
+:PROPERTIES:
+:EXPORT_FILE_NAME: development
+:END:
+
+The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
+
+** Setup
+
+TODO: instructions to install Erlang/OTP on all kinds of platforms
+TODO: instructions to install rebar3 on all platforms
+
 ** OTP at a High Level
 
 *** The Erlang Run-Time System
@@ -96,13 +111,14 @@ Standard tools developed and used by the community such as rebar3 basically oper
 
 And everyone follows it, whether they are writing embedded software, blockchain systems, or distributed databases. It's OTP or nothing. Whereas other languages usually mandate nothing specific to get started, but then add some requirements later on (such as when integrating with a package manager), Erlang--and its entire community--expects you to just write OTP applications, which the rest of the tools can handle.
 
-So the key to getting started fast in Erlang is to know the framework, which is often kept as more advanced material. Here we're going to do things upside down and start from a fully functional release, and then dig down into its structure.
+So the key to getting started fast in Erlang is to know the framework, which is often kept as more advanced material. Here we're going to do things upside down and start from a fully functional release, and then dig down into its structure. The next chapters will be dedicated to understanding how to work within these requirements.
 
-* Development
-:PROPERTIES:
-:EXPORT_FILE_NAME: development
-:END:
+
 ** OTP Applications
+
+Since every component to be shipped in an Erlang/OTP release needs to be an OTP Application, it will do you a great good to understand what they are and how they work. In this chapter, we'll go over the basic structure of an OTP application, and what that means for your project.
+
+
 
 ALSO
 
@@ -116,6 +132,8 @@ ALSO
 *** Coverage
 *** Dialyzer
 *** XRef
+*** Continuous Integration
+** Structuring Supervision Trees
 ** Handling Unicode
 * Production
 :PROPERTIES:
@@ -141,4 +159,23 @@ ALSO
 **** VM
 **** Libraries
 **** Custom
+*** Logging
 *** Distributed tracing
+* Team Building
+:PROPERTIES:
+:EXPORT_FILE_NAME: team_building
+:END:
+** Who to Put on The Team
+*** Building Around an Expert
+*** Building Without an Expert
+*** To Remote or Not To Remote
+** Repository Structures
+** Processes
+*** Code Reviews
+*** Common Architecture Decisions
+*** Prototype and Throw Away
+*** Internal Training
+** How To Hire
+*** It Takes One to Know One
+*** It is Easier to Train than Hire
+
