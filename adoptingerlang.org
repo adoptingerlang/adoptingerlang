@@ -31,8 +31,216 @@ The first section of this book is dedicated to getting a working installation wo
 
 ** Setup
 
-TODO: instructions to install Erlang/OTP on all kinds of platforms
-TODO: instructions to install rebar3 on all platforms
+In this chapter, you will go through the basic steps required to install Erlang/OTP on most major platforms. The instructions will aim for a basic set-up, and in some more popular platforms, will also target running multiple Erlang/OTP versions at once, as a team with growing projects is likely to have to test multiple deploy scenarios.
+
+You will also see how to install Rebar3, the official build tool for the Erlang community, and base configurations for various text editors.
+
+*** Installing Erlang/OTP
+
+The first step is to get a proper install of Erlang/OTP in place. This is not going to be a uniform experience on all platforms, but we'll at least make sure everyone following these steps has a fully functioning setup for any work environment.
+
+**** Choosing a Version
+
+Erlang/OTP is released on a fairly stable and predictable schedule, with well-defined criteria for backwards-incompatible changes.
+
+Erlang versions are numbered according to a =<Major>.<Minor>.<Patch>= scheme, as described in the [Erlang/OTP system principles](http://erlang.org/doc/system_principles/versions.html#version_scheme). In some rare circumstances, other digits are bolted on as "branched" versions, which you likely won't have to care about.
+
+Here are some example possible versions:
+
+- 22.0-rc1
+- 21.3
+- 21.2.3
+- 21.1
+- 19.3
+- 17.0
+- R16B03 (this is a legacy version format that hasn't been used since 2014)
+
+As you can see, the =Patch= version is not mentioned when no patch is required. The release schedule for Erlang goes a bit like this:
+
+1. Once per year, around February or March, a release candidate for the next major version is announced (with a suffix such as =-rc1=, or =-rc2=). This release candidate is made available for users who want to build from source, in order to test that their applications and system will work well with it
+2. A few months later (April to June), the major release is cut and made public. Major releases contain large new features that require bigger virtual machine changes, and are also allowed to introduce backwards-incompatible changes
+3. At a frequency of every three or four months, a minor release is made public, which usually includes stability fixes and minor feature additions in individual libraries
+4. If a critical bug has been found in some circumstances, either for security or stability reasons, a patch release may be announced.
+
+#+attr_shortcode: info
+#+begin_alert
+Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [Support, Compatibility, Deprecations, and Removal](http://erlang.org/doc/system_principles/misc.html) document published by the OTP team at Ericsson.
+
+In some rare scenarios, hard-and-fast deprecations do happen, and it may take a few weeks for the community to come up with workarounds.
+#+end_alert
+
+A team that adopts Erlang will therefore likely want to adopt a maintenance schedule that fits the main releases if they want to avoid falling too far behind. While it is possible to only upgrade occasionally, you will find that it is often easier to do a bit of maintenance somewhat often than a lot of maintenance at once.
+
+Do note that patch-level releases are often only announced on the [mailing lists](http://erlang.org/mailman/listinfo/erlang-questions) and tagged on [the main git repository on GitHub](https://github.com/erlang/otp), but are otherwise not packaged on the main website.
+
+**** Windows
+
+If you are a Windows user, it is recommended that you use Windows 10 for any Erlang development. Prior versions can work, but community tools such as Rebar3 are only tested on Windows 10, for example.
+
+Building on Windows from source has been notoriously difficult, and it is therefore recommended that you stick to the pre-built copies distributed on [www.erlang.org/downloads](https://www.erlang.org/downloads), or alternatively those built by [Erlang Solutions Ltd.](https://www.erlang-solutions.com/resources/download.html).
+
+The installer for these versions comes with a wizard that will take you through all the required steps.
+
+Do not forget to add Erlang/OTP to your =PATH= variable to contain your Erlang/OTP installation, since this will let you call it from the command-line:
+
+
+1. In the start menu, search for "system environment variables" and select the "Edit the System and Environment Variables (Control Panel)" option
+2. At the bottom of the "System Properties" window that has just open, press the "Environment Variables..." button
+3. Select the =Path= variable (or create it if it does not exist) and click the "Edit" button
+4. Add an entry for Erlang/OTP that matches the installation path, usually something like =C:\Program Files\erl10.2\bin=. The entries put earlier in the list will be loaded first.
+5. Save the options
+6. Close and restart any terminal you were running.
+
+If you do development in the long term, you will be able to install multiple versions that way. You can control which one is used by changing and modifying the =PATH= variable's priorities in paths.
+
+If you are a purist when it comes to Windows development, you may be quite comfortable in an environment such as Visual Studio, where pretty much everything can be done from within the IDE. Erlang comes from a different environment, and a lot of the instructions we'll use in this book are focused on using the command line to build everything.
+
+If you are looking for a terminal to run the command line on Windows, various options are available:
+
+- Use PowerShell as a terminal. Most commands in this book should work fine with it, but some edge cases may exist.
+- Download and install [git for Windows](https://git-scm.com/download/win), which will come with a =git-bash= shell that will work well with all tooling and most commands in this book
+- Try [ConEmu](https://www.fosshub.com/ConEmu.htm) as a nicer terminal emulator to work with
+- Use [Cmder](https://cmder.net/) which is a Windows console emulator that packages most of the above options rather well
+- Use [Cygwin](https://www.cygwin.com) at your own risk; you will need to rebuild your software from source to work well with it, and tools like Rebar3 dynamically figure out they're on Windows, which historically has caused a few path problems when interacting with Cygwin
+
+You can then use the editor or IDE of your choosing to work with Erlang components.
+
+**** OSX
+
+While OSX makes it possible to use [Homebrew](https://brew.sh/) or [Erlang Solutions Ltd. packages](https://www.erlang-solutions.com/resources/download.html) to install pre-built versions of Erlang/OTP, you should only do so if you're trying things out the first time around. If you're planning on doing actual development for the longer haul, you'll instead want to be able to handle multiple versions at once.
+
+The most commonly supported tool for this is [=kerl=](https://github.com/kerl/kerl). Kerl is a wrapper around downloading, compiling, and loading various Erlang/OTP versions on a single system, and will abstract away most annoying operations.
+
+You can install Kerl from homebrew by calling =$ brew install kerl=, or by following the instructions in its [README file](https://github.com/kerl/kerl#downloading).
+
+Before installing Erlang, we will need to install and update a few dependencies, the main ones being to make sure you have [XCode](https://developer.apple.com/xcode/) installed and to then install OpenSSL (since OSX has terribly outdated copies of SSL by default):
+
+#+NAME: openssl_osx
+#+BEGIN_SRC sh
+$ brew install openssl
+...
+$ ls /usr/local/Cellar/openssl/
+1.0.2q
+# END_SRC
+
+Note the full path this gives you for the local openssl install, here being =/usr/local/Cellar/openssl/1.0.2q/=
+
+You can set the follwoing options in your environment:
+
+#+NAME: kerlcfg_osx
+#+BEGIN_SRC sh
+export KERL_BUILD_BACKEND="git"
+export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=/usr/local/Cellar/openssl/1.0.2q/"
+# END_SRC
+
+And ensure it's active (for example, call =source ~/.bashrc=). These options specify what is accepted or expected from the build tool. THe one here disables Java bindings, and uses the new SSL install we've made. You can look at the [Build Instructions](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#configuring-1) for more configuration options.
+
+If you want to add more content, such as =Wx= (which lets you use and build GUIs), the [Build instructions for OSX](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#os-x-darwin) contain further details to guide you.
+
+From that point on, you can download and install your own Erlang/OTP versions:
+
+#+NAME: kerl_osx
+#+BEGIN_SRC sh
+$ kerl update releases
+...
+# kerl build <release> <build name>
+$ kerl build 21.3 21.3
+...
+# kerl install <build name> <target path>
+$ kerl install 21.3 ~/bin/erls/21.3/
+...
+# make that version active
+$ . ~/bin/erls/21.3/activate
+# or alternatively
+$ source ~/bin/erls/21.3/activate
+#+END_SRC
+
+Any installed version can then be activated on-demand. If you want to set a default version, you can put the activation command in your =.bashrc= configuration file (or any shell profile you might have).
+
+**** Linux
+
+TODO
+
+**** FreeBSD
+
+On FreeBSD, some patches are required to make things work as smoothly as on other platforms. The good news is that if you use either the BSD [ports](https://www.freebsd.org/doc/en/books/handbook/ports-using.html) or [packages](https://www.freebsd.org/doc/en/books/handbook/pkgng-intro.html), it will all work fine out of the box.
+
+This is the easiest way forwards, but makes switching across versions a bit trickier since you don't get an Erlang version manager for free. However, BSD ports and packages do let you build any version supported at your liking.
+
+For example you can call any of the following:
+
+#+NAME: bsd_install
+#+BEGIN_SRC sh
+# pkg install erlang # default copy
+# pkg install erlang-runtime20  # OTP-20.x
+# ls /usr/ports/lang/erlang* # source install: pick the version directory
+erlang/
+...
+erlang-runtime20/
+erlang-runtime21/
+erlang-wx/
+# cd /usr/ports/lang/erlang-runtime21/
+# make config-recursive     # configure all the deps
+# make install
+#+END_SRC
+
+FreeBSD maintainers are generally good about ensuring things keep working fine on the main supported architectures, so if you're sticking to x86 and avoid ARM, you should have no major issues.
+
+*** Installing Rebar3
+
+Rebar3 is the standard build tool within the Erlang community. It essentially bundles all of the other tools shipping with Erlang along with a few open-source ones, and makes them all work under a unified project structure.
+
+There are a few ways to install Rebar3: from a pre-built binary, or from source, and then a last variant for a faster-running local install. Do note that in all cases, you need Erlang to have been installed already.
+
+**** Pre-Built Binaries
+
+Pre-built binaries can be found at [www.rebar3.org](https://www.rebar3.org/). There's a big "Download" button with the latest stable version, but if you like to live more dangerously, you can grab [the latest _nightly_ build](https://s3.amazonaws.com/rebar3/rebar3) as well.
+
+It is common to create a directory =~/bin/= to place commands line utilities like =rebar3=, which is where you might want to put the version you just downloaded. Call =chmod +x rebar3= on it to make sure it can run, and add it to your path with =export PATH=~/bin/:$PATH= in your =~/.bashrc=, =~/.zshrc= or equivalent.
+
+Windows users who want to use the code from PowerShell or cmd.exe (rather than a terminal emulator) must ensure that a =rebar3.cmd= file is added:
+
+#+NAME: rebar.cmd
+#+BEGIN_SRC sh
+@echo off
+setlocal
+set rebarscript=%~f0
+escript.exe "%rebarscript:.cmd=%" %*
+#+END_SRC
+
+**** Building From Source
+
+First make sure that you have git installed, and checkout the repository to build it:
+
+#+NAME: rebar_bootstrap
+#+BEGIN_SRC sh
+$ git clone https://github.com/erlang/rebar3.git
+$ cd rebar3
+$ ./bootstrap
+#+END_SRC
+
+This will create a =rebar3= script file (along with a =rebar3.cmd= file on Windows).
+
+**** Local Install
+
+The local install form will let you take any of the previously built rebar3 versions, and unpack them to a local directory from which the tool will be able to self-update at a later time:
+
+#+NAME: rebar_local
+#+BEGIN_SRC sh
+$ ./rebar3 local install  # starting from a rebar3 not in PATH
+===> Extracting rebar3 libs to ~/.cache/rebar3/lib...
+===> Writing rebar3 run script ~/.cache/rebar3/bin/rebar3...
+===> Add to $PATH for use: export PATH=$PATH:~/.cache/rebar3/bin
+$ export PATH=$PATH:~/.cache/rebar3/bin
+$ rebar3 local upgrade # this can be used to update to the latest stable copy
+...
+#+END_SRC
+
+*** Configuring Editors
+
+**** Visual Studio Code
+**** Emacs
+**** Vim
 
 ** OTP at a High Level
 
@@ -92,7 +300,7 @@ So if we to write an app named =proxy= that relies on =ssh= and =ssl= (which the
 - ssh
 - proxy
 
-A visual representation of this can be seen in [[fig:proxy_release]].
+A visual representation of this can be seen in Figure [[fig:proxy_release]].
 
 #+CAPTION: Visual representation of building the =proxy= release
 #+NAME:   fig:proxy_release
