@@ -1,4 +1,4 @@
-baseURL = "http://adoptingerlang.org/"
+baseURL = ""
 languageCode = "en-us"
 title = "Adopting Erlang"
 theme = "book"
