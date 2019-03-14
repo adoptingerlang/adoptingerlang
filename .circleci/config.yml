@@ -39,6 +39,3 @@ workflows:
       - deploy:
           requires:
             - export
-          filters:
-            branches:
-              only: master
