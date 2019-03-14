@@ -96,7 +96,7 @@ A visual representation of this can be seen in [[fig:proxy_release]].
 
 #+CAPTION: Visual representation of building the =proxy= release
 #+NAME:   fig:proxy_release
-[[./img/proxy_release_draft.png]]
+[[/img/proxy_release_draft.png]]
 
 Essentially, building an Erlang system is re-bundling the VM, along with some standard applications provided with the default distribution, together with your own apps and libraries.
 
