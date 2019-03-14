@@ -62,12 +62,9 @@ As you can see, the =Patch= version is not mentioned when no patch is required. 
 3. At a frequency of every three or four months, a minor release is made public, which usually includes stability fixes and minor feature additions in individual libraries
 4. If a critical bug has been found in some circumstances, either for security or stability reasons, a patch release may be announced.
 
-#+attr_shortcode: info
-#+begin_alert
 Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [Support, Compatibility, Deprecations, and Removal](http://erlang.org/doc/system_principles/misc.html) document published by the OTP team at Ericsson.
 
 In some rare scenarios, hard-and-fast deprecations do happen, and it may take a few weeks for the community to come up with workarounds.
-#+end_alert
 
 A team that adopts Erlang will therefore likely want to adopt a maintenance schedule that fits the main releases if they want to avoid falling too far behind. While it is possible to only upgrade occasionally, you will find that it is often easier to do a bit of maintenance somewhat often than a lot of maintenance at once.
 
@@ -109,7 +106,7 @@ You can then use the editor or IDE of your choosing to work with Erlang componen
 
 While OSX makes it possible to use [Homebrew](https://brew.sh/) or [Erlang Solutions Ltd. packages](https://www.erlang-solutions.com/resources/download.html) to install pre-built versions of Erlang/OTP, you should only do so if you're trying things out the first time around. If you're planning on doing actual development for the longer haul, you'll instead want to be able to handle multiple versions at once.
 
-The most commonly supported tool for this is [=kerl=](https://github.com/kerl/kerl). Kerl is a wrapper around downloading, compiling, and loading various Erlang/OTP versions on a single system, and will abstract away most annoying operations.
+The most commonly supported tool for this is [kerl](https://github.com/kerl/kerl). Kerl is a wrapper around downloading, compiling, and loading various Erlang/OTP versions on a single system, and will abstract away most annoying operations.
 
 You can install Kerl from homebrew by calling =$ brew install kerl=, or by following the instructions in its [README file](https://github.com/kerl/kerl#downloading).
 
@@ -121,7 +118,7 @@ $ brew install openssl
 ...
 $ ls /usr/local/Cellar/openssl/
 1.0.2q
-# END_SRC
+#+END_SRC
 
 Note the full path this gives you for the local openssl install, here being =/usr/local/Cellar/openssl/1.0.2q/=
 
@@ -131,7 +128,7 @@ You can set the follwoing options in your environment:
 #+BEGIN_SRC sh
 export KERL_BUILD_BACKEND="git"
 export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=/usr/local/Cellar/openssl/1.0.2q/"
-# END_SRC
+#+END_SRC
 
 And ensure it's active (for example, call =source ~/.bashrc=). These options specify what is accepted or expected from the build tool. THe one here disables Java bindings, and uses the new SSL install we've made. You can look at the [Build Instructions](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#configuring-1) for more configuration options.
 
