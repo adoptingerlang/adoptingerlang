@@ -52,11 +52,6 @@ With this basic stuff in place, we fall into Erlang's space, something akin to u
 
 If what we have right now is equivalent to the kernel, we need the foundational blocks for the userspace components. In Erlang, this is essentially what OTP is about. OTP specifies how "components" that run on the virtual machine should be structured. From the first start, there is more than just "processes and messages", there's one way to structure your code.
 
-#+attr_shortcode: info
-#+begin_alert
-OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
-#+end_alert
-
 > OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
 
 This is done through the use of components named _OTP Applications_. Every Erlang install that you use ships with a few of them, because it would be way too much trouble not to. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and regular _OTP Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
