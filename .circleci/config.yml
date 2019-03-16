@@ -9,6 +9,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+            - adoptingerlang.tex
             - content
   deploy:
     docker:
@@ -31,11 +32,30 @@ jobs:
 
           sudo npm install netlify-cli -g --unsafe-perm
           netlify deploy --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
+
+  pdf:
+    docker:
+      - image: schickling/latex
+        entrypoint: /bin/sh
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: |
+          pdflatex adoptingerlang.tex
+          pdflatex adoptingerlang.tex
+
+      - store_artifacts:
+         path: ./adoptingerlang.pdf
+
 workflows:
   version: 2.1
   hugo_export:
     jobs:
       - export
       - deploy:
+          requires:
+            - export
+      - pdf:
           requires:
             - export

@@ -13,4 +13,5 @@
 
 (with-eval-after-load 'org
   ;; (with-temp-file "/home/tristan/Devel/adoptingerlang/adoptingerlang.org"
-  (org-hugo-export-wim-to-md :all-subtrees nil nil :noerror))
+  (org-hugo-export-wim-to-md :all-subtrees nil nil :noerror)
+  (org-latex-export-to-latex))

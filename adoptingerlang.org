@@ -6,14 +6,21 @@
 #+DESCRIPTION: Adopting Erlang.
 #+KEYWORDS: erlang
 
-\setcounter{secnumdepth}{-1}
+# \setcounter{secnumdepth}{-1}
 
 #+LATEX_CLASS: book
+#+LATEX_CLASS_OPTIONS: [oneside,11pt]
 #+ATTR_LATEX: :width 4in
-
+#+OPTIONS: H:6
+#+LATEX_HEADER: \usepackage[Bjornstrup]{fncychap}
+#+LATEX_HEADER: \usepackage[svgnames]{xcolor}
+#+LATEX_HEADER: \usepackage[tikz]{bclogo}
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \newenvironment{alert}{\begin{bclogo}}{\end{bclogo}}
+#+OPTIONS: ^:{}
 #+HUGO_BASE_DIR: .
 #+HUGO_SECTION: docs
-#+HUGO_PAIRED_SHORTCODES: alert
+#+HUGO_PAIRED_SHORTCODES: %alert
 
 * Introduction
 :PROPERTIES:
@@ -43,7 +50,7 @@ The first step is to get a proper install of Erlang/OTP in place. This is not go
 
 Erlang/OTP is released on a fairly stable and predictable schedule, with well-defined criteria for backwards-incompatible changes.
 
-Erlang versions are numbered according to a =<Major>.<Minor>.<Patch>= scheme, as described in the [Erlang/OTP system principles](http://erlang.org/doc/system_principles/versions.html#version_scheme). In some rare circumstances, other digits are bolted on as "branched" versions, which you likely won't have to care about.
+Erlang versions are numbered according to a =<Major>.<Minor>.<Patch>= scheme, as described in the [[http://erlang.org/doc/system_principles/versions.html#version_scheme][Erlang/OTP system principles]]. In some rare circumstances, other digits are bolted on as "branched" versions, which you likely won't have to care about.
 
 Here are some example possible versions:
 
@@ -62,19 +69,23 @@ As you can see, the =Patch= version is not mentioned when no patch is required. 
 3. At a frequency of every three or four months, a minor release is made public, which usually includes stability fixes and minor feature additions in individual libraries
 4. If a critical bug has been found in some circumstances, either for security or stability reasons, a patch release may be announced.
 
-Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [Support, Compatibility, Deprecations, and Removal](http://erlang.org/doc/system_principles/misc.html) document published by the OTP team at Ericsson.
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [[http://erlang.org/doc/system_principles/misc.html][Support, Compatibility, Deprecations, and Removal]] document published by the OTP team at Ericsson.
+#+end_alert
 
 In some rare scenarios, hard-and-fast deprecations do happen, and it may take a few weeks for the community to come up with workarounds.
 
 A team that adopts Erlang will therefore likely want to adopt a maintenance schedule that fits the main releases if they want to avoid falling too far behind. While it is possible to only upgrade occasionally, you will find that it is often easier to do a bit of maintenance somewhat often than a lot of maintenance at once.
 
-Do note that patch-level releases are often only announced on the [mailing lists](http://erlang.org/mailman/listinfo/erlang-questions) and tagged on [the main git repository on GitHub](https://github.com/erlang/otp), but are otherwise not packaged on the main website.
+Do note that patch-level releases are often only announced on the [[http://erlang.org/mailman/listinfo/erlang-questions][mailing lists]] and tagged on [[https://github.com/erlang/otp][the main git repository on GitHub]], but are otherwise not packaged on the main website.
 
 **** Windows
 
 If you are a Windows user, it is recommended that you use Windows 10 for any Erlang development. Prior versions can work, but community tools such as Rebar3 are only tested on Windows 10, for example.
 
-Building on Windows from source has been notoriously difficult, and it is therefore recommended that you stick to the pre-built copies distributed on [www.erlang.org/downloads](https://www.erlang.org/downloads), or alternatively those built by [Erlang Solutions Ltd.](https://www.erlang-solutions.com/resources/download.html).
+Building on Windows from source has been notoriously difficult, and it is therefore recommended that you stick to the pre-built copies distributed on [[https://www.erlang.org/downloads][www.erlang.org/downloads]], or alternatively those built by [[https://www.erlang-solutions.com/resources/download.html][Erlang Solutions Ltd.]].
 
 The installer for these versions comes with a wizard that will take you through all the required steps.
 
@@ -95,22 +106,22 @@ If you are a purist when it comes to Windows development, you may be quite comfo
 If you are looking for a terminal to run the command line on Windows, various options are available:
 
 - Use PowerShell as a terminal. Most commands in this book should work fine with it, but some edge cases may exist.
-- Download and install [git for Windows](https://git-scm.com/download/win), which will come with a =git-bash= shell that will work well with all tooling and most commands in this book
-- Try [ConEmu](https://www.fosshub.com/ConEmu.htm) as a nicer terminal emulator to work with
-- Use [Cmder](https://cmder.net/) which is a Windows console emulator that packages most of the above options rather well
-- Use [Cygwin](https://www.cygwin.com) at your own risk; you will need to rebuild your software from source to work well with it, and tools like Rebar3 dynamically figure out they're on Windows, which historically has caused a few path problems when interacting with Cygwin
+- Download and install [[https://git-scm.com/download/win][git for Windows]], which will come with a =git-bash= shell that will work well with all tooling and most commands in this book
+- Try [[https://www.fosshub.com/ConEmu.htm][ConEmu]] as a nicer terminal emulator to work with
+- Use [[https://cmder.net/][Cmder]] which is a Windows console emulator that packages most of the above options rather well
+- Use [[https://www.cygwin.com][Cygwin]] at your own risk; you will need to rebuild your software from source to work well with it, and tools like Rebar3 dynamically figure out they're on Windows, which historically has caused a few path problems when interacting with Cygwin
 
 You can then use the editor or IDE of your choosing to work with Erlang components.
 
 **** OSX
 
-While OSX makes it possible to use [Homebrew](https://brew.sh/) or [Erlang Solutions Ltd. packages](https://www.erlang-solutions.com/resources/download.html) to install pre-built versions of Erlang/OTP, you should only do so if you're trying things out the first time around. If you're planning on doing actual development for the longer haul, you'll instead want to be able to handle multiple versions at once.
+While OSX makes it possible to use [[https://brew.sh/][Homebrew]] or [[https://www.erlang-solutions.com/resources/download.html][Erlang Solutions Ltd. packages]] to install pre-built versions of Erlang/OTP, you should only do so if you're trying things out the first time around. If you're planning on doing actual development for the longer haul, you'll instead want to be able to handle multiple versions at once.
 
-The most commonly supported tool for this is [kerl](https://github.com/kerl/kerl). Kerl is a wrapper around downloading, compiling, and loading various Erlang/OTP versions on a single system, and will abstract away most annoying operations.
+The most commonly supported tool for this is [[https://github.com/kerl/kerl][kerl]]. Kerl is a wrapper around downloading, compiling, and loading various Erlang/OTP versions on a single system, and will abstract away most annoying operations.
 
-You can install Kerl from homebrew by calling =$ brew install kerl=, or by following the instructions in its [README file](https://github.com/kerl/kerl#downloading).
+You can install Kerl from homebrew by calling =$ brew install kerl=, or by following the instructions in its [[https://github.com/kerl/kerl#downloading][README file]].
 
-Before installing Erlang, we will need to install and update a few dependencies, the main ones being to make sure you have [XCode](https://developer.apple.com/xcode/) installed and to then install OpenSSL (since OSX has terribly outdated copies of SSL by default):
+Before installing Erlang, we will need to install and update a few dependencies, the main ones being to make sure you have [[https://developer.apple.com/xcode/][XCode]] installed and to then install OpenSSL (since OSX has terribly outdated copies of SSL by default):
 
 #+NAME: openssl_osx
 #+BEGIN_SRC sh
@@ -126,13 +137,15 @@ You can set the following options in your environment:
 
 #+NAME: kerlcfg_osx
 #+BEGIN_SRC sh
+SSL_PATH=/usr/local/Cellar/openssl/1.0.2q/
 export KERL_BUILD_BACKEND="git"
-export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=/usr/local/Cellar/openssl/1.0.2q/"
+export KERL_CONFIGURE_OPTIONS="--without-javac \
+                               --with-ssl=${SSL_PATH}"
 #+END_SRC
 
-And ensure it's active (for example, call =source ~/.bashrc=). These options specify what is accepted or expected from the build tool. THe one here disables Java bindings, and uses the new SSL install we've made. You can look at the [Build Instructions](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#configuring-1) for more configuration options.
+And ensure it's active (for example, call =source ~/.bashrc=). These options specify what is accepted or expected from the build tool. The one here disables Java bindings, and uses the new SSL install we've made. You can look at the [[https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#configuring-1][Build Instructions]] for more configuration options.
 
-If you want to add more content, such as =Wx= (which lets you use and build GUIs), the [Build instructions for OSX](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#os-x-darwin) contain further details to guide you.
+If you want to add more content, such as =Wx= (which lets you use and build GUIs), the [[https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#os-x-darwin][Build instructions for OSX]] contain further details to guide you.
 
 From that point on, you can download and install your own Erlang/OTP versions:
 
@@ -156,9 +169,9 @@ Any installed version can then be activated on-demand. If you want to set a defa
 
 **** Linux
 
-Linux distributions pretty much all have package managers that let you install pre-built copies of Erlang, or you can still use [Erlang Solutions Ltd. packages](https://www.erlang-solutions.com/resources/download.html). Much like with OSX though, you should only do so if you're trying things out the first time around. If you're planning on doing actual development for the longer haul, you'll instead want to be able to handle multiple versions at once.
+Linux distributions pretty much all have package managers that let you install pre-built copies of Erlang, or you can still use [[https://www.erlang-solutions.com/resources/download.html][Erlang Solutions Ltd. packages]]. Much like with OSX though, you should only do so if you're trying things out the first time around. If you're planning on doing actual development for the longer haul, you'll instead want to be able to handle multiple versions at once.
 
-The most commonly supported tool for this is [kerl](https://github.com/kerl/kerl). Kerl is a wrapper around downloading, compiling, and loading various Erlang/OTP versions on a single system, and will abstract away most annoying operations.
+The most commonly supported tool for this is [[https://github.com/kerl/kerl][kerl]]. Kerl is a wrapper around downloading, compiling, and loading various Erlang/OTP versions on a single system, and will abstract away most annoying operations.
 
 You can install kerl by calling:
 
@@ -178,9 +191,9 @@ export KERL_BUILD_BACKEND="git"
 export KERL_CONFIGURE_OPTIONS="--without-javac"
 #+END_SRC
 
-And ensure it's active (for example, call =source ~/.bashrc=). These options specify what is accepted or expected from the build tool. The one here disables Java bindings, but they would be skipped automatically anyway. You can look at the [Build Instructions](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#configuring-1) for more configuration options.
+And ensure it's active (for example, call =source ~/.bashrc=). These options specify what is accepted or expected from the build tool. The one here disables Java bindings, but they would be skipped automatically anyway. You can look at the [[https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#configuring-1][Build Instructions]] for more configuration options.
 
-If you want to add more content, such as =Wx= (which lets you use and build GUIs), the [Build instructions for Wx](https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#building-with-wxerlang) contain further details to guide you.
+If you want to add more content, such as =Wx= (which lets you use and build GUIs), the [[https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#building-with-wxerlang][Build instructions for Wx]] contain further details to guide you.
 
 From that point on, you can download and install your own Erlang/OTP versions:
 
@@ -204,7 +217,7 @@ Any installed version can then be activated on-demand. If you want to set a defa
 
 **** FreeBSD
 
-On FreeBSD, some patches are required to make things work as smoothly as on other platforms. The good news is that if you use either the BSD [ports](https://www.freebsd.org/doc/en/books/handbook/ports-using.html) or [packages](https://www.freebsd.org/doc/en/books/handbook/pkgng-intro.html), it will all work fine out of the box.
+On FreeBSD, some patches are required to make things work as smoothly as on other platforms. The good news is that if you use either the BSD [[https://www.freebsd.org/doc/en/books/handbook/ports-using.html][ports]] or [[https://www.freebsd.org/doc/en/books/handbook/pkgng-intro.html][packages]], it will all work fine out of the box.
 
 This is the easiest way forwards, but makes switching across versions a bit trickier since you don't get an Erlang version manager for free. However, BSD ports and packages do let you build any version supported at your liking.
 
@@ -235,7 +248,7 @@ There are a few ways to install Rebar3: from a pre-built binary, or from source,
 
 **** Pre-Built Binaries
 
-Pre-built binaries can be found at [www.rebar3.org](https://www.rebar3.org/). There's a big "Download" button with the latest stable version, but if you like to live more dangerously, you can grab [the latest _nightly_ build](https://s3.amazonaws.com/rebar3-nightly/rebar3) as well.
+Pre-built binaries can be found at [[https://www.rebar3.org/][www.rebar3.org]]. There's a big "Download" button with the latest stable version, but if you like to live more dangerously, you can grab [[https://s3.amazonaws.com/rebar3-nightly/rebar3][the latest _nightly_ build]] as well.
 
 It is common to create a directory =~/bin/= to place commands line utilities like =rebar3=, which is where you might want to put the version you just downloaded. Call =chmod +x rebar3= on it to make sure it can run, and add it to your path with =export PATH=~/bin/:$PATH= in your =~/.bashrc=, =~/.zshrc= or equivalent.
 
@@ -291,7 +304,7 @@ Erlang/OTP is different from most programming environments out there, even those
 
 The foundational block for everything is the Erlang virtual machine itself, called BEAM. BEAM is technically a single implementation of the Erlang virtual machine, as there could be others. For example, Erllvm is an implementation over LLVM (using some custom patches to make everything possible), and an older implementation in the 90s was called JAM. The Erlang VM is implemented in C, and contains a lot of fancy stuff: schedulers to run processes, garbage collection, memory allocators, a timer wheel for events, a bunch of smart switches to abstract over operating system features and provide unified interfaces (such as over time management, file-handling drivers, and so on), a few built-in functions that go faster than what Erlang can do on its own (BIFs) and an interface for functions implemented natively in other languages (NIFs) along with special schedulures for them. There's obviously a lot more, but you can think of all that stuff the way you would with the kernel in BSD or Linux: low level stuff that you need in order to build fancier stuff.
 
-If all you have is the virtual machine with nothing else, you can't run Erlang code. You don't have a standard library, you don't have libraries to even load code. There's some odd bootstrapping going on that we don't need to understand. Just know that there's a limited set of pre-loaded Erlang modules that ship with the virtual machine, and those can be used to set up networking and file-handling stuff that allows to further load and run modules. If you're interested in knowing more though, please consult [The BEAM Book](https://happi.github.io/theBeamBook/) or [BEAM Wisdoms](http://beam-wisdoms.clau.se/en/latest/).
+If all you have is the virtual machine with nothing else, you can't run Erlang code. You don't have a standard library, you don't have libraries to even load code. There's some odd bootstrapping going on that we don't need to understand. Just know that there's a limited set of pre-loaded Erlang modules that ship with the virtual machine, and those can be used to set up networking and file-handling stuff that allows to further load and run modules. If you're interested in knowing more though, please consult [[https://happi.github.io/theBeamBook/][The BEAM Book]] or [[http://beam-wisdoms.clau.se/en/latest/][BEAM Wisdoms]].
 
 If you take the virtual machine and the pre-loaded stuff, along with all the little utilities that make code-loading possible, you have what is essentially called the _Erlang Run-Time System_ (ERTS). The Run-Time System, when starting, follows the values of a thing called a _boot script_ (which nobody writes by hand) that specifies what to start. Erlang, by default, provides boot scripts that load code described in the next section as part of its boot sequence.
 
@@ -301,13 +314,17 @@ With this basic stuff in place, we fall into Erlang's space, something akin to u
 
 If what we have right now is equivalent to the kernel, we need the foundational blocks for the userspace components. In Erlang, this is essentially what OTP is about. OTP specifies how "components" that run on the virtual machine should be structured. From the first start, there is more than just "processes and messages", there's one way to structure your code.
 
-> OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
+#+end_alert
 
 This is done through the use of components named _OTP Applications_. Every Erlang install that you use ships with a few of them, because it would be way too much trouble not to. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and regular _OTP Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
 
 - _Library Applications_: stateless collections of modules
 - _Runnable Applications_: OTP applications that start stateful supervision tree structures with processes running in them
-- _OTP Applications_: either _Library_ or _Runnable Applications, interchangeably
+- _OTP Applications_: either _Library_ or _Runnable Applications_, interchangeably
 
 By default, the two OTP applications everyone includes are called =stdlib=, which is a library application that contains the core standard library modules such as =list= or =maps=, and =kernel=, which is a runnable application and sets up the core structure for an Erlang system that relies on OTP applications to work.
 
@@ -336,7 +353,7 @@ So if we to write an app named =proxy= that relies on =ssh= and =ssl= (which the
 - kernel
 - stdlib
 - crypto
-- public_key
+- public\_key
 - ssl
 - ssh
 - proxy
@@ -345,7 +362,7 @@ A visual representation of this can be seen in Figure [[fig:proxy_release]].
 
 #+CAPTION: Visual representation of building the =proxy= release
 #+NAME:   fig:proxy_release
-[[/img/proxy_release_draft.png]]
+[[./static/img/proxy_release_draft.png]]
 
 Essentially, building an Erlang system is re-bundling the VM, along with some standard applications provided with the default distribution, together with your own apps and libraries.
 
