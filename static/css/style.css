@@ -1,3 +1,14 @@
+/* give titles some style not in the default template */
+.markdown h1, .markdown h2, .markdown h3,
+.markdown h4, .markdown h5, .markdown h6 {
+    font-weight: bold;
+}
+
+/* ensure images don't overflow out of content areas */
+img {
+    max-width: 100%;
+}
+
  /* The alert message box */
 .alert {
   padding: 20px;
@@ -37,6 +48,3 @@
   margin-top: 5px;
 }
 
-img {
-    max-width: 100%;
-}
