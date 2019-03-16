@@ -10,10 +10,13 @@
 
 #+LATEX_CLASS: book
 #+ATTR_LATEX: :width 4in
+#+LATEX_HEADER: \usepackage[svgnames]{xcolor}
+#+LATEX_HEADER: \usepackage[tikz]{bclogo}
+#+LATEX_HEADER: \usepackage{hyperref}
 
 #+HUGO_BASE_DIR: .
 #+HUGO_SECTION: docs
-#+HUGO_PAIRED_SHORTCODES: alert
+#+HUGO_PAIRED_SHORTCODES: %alert
 
 * Introduction
 :PROPERTIES:
@@ -62,7 +65,11 @@ As you can see, the =Patch= version is not mentioned when no patch is required. 
 3. At a frequency of every three or four months, a minor release is made public, which usually includes stability fixes and minor feature additions in individual libraries
 4. If a critical bug has been found in some circumstances, either for security or stability reasons, a patch release may be announced.
 
-Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [Support, Compatibility, Deprecations, and Removal](http://erlang.org/doc/system_principles/misc.html) document published by the OTP team at Ericsson.
+#+attr_shortcode: info
+#+attr_latex: :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [[http://erlang.org/doc/system_principles/misc.html][Support, Compatibility, Deprecations, and Removal]] document published by the OTP team at Ericsson.
+#+end_alert
 
 In some rare scenarios, hard-and-fast deprecations do happen, and it may take a few weeks for the community to come up with workarounds.
 
