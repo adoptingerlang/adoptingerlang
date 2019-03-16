@@ -6,12 +6,13 @@
 #+DESCRIPTION: Adopting Erlang.
 #+KEYWORDS: erlang
 
-\setcounter{secnumdepth}{-1}
+# \setcounter{secnumdepth}{-1}
 
 #+LATEX_CLASS: book
 #+LATEX_CLASS_OPTIONS: [oneside,11pt]
 #+ATTR_LATEX: :width 4in
 #+OPTIONS: H:6
+#+LATEX_HEADER: \usepackage[Bjornstrup]{fncychap}
 #+LATEX_HEADER: \usepackage[svgnames]{xcolor}
 #+LATEX_HEADER: \usepackage[tikz]{bclogo}
 #+LATEX_HEADER: \usepackage{hyperref}
