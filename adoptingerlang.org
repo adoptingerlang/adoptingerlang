@@ -13,6 +13,7 @@
 #+LATEX_HEADER: \usepackage[svgnames]{xcolor}
 #+LATEX_HEADER: \usepackage[tikz]{bclogo}
 #+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \newenvironment{alert}{\begin{bclogo}}{\end{bclogo}}
 
 #+HUGO_BASE_DIR: .
 #+HUGO_SECTION: docs
@@ -66,7 +67,7 @@ As you can see, the =Patch= version is not mentioned when no patch is required. 
 4. If a critical bug has been found in some circumstances, either for security or stability reasons, a patch release may be announced.
 
 #+attr_shortcode: info
-#+attr_latex: :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_alert
 Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [[http://erlang.org/doc/system_principles/misc.html][Support, Compatibility, Deprecations, and Removal]] document published by the OTP team at Ericsson.
 #+end_alert
@@ -343,7 +344,7 @@ So if we to write an app named =proxy= that relies on =ssh= and =ssl= (which the
 - kernel
 - stdlib
 - crypto
-- public_key
+- public\_key
 - ssl
 - ssh
 - proxy
@@ -352,7 +353,7 @@ A visual representation of this can be seen in Figure [[fig:proxy_release]].
 
 #+CAPTION: Visual representation of building the =proxy= release
 #+NAME:   fig:proxy_release
-[[/img/proxy_release_draft.png]]
+[[./static/img/proxy_release_draft.png]]
 
 Essentially, building an Erlang system is re-bundling the VM, along with some standard applications provided with the default distribution, together with your own apps and libraries.
 
