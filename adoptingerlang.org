@@ -235,7 +235,7 @@ There are a few ways to install Rebar3: from a pre-built binary, or from source,
 
 **** Pre-Built Binaries
 
-Pre-built binaries can be found at [www.rebar3.org](https://www.rebar3.org/). There's a big "Download" button with the latest stable version, but if you like to live more dangerously, you can grab [the latest _nightly_ build](https://s3.amazonaws.com/rebar3/rebar3) as well.
+Pre-built binaries can be found at [www.rebar3.org](https://www.rebar3.org/). There's a big "Download" button with the latest stable version, but if you like to live more dangerously, you can grab [the latest _nightly_ build](https://s3.amazonaws.com/rebar3-nightly/rebar3) as well.
 
 It is common to create a directory =~/bin/= to place commands line utilities like =rebar3=, which is where you might want to put the version you just downloaded. Call =chmod +x rebar3= on it to make sure it can run, and add it to your path with =export PATH=~/bin/:$PATH= in your =~/.bashrc=, =~/.zshrc= or equivalent.
 
