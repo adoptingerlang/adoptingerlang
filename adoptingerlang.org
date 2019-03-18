@@ -33,6 +33,8 @@ TODO: explain what this book is for; do it last.
 :PROPERTIES:
 :EXPORT_FILE_NAME: development
 :END:
+#+latex_header: \usepackage[utf8]{inputenc}
+#+latex_header: \usepackage{pmboxdraw} % for directory listings
 
 The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
 
@@ -478,24 +480,24 @@ mylib/
 
 The =_build/= directory is the build tool's playground, where it can stash all the artifacts it needs. You should never have to touch what is in there by hand. This directory is nonetheless interesting because it shows how rebar3 structures things.
 
-Everything in =_build/= is split by [profile](https://www.rebar3.org/docs/profiles), which lets rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in face, you can define as many profiles as you want, and compose them together. The rebar3 documentation explains how this works.
+Everything in =_build/= is split by [[https://www.rebar3.org/docs/profiles][profile]], which lets rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in face, you can define as many profiles as you want, and compose them together. The rebar3 documentation explains how this works.
 
 Within each profile, the =lib/= directory contains all the OTP applications that your project may use, outside of the standard distribution's libraries. You can see our =mylib= library replicated right there, but its directory structure is a bit different from what's directly at the project root:
 
 - compiled =.erl= files are moved to the =ebin/= directory and now have the =.beam= extension
 - there is a =mylib.app= file created, whereas the source application had =mylib.app.src=
-- two symlinks have been added to =include/= and =priv/=. These will refer to matching directories at the root of the project, if they exist. The =include/= directory is meant for [header files](http://erlang.org/doc/reference_manual/macros.html#file-inclusion) (=.hrl=), and the =priv/= directory for any artifact that must be copied over and made available in production
+- two symlinks have been added to =include/= and =priv/=. These will refer to matching directories at the root of the project, if they exist. The =include/= directory is meant for [[http://erlang.org/doc/reference_manual/macros.html#file-inclusion][header files]] (=.hrl=), and the =priv/= directory for any artifact that must be copied over and made available in production
 - All other files at the root of the project have been discarded
 
 If we had any dependencies (see [[Dependencies][the Dependencies chapter]]), they would also be placed in the =_build/<profile>/lib/= directory.
 
 In general, you will want to ignore the =_build/= directory entirely and avoid tracking it in your source control: if you look at the =.gitignore= file, you will see that it automatically ignores =_build/= for you.
 
-Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open soruce work), going for the [Apache 2.0](https://en.wikipedia.org/wiki/Apache_License#Version_2.0) license that Erlang ships with. Feel free to replace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
+Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open soruce work), going for the [[https://en.wikipedia.org/wiki/Apache_License#Version_2.0][Apache 2.0]] license that Erlang ships with. Feel free to replace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
 
 Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by rebar3 to track which versions of any dependencies you were using, and should be checked into source control. The [[Dependencies][Dependencies chapter]] contains more details.
 
-The =rebar.config= file is a complete declarative configuration file that exposes options for all the Erlang tools that rebar3 integrates with. [The official documentation](https://www.rebar3.org/docs/configuration) explains all the values possible, but by default it is quite empty. In fact, if you only want default values with no dependencies, you can just delete the file. As long as your project is structured like an OTP application, rebar3 will figure out what needs to be done.
+The =rebar.config= file is a complete declarative configuration file that exposes options for all the Erlang tools that rebar3 integrates with. [[https://www.rebar3.org/docs/configuration][The official documentation]] explains all the values possible, but by default it is quite empty. In fact, if you only want default values with no dependencies, you can just delete the file. As long as your project is structured like an OTP application, rebar3 will figure out what needs to be done.
 
 Let's see what the standards are for that to happen.
 

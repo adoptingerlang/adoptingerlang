@@ -4,6 +4,20 @@
     font-weight: bold;
 }
 
+/* make tables non-horrible */
+.markdown table {
+    border: 1px solid #666;
+    border-collapse: collapse;
+}
+
+.markdown table thead tr {
+    border-bottom: 1px solid #666;
+}
+
+.markdown table tr td {
+    border: 1px dotted #aaa;
+}
+
 /* ensure images don't overflow out of content areas */
 img {
     max-width: 100%;
