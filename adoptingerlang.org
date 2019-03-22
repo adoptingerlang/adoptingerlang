@@ -623,13 +623,14 @@ ALSO
 *** Dialyzer
 *** XRef
 *** Continuous Integration
-** Handling Unicode
+** Things Hard to Get Right
+*** Handling Unicode
+*** Handling Time
+*** SSL Configurations
 * Production
 :PROPERTIES:
 :EXPORT_FILE_NAME: production
 :END:
-** Not sure of title yet
-*** SSL Configuration
 ** Releases
 *** Runtime Configuration
 ** Deployment
