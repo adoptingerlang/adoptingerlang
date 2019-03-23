@@ -486,7 +486,7 @@ Within each profile, the =lib/= directory contains all the OTP applications that
 
 - compiled =.erl= files are moved to the =ebin/= directory and now have the =.beam= extension
 - there is a =mylib.app= file created, whereas the source application had =mylib.app.src=
-- two symlinks have been added to =include/= and =priv/=. These will refer to matching directories at the root of the project, if they exist. The =include/= directory is meant for [[http://erlang.org/doc/reference_manual/macros.html#file-inclusion][header files]] (=.hrl=), and the =priv/= directory for any artifact that must be copied over and made available in production
+- two symlinks have been added to =include/= and =priv/=. These will refer to matching directories at the root of the project, if they exist. The =include/= directory is meant for [[http://erlang.org/doc/reference_manual/macros.html#file-inclusion][header files]] (=.hrl=), and the =priv/= directory for any file that must be copied over and made available in production
 - All other files at the root of the project have been discarded
 
 If we had any dependencies (see [[Dependencies][the Dependencies chapter]]), they would also be placed in the =_build/<profile>/lib/= directory.
