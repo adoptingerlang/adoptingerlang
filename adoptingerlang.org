@@ -537,7 +537,7 @@ For now, let's focus on what exactly is the difference between a stateless and a
 
 To make a stateful application, we're going to use the "app" template in rebar3, and see what are the differences with a stateless application.
 
-So let's grab you command line tool and run the following:
+So let's grab your command line tool and run the following:
 
 #+NAME: rebar3_new_myapp
 #+BEGIN_SRC sh
