@@ -406,7 +406,7 @@ Here's a table showing when they might be used:
 | a library (collection of modules)  | lib             | Can be used as a dependency                                         |
 | a library (stateful processes)     | app             | Can be used as a dependency                                         |
 | full executable program            | umbrella or app | Can be turned into a full release, the recommended deploy mechanism |
-| a collection of multiple libraries | umbrella        | Cannot be used as a dependency                                      |
+| a collection of multiple libraries | umbrella        | Cannot be used as a git dependency but each individual app could be published to hex |
 | rebar3 extension                   | plugin          |                                                                     |
 | compiling C code                   | cmake           | Also see the "pc" plugin for a portable way to compile C/C++        |
 
