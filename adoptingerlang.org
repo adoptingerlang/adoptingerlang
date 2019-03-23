@@ -480,7 +480,7 @@ mylib/
 
 The =_build/= directory is the build tool's playground, where it can stash all the artifacts it needs. You should never have to touch what is in there by hand. This directory is nonetheless interesting because it shows how rebar3 structures things.
 
-Everything in =_build/= is split by [[https://www.rebar3.org/docs/profiles][profile]], which lets rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in face, you can define as many profiles as you want, and compose them together. The rebar3 documentation explains how this works.
+Everything in =_build/= is split by [[https://www.rebar3.org/docs/profiles][profile]], which lets rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in fact, you can define as many profiles as you want, and compose them together. The rebar3 documentation explains how this works.
 
 Within each profile, the =lib/= directory contains all the OTP applications that your project may use, outside of the standard distribution's libraries. You can see our =mylib= library replicated right there, but its directory structure is a bit different from what's directly at the project root:
 
