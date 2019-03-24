@@ -527,7 +527,7 @@ $ cat _build/default/lib/mylib/ebin/mylib.app
 
 This is essentially a metadata file that describes everything about the application. We've taken the time to annotate it for you, so check it out. A lot of the content in there is annoying to write by hand so if you look at the source file (=src/mylib.app.src=), you'll see that the fields are mostly pre-populated. You may also notice that =modules= is empty. That's on purpose: rebar3 will populate the list for you.
 
-By far, the most critical field to keep up to date in there is the =applications= tuple. It lets the Erlang Run-Time System know the order in which OTP applications must be started to work, and also allows build tools to build a dependency graph between all available OTP applications to know which to keep and which to remove from the distribution when building a release.
+By far, the most critical field to keep up to date in there is the =applications= tuple. It lets Erlang libraries know the order in which OTP applications must be started to work, and also allows build tools to build a dependency graph between all available OTP applications to know which to keep and which to remove from the distribution when building a release.
 
 A more subtle thing to notice is that even if what we have here is a _library_, and it therefore has no processes to run, we still have the ability to define some configuration values (see the [[Configuration][Configuration Chapter]]), and dependencies must be respected. It is possible, for example, that our library is stateless, but uses a stateful HTTP client: the Erlang VM will then need to know when your code may or may not be safe to call.
 
