@@ -33,6 +33,8 @@ TODO: explain what this book is for; do it last.
 :PROPERTIES:
 :EXPORT_FILE_NAME: development
 :END:
+#+latex_header: \usepackage[utf8]{inputenc}
+#+latex_header: \usepackage{pmboxdraw} % for directory listings
 
 The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
 
@@ -379,10 +381,237 @@ So the key to getting started fast in Erlang is to know the framework, which is 
 
 Since every component to be shipped in an Erlang/OTP release needs to be an OTP Application, it will do you a great good to understand what they are and how they work. In this chapter, we'll go over the basic structure of an OTP application, and what that means for your project.
 
+*** Project Structure
 
+We'll start by using the rebar3 templates, since they will allow us to create brand new projects that properly respect the directory structures expected by Erlang/OTP. Let's see which templates are available:
+
+#+NAME: rebar3_new
+#+BEGIN_SRC sh
+$ rebar3 new
+app (built-in): Complete OTP Application structure.
+cmake (built-in): Standalone Makefile for building C/C++ in c_src
+escript (built-in): Complete escriptized application structure
+lib (built-in): Complete OTP Library application (no processes) structure
+plugin (built-in): Rebar3 plugin project structure
+release (built-in): OTP Release structure for executable programs
+umbrella (built-in): OTP structure for executable programs
+                     (alias of 'release' template)
+#+END_SRC
+
+Here's a table showing when they might be used:
+
+| Type of Project                    | Template to use | Comments                                                            |
+|------------------------------------+-----------------+---------------------------------------------------------------------|
+| script or command line tool        | escript         | Requires Erlang to be installed by the user                         |
+| a library (collection of modules)  | lib             | Can be used as a dependency                                         |
+| a library (stateful processes)     | app             | Can be used as a dependency                                         |
+| full executable program            | umbrella or app | Can be turned into a full release, the recommended deploy mechanism |
+| a collection of multiple libraries | umbrella        | Cannot be used as a git dependency but each individual app could be published to hex |
+| rebar3 extension                   | plugin          |                                                                     |
+| compiling C code                   | cmake           | Also see the "pc" plugin for a portable way to compile C/C++        |
+
+You can see the details of a given template by calling =rebar3 new help <template>=. See for example:
+
+#+NAME: rebar3_new_lib
+#+BEGIN_SRC sh
+$ rebar3 new help lib
+lib:
+  built-in template
+  Description: Complete OTP Library application (no processes) structure
+  Variables:
+    name="mylib" (Name of the OTP library application)
+    desc="An OTP library" (Short description of the app)
+    date="2019-03-15"
+    datetime="2019-03-15T19:52:31+00:00"
+    author_name="Fred Hebert"
+    author_email="mononcqc@ferd.ca"
+    copyright_year="2019"
+    apps_dir="apps" (Directory where applications will be created if needed)
+#+END_SRC
+
+The values can be modified as desired on the command line, but those are the default variables. Let's see what we get by writing our own:
+
+#+NAME: rebar3_new_mylib
+#+BEGIN_SRC sh
+$ rebar3 new lib mylib desc="Checking out OTP libs"
+===> Writing mylib/src/mylib.erl
+===> Writing mylib/src/mylib.app.src
+===> Writing mylib/rebar.config
+===> Writing mylib/.gitignore
+===> Writing mylib/LICENSE
+===> Writing mylib/README.md
+#+END_SRC
+
+Go to the =mylib= directory, and call =rebar3 compile= right away:
+
+#+NAME: rebar3_mylib_compile
+#+BEGIN_SRC sh
+$ rebar3 compile
+===> Verifying dependencies...
+===> Compiling mylib
+#+END_SRC
+
+If you look at your directory structure, you should now have something like this in your project:
+
+
+#+NAME: lib_structure
+#+BEGIN_SRC sh
+mylib/
+├─ _build/
+│  └─ default/
+│     └─ lib/
+│        └─ mylib/
+│           ├─ ebin/
+│           │  ├─ mylib.app
+│           │  └─ mylib.beam
+│           ├─ include/
+│           ├─ priv/
+│           └─ src/
+│              └─ ...
+├─ .gitignore
+├─ LICENSE
+├─ README.md
+├─ rebar.config
+├─ rebar.lock
+└─ src/
+   ├─ mylib.app.src
+   └─ mylib.erl
+#+END_SRC
+
+The =_build/= directory is the build tool's playground, where it can stash all the artifacts it needs. You should never have to touch what is in there by hand. This directory is nonetheless interesting because it shows how rebar3 structures things.
+
+Everything in =_build/= is split by [[https://www.rebar3.org/docs/profiles][profile]], which lets rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in fact, you can define as many profiles as you want, and compose them together. The rebar3 documentation explains how this works.
+
+Within each profile, the =lib/= directory contains all the OTP applications that your project may use, outside of the standard distribution's libraries. You can see our =mylib= library replicated right there, but its directory structure is a bit different from what's directly at the project root:
+
+- compiled =.erl= files are moved to the =ebin/= directory and now have the =.beam= extension
+- there is a =mylib.app= file created, whereas the source application had =mylib.app.src=
+- two symlinks have been added to =include/= and =priv/=. These will refer to matching directories at the root of the project, if they exist. The =include/= directory is meant for [[http://erlang.org/doc/reference_manual/macros.html#file-inclusion][header files]] (=.hrl=), and the =priv/= directory for any file that must be copied over and made available in production
+- All other files at the root of the project have been discarded
+
+If we had any dependencies (see [[Dependencies][the Dependencies chapter]]), they would also be placed in the =_build/<profile>/lib/= directory.
+
+In general, you will want to ignore the =_build/= directory entirely and avoid tracking it in your source control: if you look at the =.gitignore= file, you will see that it automatically ignores =_build/= for you.
+
+Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open soruce work), going for the [[https://en.wikipedia.org/wiki/Apache_License#Version_2.0][Apache 2.0]] license that Erlang ships with. Feel free to replace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
+
+Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by rebar3 to track which versions of any dependencies you were using, and should be checked into source control. The [[Dependencies][Dependencies chapter]] contains more details.
+
+The =rebar.config= file is a complete declarative configuration file that exposes options for all the Erlang tools that rebar3 integrates with. [[https://www.rebar3.org/docs/configuration][The official documentation]] explains all the values possible, but by default it is quite empty. In fact, if you only want default values with no dependencies, you can just delete the file. As long as your project is structured like an OTP application, rebar3 will figure out what needs to be done.
+
+Let's see what the standards are for that to happen.
+
+*** What Makes a Lib an App
+
+You've possibly guessed it, but the directory structure is one of the basic requirements of a framework like OTP. As long as your library has an =ebin/= directory once compiled with an =<appname>.app= file in it, the Erlang runtime system will be able to load your modules and run your code.
+
+This basic requirement guides the project structure of the entire Erlang ecosystem. Let's look at what a built =.app= file looks like:
+
+#+NAME: mylib.app
+#+BEGIN_SRC erlang
+$ cat _build/default/lib/mylib/ebin/mylib.app
+{application, mylib, [
+  {description, "Checking out OTP libs"},
+  {vsn, "0.1.0"},     % version number (string)
+  {registered, []},   % name of registered processes, if any
+  {applications, [    % List of OTP application names on which
+    kernel, stdlib    % yours depends at run-time. kernel and
+  ]},                 % stdlib are ALWAYS needed
+  {env, []},          % default configuration values ({Key, Val} pairs)
+  {modules, [mylib]}, % list of all the modules in the application
+  %% content below is optional, and for package publication only
+  {licenses, ["Apache 2.0"]},
+  {links, []}         % relevant URLs
+]}.
+#+END_SRC
+
+This is essentially a metadata file that describes everything about the application. We've taken the time to annotate it for you, so check it out. A lot of the content in there is annoying to write by hand so if you look at the source file (=src/mylib.app.src=), you'll see that the fields are mostly pre-populated. You may also notice that =modules= is empty. That's on purpose: rebar3 will populate the list for you.
+
+By far, the most critical field to keep up to date in there is the =applications= tuple. It lets Erlang libraries know the order in which OTP applications must be started to work, and also allows build tools to build a dependency graph between all available OTP applications to know which to keep and which to remove from the distribution when building a release.
+
+A more subtle thing to notice is that even if what we have here is a _library_, and it therefore has no processes to run, we still have the ability to define some configuration values (see the [[Configuration][Configuration Chapter]]), and dependencies must be respected. It is possible, for example, that our library is stateless, but uses a stateful HTTP client: the Erlang VM will then need to know when your code may or may not be safe to call.
+
+For now, let's focus on what exactly is the difference between a stateless and a stateful application.
+
+*** What Makes an App an App
+
+To make a stateful application, we're going to use the "app" template in rebar3, and see what are the differences with a stateless application.
+
+So let's grab your command line tool and run the following:
+
+#+NAME: rebar3_new_myapp
+#+BEGIN_SRC sh
+$ rebar3 new app myapp
+===> Writing myapp/src/myapp_app.erl
+===> Writing myapp/src/myapp_sup.erl
+===> Writing myapp/src/myapp.app.src
+===> Writing myapp/rebar.config
+===> Writing myapp/.gitignore
+===> Writing myapp/LICENSE
+===> Writing myapp/README.md
+$ cd myapp
+#+END_SRC
+
+If you're careful, you'll see that we now have two new modules instead of =<appname>.erl=: we have =<appname>_app.erl= and =<appname>_sup.erl=. We'll study them real soon, but first, let's focus on the top-level metadata file for the application, the =myapp.app.src= file:
+
+#+NAME: myapp.app.src
+#+BEGIN_SRC erlang
+$ cat src/myapp.app.src
+{application, myapp,
+ [{description, "An OTP application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {myapp_app, []}},               % this is new!
+  {applications, [kernel, stdlib]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
+#+END_SRC
+
+The only new line here is the ={mod, {<appname>_app, []}}= tuple. This tuple specifies a special module that can be called (=<appname>_app=) with some specific arguments (=[]=). When called, it is expected that this module will return the _process identifier_ (the _pid_) of a [[Supervision Trees][supervision tree]].
+
+If you go visit the =myapp_app= module, you will see what these callbacks are:
+
+#+NAME: myapp_app.erl
+#+BEGIN_SRC erlang
+%%%-------------------------------------------------------------------
+%% @doc myapp public API
+%% @end
+%%%-------------------------------------------------------------------
+
+-module(myapp_app).
+-behaviour(application).
+%% Application callbacks
+-export([start/2, stop/1]).
+
+%%====================================================================
+%% API
+%%====================================================================
+
+start(_StartType, _StartArgs) ->
+    myapp_sup:start_link().
+
+stop(_State) ->
+    ok.
+#+END_SRC
+
+The =start/2= callback is called when the application is booted by the Erlang runtime system, at which point all of its dependencies—as defined in the =applications= tuple in the .app file—have already been started. This is where you can do one-time bits of initialization. In the template application, the only thing done is starting the root supervisor for the application.
+
+The =stop/1= callback is called _after_ the whole supervision tree has been taken down once someone, somewhere, has decided to shut down the OTP application.
+
+But all in all, this little additional =mod= line in the app file and the presence of a supervision structure are what differentiates a runnable application from a library application.
+
+You now understand most of the weird stuff about Erlang/OTP's project structure and everything that has to do with these mysterious "OTP Applications". Starting with next chapter, we'll start digging a bit in supervision trees, so that you know how to set things up in a stateful runnable application.
 
 ALSO
 
+** Supervision Trees
+*** Basics
+*** Structuring Supervision Trees
+*** Further resources
 ** Dependencies
 ** Projects with Multiple Applications
 ** Rebar3 Shell
@@ -394,14 +623,14 @@ ALSO
 *** Dialyzer
 *** XRef
 *** Continuous Integration
-** Structuring Supervision Trees
-** Handling Unicode
+** Things Hard to Get Right
+*** Handling Unicode
+*** Handling Time
+*** SSL Configurations
 * Production
 :PROPERTIES:
 :EXPORT_FILE_NAME: production
 :END:
-** Not sure of title yet
-*** SSL Configuration
 ** Releases
 *** Runtime Configuration
 ** Deployment
@@ -440,3 +669,15 @@ ALSO
 *** It Takes One to Know One
 *** It is Easier to Train than Hire
 
+
+NOTE:
+
+things that have been badly covered or not covered
+
+- basic data types
+- comment syntax
+- modules syntax
+- basic Erlang shell
+- include files with -include and -include_lib
+- processes and process names
+- links, supervisors, gen_servers
