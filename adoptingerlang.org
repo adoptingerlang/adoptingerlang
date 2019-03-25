@@ -623,26 +623,129 @@ ALSO
 *** Dialyzer
 *** XRef
 *** Continuous Integration
+**** CircleCI
+***** surefire ct output
 ** Things Hard to Get Right
 *** Handling Unicode
 *** Handling Time
 *** SSL Configurations
+** Structuring Supervision Trees
+** Handling Unicode
+
 * Production
 :PROPERTIES:
 :EXPORT_FILE_NAME: production
 :END:
+
+Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service.
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+... Debunk claim that kubernetes and erlang are the same thing here ...
+#+end_alert
+
 ** Releases
-*** Runtime Configuration
-** Deployment
-*** Release building
-*** Docker Containers
-*** Kubernetes
-**** Deployment
-**** Service
-**** StatefulSet
-**** Resources
-***** CPUs
-****** Active Schedulers
+In OTP at a High Level we took a bird's-eye view of how applications are combined into a release and in Development we built and tested OTP applications. Now we'll configure and build a release of the =service_discovery= project. Then, build a docker image of the release, runtime configuration and deploy to Kubernetes.
+
+*** What is a Release? (better name for this?)
+
+<lower level details of a release than what was given in OTP at a High Level>
+
+*** Building a Development Release
+
+[some backstory/description of relx and its relation to rebar3 first?]
+
+#+NAME: rebar.config
+#+BEGIN_SRC erlang
+{relx, [{release, {service_discovery, "0.1.0"},
+         [service_discovery,
+          sasl]},
+
+        {sys_config_src, "./config/sys.config.src"},
+        {vm_args_src, "./config/vm.args.src"},
+
+        {dev_mode, true},
+        {include_erts, false},
+
+        {extended_start_script, true}]}.
+#+END_SRC
+
+The first tuple in the =relx= configuration list defines a release's name, version and the applications
+included in the release.
+
+=rebar3 release= runs relx with configuration based on the =relx= section of =rebar.config= and the rebar3 project structure so relx can find the necessary applications for building the release.
+
+#+BEGIN_SRC shell
+$ rebar3 release
+===> Verifying dependencies...
+===> Compiling service_discovery
+===> Starting relx build process ...
+===> Resolving OTP Applications from directories:
+          /home/tristan/Devel/service_discovery/_build/default/lib
+          /home/tristan/Devel/service_discovery/apps
+          /home/tristan/.cache/erls/otps/OTP-21.2.1/dist/lib/erlang/lib
+          /home/tristan/Devel/service_discovery/_build/default/rel
+===> Resolved service_discovery-0.1.0
+===> Dev mode enabled, release will be symlinked
+===> release successfully created!
+#+END_SRC
+
+The first relx step seen in the output is "Resolving OTP Applications" followed by a list of directories it will check, this means to find the name, version and path to all applications that make up the release being built. In the =relx= config only =service_discovery= and =sasl= are listed as applications to include in the release. relx takes those two applications and based on their =.app= files finds the applications they depend on, does the same for those found and so on until all dependencies have been discovered.
+
+Since this is built with ={dev_mode, true}= symlinks are created in the release's lib directory that point to each application:
+
+#+BEGIN_SRC shell
+$ ls -l _build/default/rel/service_discovery/lib
+lrwxrwxrwx ... service_discovery-0.1.0 -> .../_build/default/lib/service_discovery
+#+END_SRC
+
+The same is also done for the runtime configuration files =sys.config.src= and =vm.args.src=:
+
+#+BEGIN_SRC shell
+$ ls -l _build/default/rel/service_discovery/releases/0.1.0
+lrwxrwxrwx [...] sys.config.src -> [...]/config/sys.config.src
+lrwxrwxrwx [...] vm.args.src -> [...]/config/vm.args.src
+#+END_SRC
+
+This allows for a faster feedback loop when running our release for local testing. Simply stopping and starting the release again will pick up any changes to beam files or configuration.
+
+*** Building a Production Release
+
+#+NAME: rebar.config
+#+BEGIN_SRC erlang
+{profiles, [{prod, [{relx, [{dev_mode, false},
+                            {include_erts, true},
+                            {debug_info, strip}]}]
+            }]}.
+#+END_SRC
+
+#+BEGIN_SRC shell
+$ rebar3 as prod release
+===> Verifying dependencies...
+===> Compiling service_discovery
+===> Starting relx build process ...
+===> Resolving OTP Applications from directories:
+          /home/tristan/Devel/service_discovery/_build/prod/lib
+          /home/tristan/Devel/service_discovery/apps
+          /home/tristan/.cache/erls/otps/OTP-21.2.1/dist/lib/erlang/lib
+          /home/tristan/Devel/service_discovery/_build/prod/rel
+===> Resolved service_discovery-0.1.0
+===> Including Erts from /home/tristan/.cache/erls/otps/OTP-21.2.1/dist/lib/erlang
+===> release successfully created!
+#+END_SRC
+
+** Docker
+
+[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]]
+
+** Kubernetes
+*** Deployment
+*** Service
+*** StatefulSet
+*** Resources
+**** CPUs
+***** Active Schedulers
 ** Operations
 *** Remote access
 *** Metrics
