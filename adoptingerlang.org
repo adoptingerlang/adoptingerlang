@@ -625,10 +625,13 @@ ALSO
 *** Continuous Integration
 **** CircleCI
 ***** surefire ct output
+***** Microsoft's visual studio tooling https://github.com/ferd/trx
 ** Things Hard to Get Right
 *** Handling Unicode
 *** Handling Time
 *** SSL Configurations
+** Structuring Supervision Trees
+** Handling Unicode
 
 * Production
 :PROPERTIES:
@@ -652,13 +655,14 @@ In OTP at a High Level we took a bird's-eye view of how applications are combine
 
 *** Building a Development Release
 
-[some backstory/description of relx and its relation to rebar3 first?]
+rebar3 comes with support for building releases through the inclusion of relx.
+
+[expand on this]
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
 {relx, [{release, {service_discovery, "0.1.0"},
-         [service_discovery,
-          sasl]},
+         [service_discovery]},
 
         {sys_config_src, "./config/sys.config.src"},
         {vm_args_src, "./config/vm.args.src"},
@@ -689,7 +693,13 @@ $ rebar3 release
 ===> release successfully created!
 #+END_SRC
 
-The first relx step seen in the output is "Resolving OTP Applications" followed by a list of directories it will check, this means to find the name, version and path to all applications that make up the release being built. In the =relx= config only =service_discovery= and =sasl= are listed as applications to include in the release. relx takes those two applications and based on their =.app= files finds the applications they depend on, does the same for those found and so on until all dependencies have been discovered.
+The first relx step seen in the output is "Resolving OTP Applications" followed by a list of directories it will check, this means to find the name, version and path to all applications that make up the release being built. In the =relx= config only =service_discovery= is listed as applications to include in the release. relx takes those two applications and based on their =.app= files finds the applications they depend on, does the same for those found and so on until all dependencies have been discovered.
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+Note that the application =sasl= is not included in the =relx= config's list of applications to include. By default in the rebar3 template it is in the list. This is because =sasl= is required for certain release operations. The application includes =release_handler= which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded =sasl= does not need to be included.
+#+end_alert
 
 Since this is built with ={dev_mode, true}= symlinks are created in the release's lib directory that point to each application:
 
@@ -707,6 +717,12 @@ lrwxrwxrwx [...] vm.args.src -> [...]/config/vm.args.src
 #+END_SRC
 
 This allows for a faster feedback loop when running our release for local testing. Simply stopping and starting the release again will pick up any changes to beam files or configuration.
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+On Windows the =dev_mode= of relx won't necesary work but it will fallback to copying.
+#+end_alert
 
 *** Building a Production Release
 
