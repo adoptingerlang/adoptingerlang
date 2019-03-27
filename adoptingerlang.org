@@ -629,8 +629,6 @@ ALSO
 *** Handling Unicode
 *** Handling Time
 *** SSL Configurations
-** Structuring Supervision Trees
-** Handling Unicode
 
 * Production
 :PROPERTIES:
