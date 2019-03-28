@@ -36,10 +36,10 @@ TODO: explain what this book is for; do it last.
 #+latex_header: \usepackage[utf8]{inputenc}
 #+latex_header: \usepackage{pmboxdraw} % for directory listings
 #+latex_header: \usepackage{textalpha} % for greek a
-#+latex_header: \DeclareUnicodeCharacter{267B}{\includegraphics[height=\fontcharht\font`\B]{./static/img/recycling.png}}
 #+latex_header: \usepackage[T2A]{fontenc} % cyrilic a
 #+latex_header: \DeclareUnicodeCharacter{0430}{\cyra} % cyrilic a
 #+latex_header: \DeclareUnicodeCharacter{03A9}{Ω} % omega vs. ohm
+#+latex_header: \DeclareUnicodeCharacter{267B}{\includegraphics[height=\fontcharht\font`\B]{./static/img/recycling.png}}
 #+latex_header: \DeclareUnicodeCharacter{FDFD}{\includegraphics[height=\fontcharht\font`\B]{./static/img/bismillah.png}}
 #+latex_header: \DeclareUnicodeCharacter{1F469}{\includegraphics[height=\fontcharht\font`\B]{./static/img/woman.png}}
 #+latex_header: \DeclareUnicodeCharacter{1F466}{\includegraphics[height=\fontcharht\font`\B]{./static/img/boy.png}}
@@ -710,11 +710,13 @@ In Erlang, you have to be aware of the following possible encodings for strings:
 - =<<"abcdef"/utf32>>= as a binary string that is Unicode encoded as UTF-32. =<<"🤔"/utf32>>= returns =<<0,1,249,20>>=
 - =["abcdef", <<"abcdef"/utf8>>]=: This is a special list dubbed "IoData" that can support multiple string formats. Your list can be codepoints as usual, but you'll want all the binaries to all be the same encoding (ideally UTF-8) to prevent issues where encodings get mixed.
 
-If you want to work with Unicode content, you will want to use the following modules:
+If you want to work with Unicode content, you will want to use the various string-related modules in Erlang.
 
-...
+The first one is [[http://erlang.org/doc/man/string.html][string]], which contains functions such as =equal/2-4= which handles string comparison while dealing with case sensitivity and normalization, =find/2-3= to look for substrings, =length/1= to get the number of grapheme clusters, =lexemes/2= to split a string on some pattern, =next_codepoint/1= and =next_grapheme/1= to consume bits of a string, =replace/3-4= for substitutions, =to_graphemes/1= to turn a string into lists of graphemes, and finally functions like =lowercase/1=, =uppercase/1=, and =titlecase/1= to play with casing. The module contains more content still, but that should be representative.
 
-These modules all handle Unicode fine. As long as you stick with them, you'll be in a good position.
+You will also want to use the [[http://erlang.org/doc/man/unicode.html][unicode]] module to handle all kinds of conversions across string formats, encodings, and normalization forms. The [[http://erlang.org/doc/man/re.html][re]] module handles unicode fine (just pass in the =unicode= atom to its options lists), and lets you use [[http://erlang.org/doc/man/re.html#generic_character_types][Generic Character Types]] if you pass in the =ucp= option. Finally, the =file= and =io= modules all support specific options to make unicode work fine.
+
+As long as you stick with these modules for string handling, you'll be in a good position.
 
 The one tricky thing you have to remember is that the encoding of a string is implicit. You have to know what it is when a string enters your system: an HTTP request often specifies it in headers, and so does XML. JSON and YAML mandate using UTF-8, for example. When dealing with SQL databases, each table may specify its own encoding, but so does the connection to the database itself! If any one of them disagrees, you're going to corrupt data.
 
