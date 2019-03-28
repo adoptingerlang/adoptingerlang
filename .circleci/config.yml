@@ -11,6 +11,10 @@ jobs:
           paths:
             - adoptingerlang.tex
             - content
+      - store_artifacts:
+          path: ./adoptingerlang.tex
+      - store_artifacts:
+          path: ./content
   deploy:
     docker:
       - image: circleci/node
@@ -46,7 +50,7 @@ jobs:
           pdflatex adoptingerlang.tex
 
       - store_artifacts:
-         path: ./adoptingerlang.pdf
+          path: ./adoptingerlang.pdf
 
 workflows:
   version: 2.1
