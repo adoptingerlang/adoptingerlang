@@ -657,7 +657,7 @@ ALSO
 
 You probably have a fairly decent understanding of how an Erlang project should be structured by now. Along with any guide about the language basics, you should be mostly good to get started. However, there are a few complex topics that are currently not covered well in any of the Erlang documentation out there. In this chapter, we'll go through the task of providing guidance around handling Unicode, time, and SSL/TLS configurations.
 
-Do note that those are three complex topics on their own. While we're going to provide some background information on each of them, you are not going to be an expert at handling them right away—it just helps to know just how much complexity exist to avoid huge mistakes.
+Do note that those are three complex topics on their own. While we're going to provide some background information on each of them, you are not going to be an expert at handling them right away—it just helps to know how much complexity exists to avoid huge mistakes.
 
 *** Handling Unicode
 
