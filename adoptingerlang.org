@@ -716,7 +716,7 @@ The first one is [[http://erlang.org/doc/man/string.html][string]], which contai
 
 You will also want to use the [[http://erlang.org/doc/man/unicode.html][unicode]] module to handle all kinds of conversions across string formats, encodings, and normalization forms. The [[http://erlang.org/doc/man/re.html][re]] module handles unicode fine (just pass in the =unicode= atom to its options lists), and lets you use [[http://erlang.org/doc/man/re.html#generic_character_types][Generic Character Types]] if you pass in the =ucp= option. Finally, the =file= and =io= modules all support specific options to make unicode work fine.
 
-As long as you stick with these modules for string handling, you'll be in a good position.
+All of these modules work on any form of string: binaries, lists of integers, or mixed representations. As long as you stick with these modules for string handling, you'll be in a good position.
 
 The one tricky thing you have to remember is that the encoding of a string is implicit. You have to know what it is when a string enters your system: an HTTP request often specifies it in headers, and so does XML. JSON and YAML mandate using UTF-8, for example. When dealing with SQL databases, each table may specify its own encoding, but so does the connection to the database itself! If any one of them disagrees, you're going to corrupt data.
 
@@ -726,7 +726,66 @@ There's one more thing we can cover about strings: how to transform them effecti
 
 ***** IoData
 
-TODO
+So which string type should you use? There are plenty of options, but picking one is not too simple.
+
+The quick guidelines are:
+
+- Binaries for UTF-8, which should represent the majority of your usage
+- Binaries for UTF-16 and UTF-32, should you use them
+- Lists as strings are rarely used in practice, but can be very effective if you want to work at the codepoint level
+- Use IoData for everything else, particularly building strings.
+
+One advantage of the binary data types is their ability to create subslices efficiently. So for example, I could have a binary blob with content such as =<<"hello there, Erlang!">>= and if I pattern match a subslice such as =<<Txt:11/binary, _/binary>>=, then =Txt= now refers to =<<"hello there">>= at the same memory location as the original one, but with no way to obtain the parent context programmatically. It's a bounded reference to a subset of the original content. The same would not be true with lists, since they're defined recursively.
+
+On top of that, binaries larger than 64 bytes can be shared across process heaps, so you can cheaply move string content around the virtual machine without paying the same copying cost as you would with other data structure.
+
+The real cool thing though comes from the IoData representation where you combine the list approach with binaries. It's how you get really cheap composition of immutable strings:
+
+#+NAME: url_iodata
+#+BEGIN_SRC erlang
+Directory = <<"/Users/ferd/code/self/ReVault">>,
+FileName = "src/my_module",
+[Directory, $/, FileName, ".erl"]
+#+END_SRC
+
+The final data structure here looks like =[<<"/Users/ferd/code/self/ReVault">>,47,"src/my_module", ".erl"]= which is a mixed list containing binary subsections, literal codepoints, strings, or other IoData structures. But the VM mechanisms all support handling it as if it were a flat binary string: The IO systems (both network and disk access), and the modules named in the previous section all seamlessly handle this string as =/Users/ferd/code/self/ReVault/src/my_module.erl= with full Unicode support.
+
+
+So while you can't mutate strings, you can append and match a bunch of them in constant time, no matter the type they initially had. This has interesting implications if you're writing libraries that do string handling. For example, if I want to replace all instances of =&= by =&amp;=, and I started with =<<"https://example.org/?abc=def&ghi=jkl"/ut8>>=, I might instead just return the following linked list:
+
+#+NAME: url_sublists
+#+BEGIN_SRC erlang
+% a list
+[%% a slice of the original unmutated URL
+ <<"https://example.org/?abc=def">>,
+ %% a literal list with the replacement content
+ "&amp;amp",
+ %% the remaining sub-slice
+ <<"ghi=jkl">>
+]
+#+END_SRC
+
+What you have then is a string that is in fact a linked list of 3 elements: a slice of the original string, the replaced subset, the rest of the original string. If you're replacing on a document that's taking 150MB in RAM and you have somewhat sparse replacements, you can build the entire thing and edit it with essentially no overhead. That's pretty great.
+
+So why else are IoData strings kind of cool? Well the unicode representation is one fun thing. As mentioned earlier, grapheme clusters are a crucial aspect of Unicode strings when you want to operate on them as a human would (rather than as binary sequences that only programmers would care about). Whereas most programming languages that use a flat array of bytes to represent strings have no great way to iterate over strings, Erlang's =string= module lets you call =string:to_graphemes(String)= to play with them:
+
+
+#+NAME: graphemes
+#+BEGIN_SRC erlang
+erl +pc latin1 # disable unicode interpretation
+1> [Grapheme | Rest] = string:next_grapheme(<<"ß↑õ"/utf8>>),
+[223 | <<226,134,145,111,204,131>>]
+2> string:to_graphemes("ß↑õ"),
+[223,8593,[111,771]]
+3> string:to_graphemes(<<"ß↑õ"/utf8>>),
+[223,8593,[111,771]]
+#+END_SRC
+
+This lets you take any unicode string, and turn it into a list that is safe to iterate using calls such as =lists:map/2=, lists comprehensions, or pattern matching. This can only be done through IoData, and this might even be a better format than what you'd get with just default UTF-8 binary strings.
+
+Do note that pattern matching is still risky there. Ideally you'd want to do a round of normalization first, so that characters that can be encoded in more than one way are forced into a uniform representation.
+
+This should hopefully demistify Erlang's strings.
 
 *** Handling Time
 **** Background Information on Time
