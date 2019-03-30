@@ -819,7 +819,7 @@ In OTP at a High Level we took a bird's-eye view of how applications are combine
 
 <lower level details of a release than what was given in OTP at a High Level>
 
-In the beginning there was =systools=. During this time building releases was a manual process that user's built their own tooling around. Then came =reltool=, a release management tool that comes with Erlang/OTP and was meant to ease the creation of releases, it even has a gui!
+In the earlier days of Erlang/OTP, there was =systools=. Back then, release handling was a manual process around which users built their own tooling. Then came =reltool=, a release management tool that ships with Erlang/OTP and was meant to ease the creation of releases—it even has a GUI.
 
 However, releases continued to be mysterious and difficult to build to many users. relx was created with the goal of making release creation and management so simple that users no longer felt it was a burden best not undertaken -- this is done in part through requiring minimal configuration to get started and by including tools for runtime management in the generated release. When rebar3 was started relx was included to provide release building functionality.
 
