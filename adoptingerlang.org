@@ -739,16 +739,21 @@ One advantage of the binary data types is their ability to create subslices effi
 
 On top of that, binaries larger than 64 bytes can be shared across process heaps, so you can cheaply move string content around the virtual machine without paying the same copying cost as you would with other data structure.
 
+#+attr_shortcode: info
+#+begin_alert
+Binary sharing is often a great way to gain performance in a program. However, there exist some pathological usage patterns where binary sharing can lead to memory leaks. If you want to know more, take a look at [[https://www.erlang-in-anger.com/][Erlang In Anger]]'s chapter on memory leaks, particularly section 7.2
+#+end_alert
+
 The real cool thing though comes from the IoData representation where you combine the list approach with binaries. It's how you get really cheap composition of immutable strings:
 
-#+NAME: url_iodata
+#+NAME: greetings
 #+BEGIN_SRC erlang
-Directory = <<"/Users/ferd/code/self/ReVault">>,
-FileName = "src/my_module",
-[Directory, $/, FileName, ".erl"]
+Greetings = <<"Good Morning">>,
+Name = "James",
+[Greetings, ", ", Name, $!]
 #+END_SRC
 
-The final data structure here looks like =[<<"/Users/ferd/code/self/ReVault">>,47,"src/my_module", ".erl"]= which is a mixed list containing binary subsections, literal codepoints, strings, or other IoData structures. But the VM mechanisms all support handling it as if it were a flat binary string: The IO systems (both network and disk access), and the modules named in the previous section all seamlessly handle this string as =/Users/ferd/code/self/ReVault/src/my_module.erl= with full Unicode support.
+The final data structure here looks like =[<<"Good Morning">>, ", ", "James", 33]= which is a mixed list containing binary subsections, literal codepoints, strings, or other IoData structures. But the VM mechanisms all support handling it as if it were a flat binary string: The IO systems (both network and disk access), and the modules named in the previous section all seamlessly handle this string as =Good Morning, James!= with full Unicode support.
 
 
 So while you can't mutate strings, you can append and match a bunch of them in constant time, no matter the type they initially had. This has interesting implications if you're writing libraries that do string handling. For example, if I want to replace all instances of =&= by =&amp;=, and I started with =<<"https://example.org/?abc=def&ghi=jkl"/ut8>>=, I might instead just return the following linked list:
