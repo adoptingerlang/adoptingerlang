@@ -805,7 +805,7 @@ This should hopefully demistify Erlang's strings.
 :EXPORT_FILE_NAME: production
 :END:
 
-Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service. In this part we'll build a deployable artifact (a release), create a docker image of the release and deploy to Kubernetes.
+Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service. In this part we'll build a deployable artifact (a release), create a docker image of the release and deploy to a Kubernetes cluster.
 
 Contrary to what some say, Erlang does not replace Kubernetes, nor does Kubernetes replace Erlang. If an Erlang system didn't need to be monitored and restarted like any other runtime because it has supervision trees then it wouldn't come with [[http://erlang.org/doc/man/heart.html][heart]]. Similarly, if restarting the entire program with =heart= was adequate there wouldn't be supervision trees.
 
