@@ -695,7 +695,7 @@ In short, to support Unicode well in your programs, no matter in which programmi
 
 **** Handling Strings in Erlang
 
-Erlang's support for strings initially looks a bit funky: there is no dedicated string type. When considering all the complexity of Unicode though, it's not actually all that bad: it's usually as tricky to work with just _one_ string type as it would be to work with _no_ string types at all, because of all the possible alternative representations.
+Erlang's support for strings initially looks a bit funky: there is no dedicated string type. When considering all the complexity of Unicode though, it's not actually all that bad. It's usually as tricky to work with just _one_ string type as it would be to work with _no_ string types at all, because of all the possible alternative representations.
 
 Folks using programming languages with variable string types that reflect multiple encodings may feel good about themselves right now, but you'll see that Erlang has pretty decent Unicode support all things considered—only collations appear to be missing.
 
@@ -712,9 +712,9 @@ In Erlang, you have to be aware of the following possible encodings for strings:
 
 If you want to work with Unicode content, you will want to use the various string-related modules in Erlang.
 
-The first one is [[http://erlang.org/doc/man/string.html][string]], which contains functions such as =equal/2-4= which handles string comparison while dealing with case sensitivity and normalization, =find/2-3= to look for substrings, =length/1= to get the number of grapheme clusters, =lexemes/2= to split a string on some pattern, =next_codepoint/1= and =next_grapheme/1= to consume bits of a string, =replace/3-4= for substitutions, =to_graphemes/1= to turn a string into lists of graphemes, and finally functions like =lowercase/1=, =uppercase/1=, and =titlecase/1= to play with casing. The module contains more content still, but that should be representative.
+The first one is [[http://erlang.org/doc/man/string.html][string]], which contains functions such as =equal/2-4= to handle string comparison while dealing with case sensitivity and normalization, =find/2-3= to look for substrings, =length/1= to get the number of grapheme clusters, =lexemes/2= to split a string on some pattern, =next_codepoint/1= and =next_grapheme/1= to consume bits of a string, =replace/3-4= for substitutions, =to_graphemes/1= to turn a string into lists of graphemes, and finally functions like =lowercase/1=, =uppercase/1=, and =titlecase/1= to play with casing. The module contains more content still, but that should be representative.
 
-You will also want to use the [[http://erlang.org/doc/man/unicode.html][unicode]] module to handle all kinds of conversions across string formats, encodings, and normalization forms. The [[http://erlang.org/doc/man/re.html][re]] module handles unicode fine (just pass in the =unicode= atom to its options lists), and lets you use [[http://erlang.org/doc/man/re.html#generic_character_types][Generic Character Types]] if you pass in the =ucp= option. Finally, the =file= and =io= modules all support specific options to make unicode work fine.
+You will also want to use the [[http://erlang.org/doc/man/unicode.html][unicode]] module to handle all kinds of conversions across string formats, encodings, and normalization forms. The regular expression module [[http://erlang.org/doc/man/re.html][re]] handles unicode fine (just pass in the =unicode= atom to its options lists), and lets you use [[http://erlang.org/doc/man/re.html#generic_character_types][Generic Character Types]] if you pass in the =ucp= option. Finally, the =file= and =io= modules all support specific options to make unicode work fine.
 
 All of these modules work on any form of string: binaries, lists of integers, or mixed representations. As long as you stick with these modules for string handling, you'll be in a good position.
 
