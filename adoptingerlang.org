@@ -805,26 +805,27 @@ This should hopefully demistify Erlang's strings.
 :EXPORT_FILE_NAME: production
 :END:
 
-Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service.
+Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service. In this part we'll build a deployable artifact (a release), create a docker image of the release and deploy to Kubernetes.
 
-#+attr_shortcode: info
-#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
-#+begin_alert
-... Debunk claim that kubernetes and erlang are the same thing here ...
-#+end_alert
+Contrary to what some say, Erlang does not replace Kubernetes, nor does Kubernetes replace Erlang. If an Erlang system didn't need to be monitored and restarted like any other runtime because it has supervision trees then it wouldn't come with [[http://erlang.org/doc/man/heart.html][heart]]. Similarly, if restarting the entire program with =heart= was adequate there wouldn't be supervision trees.
+
+While not every Erlang system will fit a Kubernetes environment, where to use the pattern of immutable images run as containers packed efficiently on nodes by a scheduler is a separate decision, unchanged, by the language used to build the system. And while this applies even if you are building in a rare monolingual workplace there are certainly additional benefits when it comes to sharing a common deploy and configuration setup across languages.
+
 
 ** Releases
-In OTP at a High Level we took a bird's-eye view of how applications are combined into a release and in Development we built and tested OTP applications. Now we'll configure and build a release of the =service_discovery= project. Then, build a docker image of the release, runtime configuration and deploy to Kubernetes.
+In OTP at a High Level we took a bird's-eye view of how applications are combined into a release and in Development we built and tested OTP applications. Now we'll configure and build a release of the =service_discovery= project.
 
-*** What is a Release? (better name for this?)
+*** The Nitty Gritty
 
 <lower level details of a release than what was given in OTP at a High Level>
 
+In the beginning there was =systools=. During this time building releases was a manual process that user's built their own tooling around. Then came =reltool=, a release management tool that comes with Erlang/OTP and was meant to ease the creation of releases, it even has a gui!
+
+However, releases continued to be mysterious and difficult to build to many users. relx was created with the goal of making release creation and management so simple that users no longer felt it was a burden best not undertaken -- this is done in part through requiring minimal configuration to get started and by including tools for runtime management in the generated release. When rebar3 was started relx was included to provide release building functionality.
+
 *** Building a Development Release
 
-rebar3 comes with support for building releases through the inclusion of relx.
-
-[expand on this]
+The first thing we need is a =relx= section in =rebar.config=:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
@@ -919,6 +920,14 @@ $ rebar3 as prod release
 ** Docker
 
 [[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]]
+
+[Make note about overriding CMD in Dockerfile to run console]
+
+#+BEGIN_SRC shell
+$ docker run -ti adoptingerlang.org/service_discovery console
+[...]
+(service_discovery@960409ea0bc0)1>
+#+END_SRC
 
 ** Kubernetes
 *** Deployment
