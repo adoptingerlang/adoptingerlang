@@ -28,6 +28,7 @@
 :END:
 
 TODO: explain what this book is for; do it last.
+TODO: refer to the appendix for reminders
 
 * Development
 :PROPERTIES:
@@ -951,16 +952,14 @@ $ rebar3 as prod release
 ** How To Hire
 *** It Takes One to Know One
 *** It is Easier to Train than Hire
+* Appendix 1: Erlang/OTP Cheat Sheets
+:PROPERTIES:
+:EXPORT_FILE_NAME: cheat_sheets
+:END:
+** Data Types
+** Modules and Syntax
+** Processes and Signals
+** Behaviours
 
 
-NOTE:
 
-things that have been badly covered or not covered
-
-- basic data types
-- comment syntax
-- modules syntax
-- basic Erlang shell
-- include files with -include and -include_lib
-- processes and process names
-- links, supervisors, gen_servers
