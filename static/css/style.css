@@ -1,3 +1,8 @@
+
+body {
+    font-family: sans-serif;
+}
+
 /* give titles some style not in the default template */
 .markdown h1, .markdown h2, .markdown h3,
 .markdown h4, .markdown h5, .markdown h6 {
@@ -16,6 +21,11 @@
 
 .markdown table tr td {
     border: 1px dotted #aaa;
+}
+
+.markdown > :first-child {
+    margin-top: 0;
+    line-height: 1.7;
 }
 
 /* ensure images don't overflow out of content areas */
