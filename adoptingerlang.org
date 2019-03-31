@@ -21,6 +21,7 @@
 #+HUGO_BASE_DIR: .
 #+HUGO_SECTION: docs
 #+HUGO_PAIRED_SHORTCODES: %alert
+#+HUGO_PAIRED_SHORTCODES: %notice
 
 * Introduction
 :PROPERTIES:
@@ -867,9 +868,9 @@ The first relx step seen in the output is "Resolving OTP Applications" followed 
 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
-#+begin_alert
-Note that the application =sasl= is not included in the =relx= config's list of applications to include. By default in the rebar3 template it is in the list. This is because =sasl= is required for certain release operations. The application includes =release_handler= which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded =sasl= does not need to be included.
-#+end_alert
+#+begin_notice
+Note that the application =sasl= is not included in the =relx= config's list of applications. By default in the rebar3 template it is in the list. This is because =sasl= is required for certain release operations. The application includes =release_handler= which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded =sasl= does not need to be included.
+#+end_notice
 
 Since this is built with ={dev_mode, true}= symlinks are created in the release's lib directory that point to each application:
 
