@@ -807,9 +807,11 @@ This should hopefully demistify Erlang's strings.
 
 Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service. In this part we'll build a deployable artifact (a release), create a docker image of the release and deploy to a Kubernetes cluster.
 
-Contrary to what some say, Erlang does not replace Kubernetes, nor does Kubernetes replace Erlang. If an Erlang system didn't need to be monitored and restarted like any other runtime because it has supervision trees then it wouldn't come with [[http://erlang.org/doc/man/heart.html][heart]]. Similarly, if restarting the entire program with =heart= was adequate there wouldn't be supervision trees.
+A common claim heard on forums and comment sections of popular tech news sites is, you have OTP, you don't need Kubernetes. Or the opposite, that having Kubernetes replaces OTP. Erlang does not replace Kubernetes, nor does Kubernetes replace Erlang. If an Erlang system didn't need to be monitored and restarted like any other runtime because it has supervision trees then it wouldn't come with [[http://erlang.org/doc/man/heart.html][heart]]. Similarly, if restarting the entire program with =heart= was adequate there wouldn't be supervision trees.
 
-While not every Erlang system will fit a Kubernetes environment, where to use the pattern of immutable images run as containers packed efficiently on nodes by a scheduler is a separate decision, unchanged, by the language used to build the system. And while this applies even if you are building in a rare monolingual workplace there are certainly additional benefits when it comes to sharing a common deploy and configuration setup across languages.
+[[https://kubernetes.io/][Kubernetes]] provides a scheduler for efficiently packing your programs, as containers, on physical or virtual machines. Using containers eases deployment by bundling all dependencies (think OpenSSL in an Erlang release's case) into a single image and isolation that protects against dependency conflicts between services running on a machine. Additionally, deployment and management becomes consistent across the services in your production environment no matter the language or runtime they are built with. When you integrate your Erlang service with common monitoring and tracing services, you will also ensure it's no longer the oddball your coworkers dread having to deal with.
+
+However, containers and Kubernetes are not appropriate in all cases. Kubernetes can be overkill, particularly if using a hosted solution isn't an option, or your product could be an embedded device.
 
 
 ** Releases
@@ -817,11 +819,11 @@ In OTP at a High Level we took a bird's-eye view of how applications are combine
 
 *** The Nitty Gritty
 
-<lower level details of a release than what was given in OTP at a High Level>
+An Erlang system starts by running instructions found in a boot script. The instructions load modules and start applications. Erlang provides functions for generating a boot script from a list of all required applications, defined in a release resource file with extension ".rel", and their corresponding application resource file, the ".app" file each application has. The application resource file defines the modules the boot script must load and the dependencies of each application so that the boot script will start applications in the correct order. When only the applications used in a release are bundled together with the boot script, to be copied and installed on a target, it is called a *target system*.
 
-In the earlier days of Erlang/OTP, there was =systools=. Back then, release handling was a manual process around which users built their own tooling. Then came =reltool=, a release management tool that ships with Erlang/OTP and was meant to ease the creation of releases—it even has a GUI.
+In the earlier days of Erlang/OTP, there was only =systools= and its functions for generating boot scripts from release resource files. Back then, release handling was a manual process around which users built their own tooling. Then came =reltool=, a release management tool that ships with Erlang/OTP and was meant to ease the creation of releases—it even has a GUI. While creating and installing target systems has never been provided outside of an example module found in the =sasl= application, =sasl/examples/src/target_system.erl=.
 
-However, releases continued to be mysterious and difficult to build to many users. relx was created with the goal of making release creation and management so simple that users no longer felt it was a burden best not undertaken -- this is done in part through requiring minimal configuration to get started and by including tools for runtime management in the generated release. When rebar3 was started, it bundled relx to provide its release building functionality.
+Releases continued to be mysterious and difficult to build to many users. relx was created with the goal of making release creation and management so simple that users no longer felt it was a burden best not undertaken -- this is done in part through requiring minimal configuration to get started and by including tools for runtime management in the generated release. When rebar3 was started, it bundled relx to provide its release building functionality.
 
 *** Building a Development Release
 
