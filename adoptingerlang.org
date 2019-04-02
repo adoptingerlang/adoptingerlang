@@ -972,6 +972,32 @@ $ docker run -ti adoptingerlang.org/service_discovery console
 ** Modules and Syntax
 ** Processes and Signals
 ** Behaviours
+* Appendix 2: Systemd
+:PROPERTIES:
+:EXPORT_FILE_NAME: systemd
+:END:
 
+** Systemd Unit
 
+#+BEGIN_src systemd
+[Unit]
+Description=Service Discovery Runner
+After=network.target
 
+[Service]
+WorkingDirectory=/opt/service_discovery
+EnvironmentFile=/etc/default/service_discovery.env
+ExecStart=/opt/service_discovery/bin/service_discovery foreground
+Restart=on-failure
+Environment=RELX_OUT_FILE_PATH=/tmp/
+Environment=COOKIE=service_discovery_cookie
+
+[Install]
+WantedBy=multi-user.target
+#+END_src
+
+As of OTP 19.3 a =SIGTERM= signal causes the OTP VM to gracefully shutdown.
+
+#+BEGIN_src
+journalctl service_discovery
+#+END_src
