@@ -1285,12 +1285,12 @@ OTP processes do have slightly different semantics due to supervision shenanigan
 
 *** Behaviours
 
-* Appendix 2: Systemd
+** Appendix 2: Systemd
 :PROPERTIES:
 :EXPORT_FILE_NAME: systemd
 :END:
 
-** Systemd Unit
+*** Systemd Unit
 
 #+BEGIN_src systemd
 [Unit]

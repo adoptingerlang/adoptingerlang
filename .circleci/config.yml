@@ -29,6 +29,8 @@ jobs:
       - attach_workspace:
           at: .
       - run: |
+          sudo apt-get install -f python-pygments
+
           mkdir -p bin
           curl -L https://github.com/gohugoio/hugo/releases/download/v0.53/hugo_0.53_Linux-64bit.tar.gz -o bin/hugo.tar.gz
           tar -xvf bin/hugo.tar.gz -C ./bin
