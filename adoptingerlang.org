@@ -17,6 +17,7 @@
 #+LATEX_HEADER: \usepackage[tikz]{bclogo}
 #+LATEX_HEADER: \usepackage{hyperref}
 #+LATEX_HEADER: \newenvironment{alert}{\begin{bclogo}}{\end{bclogo}}
+#+LATEX_HEADER: \newenvironment{notice}{\begin{bclogo}}{\end{bclogo}}
 #+OPTIONS: ^:{}
 #+HUGO_BASE_DIR: .
 #+HUGO_SECTION: docs
