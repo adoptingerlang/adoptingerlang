@@ -3,6 +3,10 @@ languageCode = "en-us"
 title = "Adopting Erlang"
 theme = "book"
 
+pygmentsUseClassic=true
+pygmentsUseClasses=true
+pygmentsCodeFences=true
+
 [params]
 BookMenuBundle="/docs/menu"
 # BookSection="chapters"
