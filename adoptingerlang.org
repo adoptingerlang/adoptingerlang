@@ -935,7 +935,7 @@ $ rebar3 as prod release
 
 [[https://docker.com][Docker]] helped popularize Linux containers through its ease of use and registry of pre-built images, and became a word often used interchangably with "Linux container".
 
-Docker images contain multiple layers that when merged at runtime make up the filesystem of the container. The layers are created by docker running commands found in a =Dockerfile=, each command creates a new layer.
+Docker images contain multiple layers that when merged at runtime make up the filesystem of the container. Docker creates the layers by running commands found in a =Dockerfile=. Each command creates a new layer.
 
 Because, unlike a virtual machine (VM) image, the docker image does not need to contain the Linux kernel, images can often be barely larger than your original program and the use of layers allows for images to save even more space when multiple images require some of the same layers.
 
