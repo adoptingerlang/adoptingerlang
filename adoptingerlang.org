@@ -941,7 +941,7 @@ Unlike a virtual machine (VM) image, a Docker image does not need to contain the
 
 No kernel is required because containers are run through functionality built-in to Linux for processes in isolated namespaces and controlling resource usage of a group of processes.
 
-The small size and ability to run like a regular Linux process makes for quicker start time and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
+The small size and ability to run like a regular Linux process makes for quicker start times and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
 
 Namespace isolation means not having to worry about which libraries (OpenSSL for instance) are installed, if any, on the target machine, what ports are available or global configuration effecting separate instances of the same program.
 
