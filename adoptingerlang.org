@@ -937,7 +937,7 @@ $ rebar3 as prod release
 
 Docker images contain multiple layers that when merged at runtime make up the filesystem of the container. Docker creates the layers by running commands found in a =Dockerfile=. Each command creates a new layer.
 
-Because, unlike a virtual machine (VM) image, the docker image does not need to contain the Linux kernel, images can often be barely larger than your original program and the use of layers allows for images to save even more space when multiple images require some of the same layers.
+Unlike a virtual machine (VM) image, a Docker image does not need to contain the Linux kernel, and can often be nearly as small as your original program. Using layers allows images to save even more space when multiple of them depend on a shared layer.
 
 No kernel is required because containers are run through functionality built-in to Linux for processes in isolated namespaces and controlling resource usage of a group of processes.
 
