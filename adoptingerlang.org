@@ -948,7 +948,11 @@ Namespace isolation means not having to worry about which libraries (OpenSSL for
 
 [[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]]
 
-
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+You might notice we are not using the =latest= tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should not be used, unless you really don't care what version of an image will be used.
++end_alert
 
 [Make note about overriding CMD in Dockerfile to run console]
 
