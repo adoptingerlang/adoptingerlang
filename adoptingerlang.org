@@ -898,13 +898,23 @@ On Windows the =dev_mode= of relx won't necessary work but it will fallback to c
 
 *** Building a Production Release
 
+Preparing a release to be deployed to production benefits from having different options than what is best during local development. Rebar3 profiles allow us to override and add to the relx configuration:
+
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
 {profiles, [{prod, [{relx, [{dev_mode, false},
                             {include_erts, true},
+                            {include_src, false},
+                            %%{include_hrl, false}, undecided?
                             {debug_info, strip}]}]
             }]}.
 #+END_SRC
+
+We have two overridden configuration values here. =dev_mode= is set to =false= so all content is copied into the release directory, we can't utilize symlinks to the =_build= directory from another machine and a production release should be an immutable snapshot of the project. =include_erts= copies the Erlang runtime and the Erlang/OTP applications depended on by the release into the release directory and configures the boot script to point to this copy of the runtime.
+
+The entries added to the configuration are setting =include_src= to =false= and and =debug_info= to =strip=. Since running the release in production doesn't require the source code we can drop it from the final release to save on space. Additional space is saved by stripping debug information from the beam files. Tools used during development like the debugger, =xref= and =cover= require debug information but in a release those won't be used and, unless explicitly included, won't be available.
+
+Building with the production profile enabled results in artifacts being written to the profile directory =_build/prod/= and can be enabled with =as prod=:
 
 #+BEGIN_SRC shell
 $ rebar3 as prod release
