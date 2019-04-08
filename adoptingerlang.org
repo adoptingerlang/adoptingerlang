@@ -933,14 +933,62 @@ $ rebar3 as prod release
 
 ** Docker
 
+[[https://docker.com][Docker]] helped popularize Linux containers through its ease of use and registry of pre-built images, and became a word often used interchangably with "Linux container".
+
+Docker images contain multiple layers that are merged at runtime to make up the filesystem of the container. Docker creates the layers by running commands found in a =Dockerfile=, each command creates a new layer. Layers are shared between images, saving space, and can be used as a cache for speeding up the building of images. Additional space is saved, compared to other options like a virtual machine (VM), by not including the Linux kernel in the image. The size of the image is little larger than the size of the packaged Erlang release we are deploying.
+
+The small size and ability to run like a regular Linux process makes for quicker start times (a new kernel isn't booted) and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
+
+Some advantages of filesystem and network isolation are not having to worry about which libraries (OpenSSL for instance) are installed on the target machine, if a particular port is already bound, if an Erlang node with the same name is already running or global configuration effecting separate instances of the same program.
+
 [[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]]
 
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+You might notice we are not using the =latest= tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should not be used, unless you really don't care what version of an image will be used.
++end_alert
+
+#+BEGIN_SRC dockerfile
+RUN apk add --no-cache openssh-client git && \
+    mkdir -p -m 0600 ~/.ssh && \
+    ssh-keyscan github.com >> ~/.ssh/known_hosts && \
+    git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+COPY rebar.config rebar.lock /usr/src/app/
+RUN --mount=type=ssh rebar3 compile
+#+END_SRC
+
+#+BEGIN_SRC shell
+docker build --ssh default .
+#+END_SRC
+
+*** Efficient Caching
+
+#+BEGIN_SRC dockerfile
+COPY rebar.config rebar.lock /src/
+RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
+#+END_SRC
+
+*** Multi-Stage Build
+
+#+BEGIN_SRC dockerfile
+FROM alpine:3.9 as runner
+
+COPY --from=releaser /opt/rel /opt/service_discovery
+#+END_SRC
+
+*** Running Container
 [Make note about overriding CMD in Dockerfile to run console]
 
 #+BEGIN_SRC shell
 $ docker run -ti adoptingerlang.org/service_discovery console
 [...]
 (service_discovery@960409ea0bc0)1>
+#+END_SRC
+
+#+BEGIN_SRC shell
+$ docker exec -ti <container id> -- bin/service_discovery remote_console
 #+END_SRC
 
 ** Kubernetes
