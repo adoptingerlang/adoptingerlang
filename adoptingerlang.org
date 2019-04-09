@@ -972,7 +972,7 @@ RUN --mount=type=ssh rebar3 compile
 
 The git config setting set in the first =RUN= ensures that even if in the =rebar.config= the git url is using =https= it will instead use SSH. If the private repos are not on Github this url replacement has to be changed for the appropriate location.
 
-Along with added the above section to the Dockerfiles we'll see later in this chapter you'll also need to add =--ssh default= to the build command when run and set =DOCKER_BUILDKIT=:
+Along with adding the above section to the Dockerfiles we'll see later in this chapter you'll also need to add =--ssh default= to the build command when run and set =DOCKER_BUILDKIT=:
 
 #+BEGIN_SRC shell
 $ export DOCKER_BUILDKIT=1
@@ -985,10 +985,36 @@ Additional information and options for the SSH mount type can be found [[https:/
 
 **** Efficient Caching
 
+The order of commands in a Dockerfile is very important to the efficiency, both time to build and space to store, of the images it creates. Docker uses the layers each command in the Dockerfile creates to not rerun a command if nothing has changed. With rebar3 we take advantage of this by creating a layer containing the built dependencies of our project:
+
 #+BEGIN_SRC dockerfile
+COPY rebar.config rebar.lock /src/
+RUN rebar3 compile
+#+END_SRC
+
+The =COPY= command will only invalidate the cache of the command that runs =rebar3 compile= (and subsequent commands in the file) if =rebar.config= or =rebar.lock= are different from a previously created layer. Since none of the project's code was copied in rebar3 only builds the dependencies, resulting in a layer containing only the built dependencies under =_build/default/lib=.
+
+After the dependencies are built and cached we can copy in the rest of the project and compile it:
+
+#+BEGIN_SRC dockerfile
+COPY . /src/
+RUN rebar3 compile
+#+END_SRC
+
+Because of the order of operations in the Dockerfile each run of =docker build .= only compiles the project's source, assuming there is a change, otherwise an existing layer is used here as well. Any command that doesn't need to be rerun if there are changes to the project need to come before either of the =COPY= commands. For example, installing Alpine packages needed by later steps =RUN apk add --no-cache git=.
+
+Now this is all well and good but the layer with the built dependencies that will not be used if =rebar.config= or =rebar.lock= is changed also contains the Hex package cache rebar3 creates under =~/.cache/rebar3/hex=. Any change to those two files will result in all the packages having to be downloaded again.
+
+This issue is resolved as of Docker 18.09 -- when environment variable =DOCKER_BUILDKIT= is set, enabling the use of Buildkit as the Docker backend -- through a new mount type, =cache=, that can be passed directly to the =RUN= command:
+
+#+BEGIN_SRC dockerfile
+# syntax = docker/dockerfile:experimental
+
 COPY rebar.config rebar.lock /src/
 RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
+
+Now when compile is run there is a cache of =/root/.cache/rebar3= created separately from the image layer. So future runs of =docker build=, even if the config or lock file has changed, will mount this cache and only new packages will be fetched from Hex.
 
 **** Multi-Stage Build
 
