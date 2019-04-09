@@ -939,38 +939,58 @@ Docker images contain multiple layers that are merged at runtime to make up the 
 
 The small size and ability to run like a regular Linux process makes for quicker start times (a new kernel isn't booted) and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
 
-Some advantages of filesystem and network isolation are not having to worry about which libraries (OpenSSL for instance) are installed on the target machine, if a particular port is already bound, if an Erlang node with the same name is already running or global configuration effecting separate instances of the same program.
+A few of the advantages of filesystem and network isolation are, not having to worry about which libraries (OpenSSL for instance) are installed on the target machine, if a particular port is already bound, if an Erlang node with the same name is already running or global configuration effecting separate instances of the same program.
 
-[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]]
-
-#+attr_shortcode: info
+#+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-You might notice we are not using the =latest= tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should not be used, unless you really don't care what version of an image will be used.
-+end_alert
+You might notice we will not be using the =latest= tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should not be used, unless you really don't care what version of an image will be used.
+#+end_notice
+
+*** Building Images
+
+[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of rebar3 and Alpine/Debian as well.
+
+#+attr_shortcode: tip
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+If you have private git repos as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with rebar3 before running =docker build=. The other option was copying the host SSH credentials into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image.
+
+To resolve this, Docker added a new feature, as of Docker 18.09, allowing for secure mounting of SSH credentials. A =RUN= command that needs SSH access can use =--mount=type=ssh= like below:
 
 #+BEGIN_SRC dockerfile
+# syntax = docker/dockerfile:experimental
+
 RUN apk add --no-cache openssh-client git && \
     mkdir -p -m 0600 ~/.ssh && \
     ssh-keyscan github.com >> ~/.ssh/known_hosts && \
     git config --global url."git@github.com:".insteadOf "https://github.com/"
 
-COPY rebar.config rebar.lock /usr/src/app/
+COPY rebar.config rebar.lock /src/app/
 RUN --mount=type=ssh rebar3 compile
 #+END_SRC
 
+The git config setting set in the first =RUN= ensures that even if in the =rebar.config= the git url is using =https= it will instead use SSH. If the private repos are not on Github this url replacement has to be changed for the appropriate location.
+
+Along with added the above section to the Dockerfiles we'll see later in this chapter you'll also need to add =--ssh default= to the build command when run and set =DOCKER_BUILDKIT=:
+
 #+BEGIN_SRC shell
-docker build --ssh default .
+$ export DOCKER_BUILDKIT=1
+$ docker build --ssh default .
 #+END_SRC
 
-*** Efficient Caching
+Additional information and options for the SSH mount type can be found [[https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md#run---mounttypessh][here]].
+
+#+end_notice
+
+**** Efficient Caching
 
 #+BEGIN_SRC dockerfile
 COPY rebar.config rebar.lock /src/
 RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
 
-*** Multi-Stage Build
+**** Multi-Stage Build
 
 #+BEGIN_SRC dockerfile
 FROM alpine:3.9 as runner
@@ -978,7 +998,9 @@ FROM alpine:3.9 as runner
 COPY --from=releaser /opt/rel /opt/service_discovery
 #+END_SRC
 
-*** Running Container
+**** Images for Running Dialyzer
+
+*** Running a Container
 [Make note about overriding CMD in Dockerfile to run console]
 
 #+BEGIN_SRC shell
@@ -991,6 +1013,8 @@ $ docker run -ti adoptingerlang.org/service_discovery console
 $ docker exec -ti <container id> -- bin/service_discovery remote_console
 #+END_SRC
 
+*** Running with External Dependencies
+
 ** Kubernetes
 *** Deployment
 *** Service
@@ -998,6 +1022,10 @@ $ docker exec -ti <container id> -- bin/service_discovery remote_console
 *** Resources
 **** CPUs
 ***** Active Schedulers
+***** +sbwt none
+*** Testing Locally
+**** Minikube, Microk8s, Docker for Machine
+**** Tilt
 ** Operations
 *** Remote access
 *** Metrics
