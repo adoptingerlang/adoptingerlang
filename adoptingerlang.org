@@ -1014,7 +1014,7 @@ COPY rebar.config rebar.lock /src/
 RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
 
-Now when compile is run there is a cache of =/root/.cache/rebar3= created separately from the image layer. So future runs of =docker build=, even if the config or lock file has changed, will mount this cache and only new packages will be fetched from Hex.
+Now when =compile= is run there is a cache of =/root/.cache/rebar3= created separately from the image layer. So future runs of =docker build=, even if the config or lock file has changed, will mount this cache and only new packages will be fetched from Hex.
 
 **** Multi-Stage Build
 
