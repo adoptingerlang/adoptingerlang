@@ -984,7 +984,7 @@ $ export DOCKER_BUILDKIT=1
 $ docker build --ssh default .
 #+END_SRC
 
-Additional information and options for the SSH mount type can be found [[https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md#run---mounttypessh][in the Moby documentation]].
+Additional information and options for the SSH mount type can be found [[https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md#run---mounttypessh][in the Moby documentation]] -- Moby is the name of the project that makes up the core functionality of Docker.
 
 #+end_notice
 
