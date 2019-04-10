@@ -972,7 +972,7 @@ RUN --mount=type=ssh rebar3 compile
 
 The git config setting set in the first =RUN= ensures that even if in the =rebar.config= the git url is using =https= it will instead use SSH. If the private repos are not on Github this url replacement has to be changed for the appropriate location.
 
-Along with adding the above section to the Dockerfiles we'll see later in this chapter you'll also need to add =--ssh default= to the build command when run and set =DOCKER_BUILDKIT=:
+Along with adding the previous snippet to the Dockerfiles we'll see later in this chapter you'll also need to add =--ssh default= to the build command when run and set =DOCKER_BUILDKIT=:
 
 #+BEGIN_SRC shell
 $ export DOCKER_BUILDKIT=1
