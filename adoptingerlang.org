@@ -939,7 +939,12 @@ Docker images contain multiple layers that are merged at runtime to make up the 
 
 The small size and ability to run like a regular Linux process makes for quicker start times (a new kernel isn't booted) and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
 
-A few of the advantages of filesystem and network isolation are, not having to worry about which libraries (OpenSSL for instance) are installed on the target machine, if a particular port is already bound, if an Erlang node with the same name is already running or global configuration effecting separate instances of the same program.
+Advantages of containers running with filesystem and network isolation are not having to perform operations that are common when programs are not isolated:
+
+- Pre-installing shared libraries
+- Updating configuration
+- Finding an open port
+- Finding a unique name for node name
 
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
@@ -954,9 +959,9 @@ You might notice we will not be using the =latest= tag at all when using Docker.
 #+attr_shortcode: tip
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-If you have private git repos as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with rebar3 before running =docker build=. The other option was copying the host SSH credentials into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image.
+If you have private git repos as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with rebar3 before running =docker build=. The other option is copying the host SSH credentials into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image.
 
-To resolve this, Docker added a new feature, as of Docker 18.09, allowing for secure mounting of SSH credentials. A =RUN= command that needs SSH access can use =--mount=type=ssh= like below:
+To resolve this, Docker added a new feature, as of Docker 18.09, allowing for secure mounting of SSH credentials. A =RUN= command that needs SSH access can use =--mount=type=ssh=:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
