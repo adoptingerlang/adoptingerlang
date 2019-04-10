@@ -992,7 +992,7 @@ COPY rebar.config rebar.lock /src/
 RUN rebar3 compile
 #+END_SRC
 
-The =COPY= command will only invalidate the cache of the command that runs =rebar3 compile= (and subsequent commands in the file) if =rebar.config= or =rebar.lock= are different from a previously created layer. Since none of the project's code was copied in rebar3 only builds the dependencies, resulting in a layer containing only the built dependencies under =_build/default/lib=.
+The =COPY= command will only invalidate the cache of the command that runs =rebar3 compile= (and subsequent commands in the file) if =rebar.config= or =rebar.lock= are different from a previously created layer. Since none of the project's code was copied and rebar3 only builds the dependencies, this results in a layer containing only the built dependencies under =_build/default/lib=.
 
 After the dependencies are built and cached we can copy in the rest of the project and compile it:
 
