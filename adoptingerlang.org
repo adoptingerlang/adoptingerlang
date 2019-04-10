@@ -985,7 +985,7 @@ Additional information and options for the SSH mount type can be found [[https:/
 
 **** Efficient Caching
 
-The order of commands in a Dockerfile is very important to the efficiency, both time to build and space to store, of the images it creates. Docker uses the layers each command in the Dockerfile creates to not rerun a command if nothing has changed. With rebar3 we take advantage of this by creating a layer containing the built dependencies of our project:
+The order of commands in a Dockerfile is very important to the build time and space required of the images it creates. Docker uses the layers each command in the Dockerfile creates to skip a command if nothing has changed. With rebar3 we take advantage of this by creating a layer containing the built dependencies of our project:
 
 #+BEGIN_SRC dockerfile
 COPY rebar.config rebar.lock /src/
