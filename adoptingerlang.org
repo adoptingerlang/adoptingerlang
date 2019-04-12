@@ -1052,7 +1052,7 @@ Running =docker build= with =--target build= and =-t service_discovery_builder:$
 
 The image with the compiled dependencies is now able to be used as a base for images that run rebar3 commands which would otherwise fetch and compile dependencies.
 
-The next stage uses the =builder= image as it's base:
+The next stage uses the =builder= image as its base:
 
 #+BEGIN_SRC dockerfile
 FROM builder as releaser
