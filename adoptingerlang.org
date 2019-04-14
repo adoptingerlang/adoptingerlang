@@ -897,32 +897,32 @@ On Windows the =dev_mode= of relx won't necessary work but it will fallback to c
 #+end_alert
 
 #+BEGIN_SRC shell
-_build/default/rel/service_discovery
-├── bin
-│   ├── install_upgrade.escript
-│   ├── nodetool
-│   ├── no_dot_erlang.boot
-│   ├── service_discovery
-│   ├── service_discovery-0.1.0
-│   └── start_clean.boot
-├── lib
-│   ├── base32-0.1 -> /src/_build/default/lib/base32
-│   ├── bear-0.8.7 -> /src/_build/default/lib/bear
-│   ├── dns-0.1.0 -> /src/_build/default/lib/dns
-│   ├── erldns-1.0.0 -> /src/_build/default/lib/erldns
-│   ├── folsom-0.8.7 -> /src/_build/default/lib/folsom
-│   ├── iso8601-1.3.1 -> /src/_build/default/lib/iso8601
-│   ├── jsx-2.9.0 -> /src/_build/default/lib/jsx
-│   └── service_discovery-0.1.0 -> /src/_build/default/lib/service_discovery
-└── releases
+_build/default/rel/service_discovery/
+├── bin/
+│   ├── install_upgrade.escript
+│   ├── nodetool
+│   ├── no_dot_erlang.boot
+│   ├── service_discovery
+│   ├── service_discovery-0.1.0
+│   └── start_clean.boot
+├── lib/
+│   ├── base32-0.1 -> /src/_build/default/lib/base32
+│   ├── bear-0.8.7 -> /src/_build/default/lib/bear
+│   ├── dns-0.1.0 -> /src/_build/default/lib/dns
+│   ├── erldns-1.0.0 -> /src/_build/default/lib/erldns
+│   ├── folsom-0.8.7 -> /src/_build/default/lib/folsom
+│   ├── iso8601-1.3.1 -> /src/_build/default/lib/iso8601
+│   ├── jsx-2.9.0 -> /src/_build/default/lib/jsx
+│   └── service_discovery-0.1.0 -> /src/_build/default/lib/service_discovery
+└── releases/
     ├── 0.1.0
-    │   ├── no_dot_erlang.boot
-    │   ├── service_discovery.boot
-    │   ├── service_discovery.rel
-    │   ├── service_discovery.script
-    │   ├── start_clean.boot
-    │   ├── sys.config.src -> /src/config/sys.config.src
-    │   └── vm.args.src -> /src/config/vm.args.src
+    │   ├── no_dot_erlang.boot
+    │   ├── service_discovery.boot
+    │   ├── service_discovery.rel
+    │   ├── service_discovery.script
+    │   ├── start_clean.boot
+    │   ├── sys.config.src -> /src/config/sys.config.src
+    │   └── vm.args.src -> /src/config/vm.args.src
     ├── RELEASES
     └── start_erl.data
 #+END_SRC
@@ -964,50 +964,51 @@ $ rebar3 as prod release
 
 Viewing the tree of the new =prod= profile's release directory we see:
 
-#+BEGIN_SRC shell
-_build/prod/rel/service_discovery
-├── bin
-│   ├── install_upgrade.escript
-│   ├── nodetool
-│   ├── no_dot_erlang.boot
-│   ├── service_discovery
-│   ├── service_discovery-0.1.0
-│   └── start_clean.boot
-├── erts-10.3.3
-│   ├── bin
-│   ├── doc
-│   ├── include
-│   ├── lib
-│   ├── man
-│   └── src
-├── lib
-│   ├── asn1-5.0.8
-│   ├── base32-0.1
-│   ├── bear-0.8.7
-│   ├── crypto-4.4.2
-│   ├── dns-0.1.0
-│   ├── erldns-1.0.0
-│   ├── folsom-0.8.7
-│   ├── inets-7.0.6
-│   ├── iso8601-1.3.1
-│   ├── jsx-2.9.0
-│   ├── kernel-6.3.1
-│   ├── mnesia-4.15.6
-│   ├── public_key-1.6.5
-│   ├── service_discovery-0.1.0
-│   ├── ssl-9.2.1
-│   └── stdlib-3.8.1
-└── releases
-    ├── 0.1.0
-    │   ├── no_dot_erlang.boot
-    │   ├── service_discovery.boot
-    │   ├── service_discovery.rel
-    │   ├── service_discovery.script
-    │   ├── start_clean.boot
-    │   ├── sys.config.src
-    │   └── vm.args.src
-    ├── RELEASES
-    └── start_erl.data
+#+NAME: prod_rel_structure
+#+BEGIN_SRC sh
+_build/prod/rel/service_discovery/
+├─ bin/
+│   ├─ install_upgrade.escript
+│   ├─ nodetool
+│   ├─ no_dot_erlang.boot
+│   ├─ service_discovery
+│   ├─ service_discovery-0.1.0
+│   └─ start_clean.boot
+├─ erts-10.3.3/
+│   ├─ bin
+│   ├─ doc
+│   ├─ include
+│   ├─ lib
+│   ├─ man
+│   └─ src
+├─ lib/
+│   ├─ asn1-5.0.8
+│   ├─ base32-0.1
+│   ├─ bear-0.8.7
+│   ├─ crypto-4.4.2
+│   ├─ dns-0.1.0
+│   ├─ erldns-1.0.0
+│   ├─ folsom-0.8.7
+│   ├─ inets-7.0.6
+│   ├─ iso8601-1.3.1
+│   ├─ jsx-2.9.0
+│   ├─ kernel-6.3.1
+│   ├─ mnesia-4.15.6
+│   ├─ public_key-1.6.5
+│   ├─ service_discovery-0.1.0
+│   ├─ ssl-9.2.1
+│   └─ stdlib-3.8.1
+└─ releases/
+    ├─ 0.1.0/
+    │   ├─ no_dot_erlang.boot
+    │   ├─ service_discovery.boot
+    │   ├─ service_discovery.rel
+    │   ├─ service_discovery.script
+    │   ├─ start_clean.boot
+    │   ├─ sys.config.src
+    │   └─ vm.args.src
+    ├─ RELEASES
+    └─ start_erl.data
 #+END_SRC
 
 There are no symlinks under =lib= and OTP applications like =stdlib-3.8.1= are included. And at the top of the tree is =erts-10.3.3= which contains the Erlang runtime.
