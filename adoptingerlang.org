@@ -374,7 +374,7 @@ The standard Erlang distribution contains applications such as:
 - compiler (the Erlang compiler to build your own project)
 - and so on
 
-All of these are put together into what is called an Erlang _release_. A release is a collection of OTP applications, possibly bundled together with a full virtual machine. As such, when you download and install Erlang, you just get a release whose name is something like _Erlang/OTP-21.3.2_. You're free to build your own releases, which will take some of the OTP applications in the standard distribution, and then bundle them with some of your own apps.
+All of these are put together into what is called an Erlang _release_. A release is a collection of OTP applications, possibly bundled together with a full virtual machine. As such, when you download and install Erlang, you just get a release whose name is something like _Erlang/OTP-21.3.4_. You're free to build your own releases, which will take some of the OTP applications in the standard distribution, and then bundle them with some of your own apps.
 
 So if we to write an app named =proxy= that relies on =ssh= and =ssl= (which themselves depend on =public_key=, =crypto=, =stdlib=, and =kernel=), we make a release with all of these components in it:
 
@@ -856,10 +856,10 @@ $ rebar3 release
 ===> Compiling service_discovery
 ===> Starting relx build process ...
 ===> Resolving OTP Applications from directories:
-          /home/tristan/Devel/service_discovery/_build/default/lib
-          /home/tristan/Devel/service_discovery/apps
-          /home/tristan/.cache/erls/otps/OTP-21.2.1/dist/lib/erlang/lib
-          /home/tristan/Devel/service_discovery/_build/default/rel
+          /src/service_discovery/_build/default/lib
+          /src/service_discovery/apps
+          /root/.cache/erls/otps/OTP-21.3.4/dist/lib/erlang/lib
+          /src/service_discovery/_build/default/rel
 ===> Resolved service_discovery-0.1.0
 ===> Dev mode enabled, release will be symlinked
 ===> release successfully created!
@@ -896,6 +896,37 @@ This allows for a faster feedback loop when running our release for local testin
 On Windows the =dev_mode= of relx won't necessary work but it will fallback to copying.
 #+end_alert
 
+#+BEGIN_SRC shell
+_build/default/rel/service_discovery
+├── bin
+│   ├── install_upgrade.escript
+│   ├── nodetool
+│   ├── no_dot_erlang.boot
+│   ├── service_discovery
+│   ├── service_discovery-0.1.0
+│   └── start_clean.boot
+├── lib
+│   ├── base32-0.1 -> /src/_build/default/lib/base32
+│   ├── bear-0.8.7 -> /src/_build/default/lib/bear
+│   ├── dns-0.1.0 -> /src/_build/default/lib/dns
+│   ├── erldns-1.0.0 -> /src/_build/default/lib/erldns
+│   ├── folsom-0.8.7 -> /src/_build/default/lib/folsom
+│   ├── iso8601-1.3.1 -> /src/_build/default/lib/iso8601
+│   ├── jsx-2.9.0 -> /src/_build/default/lib/jsx
+│   └── service_discovery-0.1.0 -> /src/_build/default/lib/service_discovery
+└── releases
+    ├── 0.1.0
+    │   ├── no_dot_erlang.boot
+    │   ├── service_discovery.boot
+    │   ├── service_discovery.rel
+    │   ├── service_discovery.script
+    │   ├── start_clean.boot
+    │   ├── sys.config.src -> /src/config/sys.config.src
+    │   └── vm.args.src -> /src/config/vm.args.src
+    ├── RELEASES
+    └── start_erl.data
+#+END_SRC
+
 *** Building a Production Release
 
 Preparing a release to be deployed to production benefits from having different options than what is best during local development. Rebar3 profiles allow us to override and add to the relx configuration:
@@ -922,14 +953,72 @@ $ rebar3 as prod release
 ===> Compiling service_discovery
 ===> Starting relx build process ...
 ===> Resolving OTP Applications from directories:
-          /home/tristan/Devel/service_discovery/_build/prod/lib
-          /home/tristan/Devel/service_discovery/apps
-          /home/tristan/.cache/erls/otps/OTP-21.2.1/dist/lib/erlang/lib
-          /home/tristan/Devel/service_discovery/_build/prod/rel
+          /src/service_discovery/_build/prod/lib
+          /src/service_discovery/apps
+          /root/.cache/erls/otps/OTP-21.3.4/dist/lib/erlang/lib
+          /src/service_discovery/_build/prod/rel
 ===> Resolved service_discovery-0.1.0
-===> Including Erts from /home/tristan/.cache/erls/otps/OTP-21.2.1/dist/lib/erlang
+===> Including Erts from /root/.cache/erls/otps/OTP-21.3.4/dist/lib/erlang
 ===> release successfully created!
 #+END_SRC
+
+Viewing the tree of the new =prod= profile's release directory we see:
+
+#+BEGIN_SRC shell
+_build/prod/rel/service_discovery
+├── bin
+│   ├── install_upgrade.escript
+│   ├── nodetool
+│   ├── no_dot_erlang.boot
+│   ├── service_discovery
+│   ├── service_discovery-0.1.0
+│   └── start_clean.boot
+├── erts-10.3.3
+│   ├── bin
+│   ├── doc
+│   ├── include
+│   ├── lib
+│   ├── man
+│   └── src
+├── lib
+│   ├── asn1-5.0.8
+│   ├── base32-0.1
+│   ├── bear-0.8.7
+│   ├── crypto-4.4.2
+│   ├── dns-0.1.0
+│   ├── erldns-1.0.0
+│   ├── folsom-0.8.7
+│   ├── inets-7.0.6
+│   ├── iso8601-1.3.1
+│   ├── jsx-2.9.0
+│   ├── kernel-6.3.1
+│   ├── mnesia-4.15.6
+│   ├── public_key-1.6.5
+│   ├── service_discovery-0.1.0
+│   ├── ssl-9.2.1
+│   └── stdlib-3.8.1
+└── releases
+    ├── 0.1.0
+    │   ├── no_dot_erlang.boot
+    │   ├── service_discovery.boot
+    │   ├── service_discovery.rel
+    │   ├── service_discovery.script
+    │   ├── start_clean.boot
+    │   ├── sys.config.src
+    │   └── vm.args.src
+    ├── RELEASES
+    └── start_erl.data
+#+END_SRC
+
+There are no symlinks under =lib= and OTP applications like =stdlib-3.8.1= are included. And at the top of the tree is =erts-10.3.3= which contains the Erlang runtime.
+
+To build the target system of the release we run the =tar= command in the =prod= profile:
+
+#+BEGIN_SRC shell
+$ rebar3 as prod tar
+#+END_SRC
+
+Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= that can be copied to a target and run.
 
 ** Docker
 
@@ -1039,13 +1128,14 @@ WORKDIR /src
 
 # build and cache dependencies as their own layer
 COPY rebar.config rebar.lock /src/
-RUN --mount=type=cache,target=/root/.cache/rebar3 ./rebar3 compile
+RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
 
 The =builder= stage starts with the base image =erlang:21-alpine=. =as builder= names the stage so we can use it as a target to =docker build=:
 
 #+BEGIN_SRC shell
-$ docker build --target builder -t ${PROJECT}_builder:$CHKSUM .
+$ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
+$ docker build --target builder -t ${PROJECT}_builder:${CHKSUM} .
 #+END_SRC
 
 Running =docker build= with =--target build= and =-t service_discovery_builder:$CHKSUM= builds the stage and tags with the given name. This stage only fetches and compiles the dependencies of the project, mounting the rebar3 hex cache as discussed in the previous section.
@@ -1092,7 +1182,7 @@ Why tar the release at all?
 Now to build and tag the =release= target:
 
 #+BEGIN_SRC shell
-$ docker build --cache_from=${PROJECT}_builder:$CHKSUM --target releaser -t ${PROJECT}_releaser:$CHKSUM .
+$ docker build --cache_from=${PROJECT}_builder:${CHKSUM} --target releaser -t ${PROJECT}_releaser:${CHKSUM} .
 #+END_SRC
 
 The second image using =builder= as a base is a cache of the project's PLT:
@@ -1101,11 +1191,11 @@ The second image using =builder= as a base is a cache of the project's PLT:
 FROM builder as plt
 
 RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 dialyzer \
-    --plt-location $HOME/.cache/rebar3 --plt-prefix deps --base-plt-prefix otp
+    --plt-location /root/.cache/rebar3 --plt-prefix deps --base-plt-prefix otp
 
 ENTRYPOINT ["rebar3"]
 
-CMD ["dialyzer", "--plt-location", "$HOME/.cache/rebar3", "--plt-prefix",
+CMD ["dialyzer", "--plt-location", "$/root/.cache/rebar3", "--plt-prefix",
     "deps", "--base-plt-prefix", "otp"]
 #+END_SRC
 
@@ -1118,6 +1208,8 @@ $ docker build --cache_from=${PROJECT}_builder:$CHKSUM --target plt -t ${PROJECT
 #+BEGIN_SRC dockerfile
 $ docker run -v $(pwd):/src <image>
 #+END_SRC
+
+The deployable image uses just a base OS image. In this case =alpine:3.9= is used as the base image. Any shared libraries needed to run the release are installed first and then the unpacked release from the build stage we named =releaser= is copied to =/opt/service_discovery=:
 
 #+BEGIN_SRC dockerfile
 FROM alpine:3.9 as runner
@@ -1139,21 +1231,28 @@ ENTRYPOINT ["/opt/service_discovery/bin/service_discovery"]
 CMD ["foreground"]
 #+END_SRC
 
+=/opt/service_discovery= is owned by root and it is recommended to not run the container as root. When the release is run =sys.config= and =vm.args= need to be generated from the =.src= files. By default this is to the same directory the =.src= files are found. But if =RELX_OUT_FILE_PATH= is set it uses its value as the directory. So the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
+
 #+BEGIN_SRC shell
-$ docker build --cache_from=${PROJECT}_releaser:$CHKSUM --cache_from=${PROJECT}_builder:$CHKSUM --target runner -t ${PROJECT}:$CHKSUM .
+$ docker build --cache_from=${PROJECT}_releaser:${CHKSUM} --cache_from=${PROJECT}_builder:${CHKSUM} --target runner -t ${PROJECT}:${CHKSUM} .
 #+END_SRC
 
 *** Running a Container
-[Make note about overriding CMD in Dockerfile to run console]
+
+Now that we have the image =docker run= can be used to run the release. The =CMD= passed to the entrypoint can be overridden with the =console= command to get an interactive shell:
 
 #+BEGIN_SRC shell
-$ docker run -ti adoptingerlang.org/service_discovery console
+$ docker run -ti --user 1000 adoptingerlang.org/service_discovery console
 [...]
 (service_discovery@960409ea0bc0)1>
 #+END_SRC
 
+A running node can also be attached to with =docker exec= and =remote_console=:
+
 #+BEGIN_SRC shell
-$ docker exec -ti <container id> -- bin/service_discovery remote_console
+$ docker exec -ti --user 1000 960409ea0bc0 bin/service_discovery remote_console
+[...]
+(service_discovery@960409ea0bc0)1>
 #+END_SRC
 
 *** Running with External Dependencies
