@@ -1232,7 +1232,7 @@ ENTRYPOINT ["/opt/service_discovery/bin/service_discovery"]
 CMD ["foreground"]
 #+END_SRC
 
-=/opt/service_discovery= is owned by root and it is recommended to not run the container as root. When the release is run =sys.config= and =vm.args= need to be generated from the =.src= files. By default this is to the same directory the =.src= files are found. But if =RELX_OUT_FILE_PATH= is set it uses its value as the directory. So the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
+=/opt/service_discovery= is owned by root and it is recommended to not run the container as root. When the release is run =sys.config= and =vm.args= need to be generated from their respective =.src= files. By default these are placed in the same directory as the original =.src= files. If =RELX_OUT_FILE_PATH= is set, its location will be used instead. Here, the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
 
 #+BEGIN_SRC shell
 $ docker build --cache_from=${PROJECT}_releaser:${CHKSUM} --cache_from=${PROJECT}_builder:${CHKSUM} --target runner -t ${PROJECT}:${CHKSUM} .
