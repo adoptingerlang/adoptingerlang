@@ -1,5 +1,5 @@
 #+TITLE:     Adopting Erlang
-#+AUTHOR:    Tristan Sloughter
+#+AUTHOR:    Fred Hebert, Tristan Sloughter
 #+DRAWERS: HIDDEN HINT SOLUTION
 #+EMAIL:     t@crashfast.com
 #+DATE:      \today
@@ -31,7 +31,8 @@
 
 TODO: explain what this book is for; do it last.
 TODO: refer to the appendix for reminders
-
+** About the Authors
+TODO
 * Development
 :PROPERTIES:
 :EXPORT_FILE_NAME: development
@@ -640,6 +641,7 @@ ALSO
 *** Structuring Supervision Trees
 *** Further resources
 ** Dependencies
+** External Dependencies
 ** Projects with Multiple Applications
 ** Rebar3 Shell
 ** Configuration
@@ -1255,8 +1257,6 @@ $ docker exec -ti --user 1000 960409ea0bc0 bin/service_discovery remote_console
 [...]
 (service_discovery@960409ea0bc0)1>
 #+END_SRC
-
-*** Running with External Dependencies
 
 ** Kubernetes
 *** Deployment
