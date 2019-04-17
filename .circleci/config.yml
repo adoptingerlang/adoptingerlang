@@ -41,15 +41,15 @@ jobs:
 
   pdf:
     docker:
-      - image: schickling/latex
+      - image: aergus/latex
         entrypoint: /bin/sh
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run: |
-          pdflatex adoptingerlang.tex
-          pdflatex adoptingerlang.tex
+          pdflatex -shell-escape adoptingerlang.tex
+          pdflatex -shell-escape adoptingerlang.tex
 
       - store_artifacts:
           path: ./adoptingerlang.pdf
