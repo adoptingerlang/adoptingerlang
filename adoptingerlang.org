@@ -16,6 +16,12 @@
 #+LATEX_HEADER: \usepackage[svgnames]{xcolor}
 #+LATEX_HEADER: \usepackage[tikz]{bclogo}
 #+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \usepackage{minted}
+#+latex_header: \usepackage{xcolor}
+#+latex_header: \usemintedstyle{monokai}    %% sets default for all source-code blocks
+#+latex_header: \definecolor{friendlybg}{HTML}{f0f0f0}
+#+latex_header: \definecolor{dark}{HTML}{272822}   %% custom colour for background
+#+latex_header: \setminted{style=friendly, bgcolor=friendlybg, frame=lines, breaklines, breakanywhere}
 #+LATEX_HEADER: \newenvironment{alert}{\begin{bclogo}}{\end{bclogo}}
 #+LATEX_HEADER: \newenvironment{notice}{\begin{bclogo}}{\end{bclogo}}
 #+OPTIONS: ^:{}
@@ -1212,6 +1218,7 @@ $ docker run -v $(pwd):/src <image>
 
 The deployable image uses just a base OS image. In this case =alpine:3.9= is used as the base image. Any shared libraries needed to run the release are installed first and then the unpacked release from the build stage we named =releaser= is copied to =/opt/service_discovery=:
 
+#+attr_latex: :options label=Dockerfile
 #+BEGIN_SRC dockerfile
 FROM alpine:3.9 as runner
 
