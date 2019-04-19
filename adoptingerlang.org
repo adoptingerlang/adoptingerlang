@@ -35,10 +35,59 @@
 :EXPORT_FILE_NAME: introduction
 :END:
 
-TODO: explain what this book is for; do it last.
-TODO: refer to the appendix for reminders
+There's a ton of Erlang books available out there, and a bunch more websites that can help you get started. The Erlang community has collectively spent years writing introductory content, and a lot of it is still really good. So what's the hope for yet another book?
+
+Frankly, most of the material out there is really solid to teach you the Erlang basics, and we have no pretension of replacing them, nor a desire to re-explain the same content they contain once more. Instead, we the authors felt like while they are rock solid in a lot of areas, they still have a bunch of weaknesses.
+
+For example, here are a bunch of interesting books:
+
+- [[https://www.goodreads.com/book/show/808814.Programming_Erlang][Programming Erlang]], by Joe Armstrong is great to get into the philosophy behind Erlang
+- [[https://www.goodreads.com/book/show/4826120-erlang-programming][Erlang Programming]], by Cesarini & Thompson is a very well-rounded practical approach to learning the language and bits of OTP
+- [[https://www.goodreads.com/book/show/7438968-erlang-and-otp-in-action][Erlang and OTP in Action]], by Logan, Merritt & Carlsson is the first Erlang book that really tries to teach you OTP-first and hints at broader system design
+- [[https://learnyousomeerlang.com/][Learn You Some Erlang]], by Fred Hebert, is possibly the friendliest introduction to both Erlang and OTP that tries to cover everything from basic Erlang to the design principles underpinning OTP, releases, and the whole ordeal
+- [[https://www.goodreads.com/book/show/17984681-tudes-for-erlang][Études for Erlang]] by J. David Eisenberg is a fantastic companion exercise book that works with a bunch of other Erlang books, as a kind of practical complement
+- [[https://www.goodreads.com/book/show/808815.Concurrent_Programming_ERLANG][Concurrent Programming ERLANG]] by Williams & Armstrong is a great piece of history from the 90s, showing earlier iterations of Erlang and how it could be applied to real world problems
+- [[https://www.goodreads.com/book/show/15811999-introducing-erlang][Introducing Erlang]] by Simon St. Laurent is the most concise taste of Erlang you can get in book form
+- [[https://www.erlang-in-anger.com/][Erlang in Anger]] by Fred Hebert is the only book that really contains a complete guide to debugging your Erlang systems in production
+- [[https://www.goodreads.com/book/show/18324312-designing-for-scalability-with-erlang-otp][Designing for Scalability with Erlang/OTP]] by Cesarini & Vinoski is likely the most modern approach to Erlang/OTP systems with a real-world slant to it.
+- [[https://blog.stenmans.org/theBeamBook/][The BEAM Book]] by Erik Stenman (and a lot of community contributors) is the most advanced resource on the virtual machine internals
+- [[https://propertesting.com/][Property-Based Testing with PropEr, Erlang, and Elixir]] by Fred Hebert is the one book that teaches Property-based testing for Erlang
+
+And there are some more too.
+
+We intend to replace none of these. One huge omission in most (if not all) of these books, is that they tend to focus on Erlang/OTP on its own. In fact, many of these were written before massive shifts in how the community works. For example, _Learn You Some Erlang_, while very complete, was being written before _any_ community-driven build tool would see massive adoption, and before concepts such as OTP Releases would see widespread use. None of them have really been written under the containerized platforms currently in place. Pretty much none of them also mention how you should structure your projects to fit well within the open source Erlang ecosystem.
+
+So this is what _Adopting Erlang_ is all about. This book (and website!) is all about filling in the niche that other books and manuals have not yet managed to properly cover. What you will learn in these pages will contain actually super useful stuff like:
+
+- How to set yourself up to use multiple Erlang versions, because in the real world, you end up having to run multiple Erlang versions for the multiple projects your workplace or group of friends will end up using.
+- We also cover how to set up editors and other tools, because chances are you may not have a good Erlang setup going even if you've already seen the basics
+- How to approach OTP systems from the top. Most resources out there take a bottom-up approach, but we want you to be able to have the right project structure from day one, and then fill in the gaps with other resources as you need them
+- What's needed for a good project, including dependency handling, some testing practices, handling configuration and documentation, and so on
+- How to set up a good _Continuous Integration_ (CI) pipeline on common open platforms so that code reviews and automated testing can get the best support they can
+- How to handle a bunch of difficult stuff nobody really teaches properly, like dealing with strings—specifically Unicode—or time and proper SSL/TLS configuration
+- How to deploy your Erlang systems as a self-executable bundle of files
+- How to properly package your Erlang systems as Docker images, and showing how to manage their lifecycle with Kubernetes
+- How to plan on setting up operations and get metrics going _outside_ of what the VM provides; think of things like logging and distributed tracing, platforms to get metrics dashboards going, and so on
+- How to build a team that will start using Erlang in commercial projects
+- How to interview your first Erlang experts or developers
+- How to structure your practices for things such as code reviews, experience sharing, and so on.
+
+By opposition, we will _not_ cover things like basic Erlang, core OTP behaviours, and so on. They have been covered multiple times in other resources in the past, many of which are freely available. We still have put together an appendix of cheat sheets you can refer to if you need a refresher.
+
+Essentially, we hope for _Adopting Erlang_ to be the missing link between all the various starter books with their various approaches, and the material like _Erlang in Anger_ that lets you debug stuff in production. We want this book to teach you how to go from "Okay, I think I got the basics" to "let's get this project going, and let's do it right." After reading this book, you should be able to know exactly what the best practices are to fit right in with the rest of the Erlang community.
+
 ** About the Authors
-TODO
+
+*** Tristan Sloughter
+
+Tristan is a long time Erlang hacker, having gotten into it in college and then professionally for various companies, eCDMarket, Orbitz Worldwide, Heroku, SpaceTime Insight, and currently as a senior software engineer at Postmates, Inc. Tristan is also one of the maintainers of the release tool Relx and build tool Rebar3.
+
+*** Fred Hebert
+
+Fred is the author of _Learn You Some Erlang_, _Erlang in Anger_, and more recently, _Property-Based Testing with PropEr, Erlang, and Elixir_. He is a maintainer of Rebar3, and of libraries such as recon, pobox, vmstats, and backoff.
+
+He is a Systems Architect at Genetec, a company offering video systems, access control, case management, and IoT integration systems. Previously, he was a principal member of technical staff on the Heroku platform, worked in real-time bidding, and provided Erlang training.
+
 * Development
 :PROPERTIES:
 :EXPORT_FILE_NAME: development
