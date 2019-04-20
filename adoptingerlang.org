@@ -32,7 +32,12 @@
 
 * Introduction
 :PROPERTIES:
-:EXPORT_FILE_NAME: introduction
+:EXPORT_HUGO_SECTION: docs/introduction
+:END:
+
+** Index
+:PROPERTIES:
+:EXPORT_FILE_NAME: _index
 :END:
 
 There's a ton of Erlang books available out there, and a bunch more websites that can help you get started. The Erlang community has collectively spent years writing introductory content, and a lot of it is still really good. So what's the hope for yet another book?
@@ -77,6 +82,9 @@ By opposition, we will _not_ cover things like basic Erlang, core OTP behaviours
 Essentially, we hope for _Adopting Erlang_ to be the missing link between all the various starter books with their various approaches, and the material like _Erlang in Anger_ that lets you debug stuff in production. We want this book to teach you how to go from "Okay, I think I got the basics" to "let's get this project going, and let's do it right." After reading this book, you should be able to know exactly what the best practices are to fit right in with the rest of the Erlang community.
 
 ** About the Authors
+:PROPERTIES:
+:EXPORT_FILE_NAME: about_the_authors
+:END:
 
 *** Tristan Sloughter
 
@@ -90,7 +98,7 @@ He is a Systems Architect at Genetec, a company offering video systems, access c
 
 * Development
 :PROPERTIES:
-:EXPORT_FILE_NAME: development
+:EXPORT_HUGO_SECTION: docs/development
 :END:
 #+latex_header: \usepackage[utf8]{inputenc}
 #+latex_header: \usepackage{pmboxdraw} % for directory listings
@@ -105,9 +113,18 @@ He is a Systems Architect at Genetec, a company offering video systems, access c
 #+latex_header: \DeclareUnicodeCharacter{1F914}{\includegraphics[height=\fontcharht\font`\B]{./static/img/thinking.png}}
 #+latex_header: \DeclareUnicodeCharacter{200D}{\hspace{0pt}}
 
+
+** Index
+:PROPERTIES:
+:EXPORT_FILE_NAME: _index
+:END:
+
 The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
 
 ** Setup
+:PROPERTIES:
+:EXPORT_FILE_NAME: setup
+:END:
 
 In this chapter, you will go through the basic steps required to install Erlang/OTP on most major platforms. The instructions will aim for a basic set-up, and in some more popular platforms, will also target running multiple Erlang/OTP versions at once, as a team with growing projects is likely to have to test multiple deploy scenarios.
 
@@ -382,6 +399,9 @@ $ rebar3 local upgrade # this can be used to update to the latest stable copy
 **** Vim
 
 ** OTP at a High Level
+:PROPERTIES:
+:EXPORT_FILE_NAME: otp_high_level
+:END:
 
 *** The Erlang Run-Time System
 
@@ -461,6 +481,9 @@ So the key to getting started fast in Erlang is to know the framework, which is 
 
 
 ** OTP Applications
+:PROPERTIES:
+:EXPORT_FILE_NAME: otp_applications
+:END:
 
 Since every component to be shipped in an Erlang/OTP release needs to be an OTP Application, it will do you a great good to understand what they are and how they work. In this chapter, we'll go over the basic structure of an OTP application, and what that means for your project.
 
@@ -572,13 +595,13 @@ Within each profile, the =lib/= directory contains all the OTP applications that
 - two symlinks have been added to =include/= and =priv/=. These will refer to matching directories at the root of the project, if they exist. The =include/= directory is meant for [[http://erlang.org/doc/reference_manual/macros.html#file-inclusion][header files]] (=.hrl=), and the =priv/= directory for any file that must be copied over and made available in production
 - All other files at the root of the project have been discarded
 
-If we had any dependencies (see [[Dependencies][the Dependencies chapter]]), they would also be placed in the =_build/<profile>/lib/= directory.
+If we had any dependencies (see [[/docs/development/dependencies][The Dependencies chapter]]), they would also be placed in the =_build/<profile>/lib/= directory.
 
 In general, you will want to ignore the =_build/= directory entirely and avoid tracking it in your source control: if you look at the =.gitignore= file, you will see that it automatically ignores =_build/= for you.
 
 Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open soruce work), going for the [[https://en.wikipedia.org/wiki/Apache_License#Version_2.0][Apache 2.0]] license that Erlang ships with. Feel free to replace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
 
-Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by rebar3 to track which versions of any dependencies you were using, and should be checked into source control. The [[Dependencies][Dependencies chapter]] contains more details.
+Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by rebar3 to track which versions of any dependencies you were using, and should be checked into source control. The [[/docs/development/dependencies][Dependencies chapter]] contains more details.
 
 The =rebar.config= file is a complete declarative configuration file that exposes options for all the Erlang tools that rebar3 integrates with. [[https://www.rebar3.org/docs/configuration][The official documentation]] explains all the values possible, but by default it is quite empty. In fact, if you only want default values with no dependencies, you can just delete the file. As long as your project is structured like an OTP application, rebar3 will figure out what needs to be done.
 
@@ -612,7 +635,7 @@ This is essentially a metadata file that describes everything about the applicat
 
 By far, the most critical field to keep up to date in there is the =applications= tuple. It lets Erlang libraries know the order in which OTP applications must be started to work, and also allows build tools to build a dependency graph between all available OTP applications to know which to keep and which to remove from the distribution when building a release.
 
-A more subtle thing to notice is that even if what we have here is a _library_, and it therefore has no processes to run, we still have the ability to define some configuration values (see the [[Configuration][Configuration Chapter]]), and dependencies must be respected. It is possible, for example, that our library is stateless, but uses a stateful HTTP client: the Erlang VM will then need to know when your code may or may not be safe to call.
+A more subtle thing to notice is that even if what we have here is a _library_, and it therefore has no processes to run, we still have the ability to define some configuration values (see the [[/docs/development/configuration][Configuration chapter]]), and dependencies must be respected. It is possible, for example, that our library is stateless, but uses a stateful HTTP client: the Erlang VM will then need to know when your code may or may not be safe to call.
 
 For now, let's focus on what exactly is the difference between a stateless and a stateful application.
 
@@ -654,7 +677,7 @@ $ cat src/myapp.app.src
  ]}.
 #+END_SRC
 
-The only new line here is the ={mod, {<appname>_app, []}}= tuple. This tuple specifies a special module that can be called (=<appname>_app=) with some specific arguments (=[]=). When called, it is expected that this module will return the _process identifier_ (the _pid_) of a [[Supervision Trees][supervision tree]].
+The only new line here is the ={mod, {<appname>_app, []}}= tuple. This tuple specifies a special module that can be called (=<appname>_app=) with some specific arguments (=[]=). When called, it is expected that this module will return the _process identifier_ (the _pid_) of a [[/docs/development/supervision_trees][supervision tree]].
 
 If you go visit the =myapp_app= module, you will see what these callbacks are:
 
@@ -692,16 +715,48 @@ You now understand most of the weird stuff about Erlang/OTP's project structure 
 ALSO
 
 ** Supervision Trees
+:PROPERTIES:
+:EXPORT_FILE_NAME: supervision_trees
+:END:
+
 *** Basics
 *** Structuring Supervision Trees
 *** Further resources
 ** Dependencies
+:PROPERTIES:
+:EXPORT_FILE_NAME: dependencies
+:END:
+
 ** External Dependencies
+:PROPERTIES:
+:EXPORT_FILE_NAME: external_dependencies
+:END:
+
 ** Projects with Multiple Applications
+:PROPERTIES:
+:EXPORT_FILE_NAME: umbrella_projects
+:END:
+
 ** Rebar3 Shell
+:PROPERTIES:
+:EXPORT_FILE_NAME: rebar3_shell
+:END:
+
 ** Configuration
+:PROPERTIES:
+:EXPORT_FILE_NAME: configuration
+:END:
+
 ** Documentation
+:PROPERTIES:
+:EXPORT_FILE_NAME: documentation
+:END:
+
 ** Testing
+:PROPERTIES:
+:EXPORT_FILE_NAME: testing
+:END:
+
 *** Common Test
 *** Coverage
 *** Dialyzer
@@ -714,6 +769,9 @@ ALSO
 
 
 ** Things Hard to Get Right
+:PROPERTIES:
+:EXPORT_FILE_NAME: hard_to_get_right
+:END:
 
 You probably have a fairly decent understanding of how an Erlang project should be structured by now. Along with any guide about the language basics, you should be mostly good to get started. However, there are a few complex topics that are currently not covered well in any of the Erlang documentation out there. In this chapter, we'll go through the task of providing guidance around handling Unicode, time, and SSL/TLS configurations.
 
@@ -861,7 +919,12 @@ This should hopefully demistify Erlang's strings.
 
 * Production
 :PROPERTIES:
-:EXPORT_FILE_NAME: production
+:EXPORT_HUGO_SECTION: docs/production
+:END:
+
+** Index
+:PROPERTIES:
+:EXPORT_FILE_NAME: _index
 :END:
 
 Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service. In this part we'll build a deployable artifact (a release), create a docker image of the release and deploy to a Kubernetes cluster.
@@ -874,6 +937,10 @@ However, containers and Kubernetes are not appropriate in all cases. Kubernetes 
 
 
 ** Releases
+:PROPERTIES:
+:EXPORT_FILE_NAME: releases
+:END:
+
 In OTP at a High Level we took a bird's-eye view of how applications are combined into a release and in Development we built and tested OTP applications. Now we'll configure and build a release of the =service_discovery= project.
 
 *** The Nitty Gritty
@@ -1079,6 +1146,9 @@ $ rebar3 as prod tar
 Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= that can be copied to a target and run.
 
 ** Docker
+:PROPERTIES:
+:EXPORT_FILE_NAME: docker
+:END:
 
 [[https://docker.com][Docker]] helped popularize Linux containers through its ease of use and registry of pre-built images, and became a word often used interchangably with "Linux container".
 
@@ -1315,6 +1385,10 @@ $ docker exec -ti --user 1000 960409ea0bc0 bin/service_discovery remote_console
 #+END_SRC
 
 ** Kubernetes
+:PROPERTIES:
+:EXPORT_FILE_NAME: kubernetes
+:END:
+
 *** Deployment
 *** Service
 *** StatefulSet
@@ -1326,6 +1400,9 @@ $ docker exec -ti --user 1000 960409ea0bc0 bin/service_discovery remote_console
 **** Minikube, Microk8s, Docker for Machine
 **** Tilt
 ** Operations
+:PROPERTIES:
+:EXPORT_FILE_NAME: operations
+:END:
 *** Remote access
 *** Metrics
 **** VM
@@ -1335,27 +1412,57 @@ $ docker exec -ti --user 1000 960409ea0bc0 bin/service_discovery remote_console
 *** Distributed tracing
 * Team Building
 :PROPERTIES:
-:EXPORT_FILE_NAME: team_building
+:EXPORT_HUGO_SECTION: docs/team_building
 :END:
+
+** Index
+:PROPERTIES:
+:EXPORT_FILE_NAME: _index
+:END:
+
 ** Who to Put on The Team
+:PROPERTIES:
+:EXPORT_FILE_NAME: on_the_team
+:END:
+
 *** Building Around an Expert
 *** Building Without an Expert
 *** To Remote or Not To Remote
 ** Repository Structures
+:PROPERTIES:
+:EXPORT_FILE_NAME: repo_structures
+:END:
+
 ** Processes
+:PROPERTIES:
+:EXPORT_FILE_NAME: processes
+:END:
+
 *** Code Reviews
 *** Common Architecture Decisions
 *** Prototype and Throw Away
 *** Internal Training
 ** How To Hire
+:PROPERTIES:
+:EXPORT_FILE_NAME: how_to_hire
+:END:
+
 *** It Takes One to Know One
 *** It is Easier to Train than Hire
 
 * Appendix
 :PROPERTIES:
-:EXPORT_FILE_NAME: appendix
+:EXPORT_HUGO_SECTION: docs/appendix
 :END:
+** Index
+:PROPERTIES:
+:EXPORT_FILE_NAME: _index
+:END:
+
 ** Erlang/OTP Cheat Sheets
+:PROPERTIES:
+:EXPORT_FILE_NAME: cheat_sheets
+:END:
 
 This section contains various reminders to jog your memory if you're not too fresh on basic Erlang data, types, or syntax.
 

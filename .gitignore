@@ -1,4 +1,9 @@
 content/docs/*.md
+content/docs/appendix/
+content/docs/development/
+content/docs/introduction/
+content/docs/production/
+content/docs/team_building/
 adoptingerlang.*
 !adoptingerlang.org
 output
