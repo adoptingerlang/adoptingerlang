@@ -383,7 +383,7 @@ Although there exists a [[https://github.com/erlang/sourcer][language server]] w
 
 To configure the extension, go to the =Preferences= and then =Settings= menu. Within the VS Code window, unroll the =Extensions= menu until the =erlang configuration= section. Make sure that all the values are right, particularly the Erlang path and the Rebar3 path. With this in place, you can mix and match all the other extensions you'd like and things should be ready to go.
 
-The code formatter may feel a bit janky; it respects the Erlang Emacs rules of mixing tabs and spaces, and expects each tab is 8 spaces wide. If your Visual Studio Code is not configured that way (using 4 spaces for example), it will just look off.
+The code formatter may feel a bit janky; it respects the official Erlang repository's old rules of mixing tabs and spaces, and expects each tab is 8 spaces wide. This is not really use anywhere else, and if your Visual Studio Code is not configured that way (using 4 spaces for example), it will just look off.
 
 Otherwise, that extension covers all the major features: jumping around code definitions, build tool support (although only =compile=, =eunit=, and =dialyzer= are supported in the command palette, you can still call =rebar3= directly from the terminal), intellisense, warnings as you type, and CodeLens features. If you look at the extension's documentation, you'll also find debugger support instructions.
 
