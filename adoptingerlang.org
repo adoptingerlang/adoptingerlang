@@ -1419,7 +1419,7 @@ $ docker run -ti adoptingerlang.org/service_discovery console
 
 The =-ti= options tell =docker= we want an interactive shell, while `console` tells the same to the Erlang release.
 
-A running node can also be attached to with =docker exec= and =remote_console=:
+A running node can also be attached to with =docker exec=, the container id (use =docker ps= to find this id) and =remote_console=:
 
 #+BEGIN_SRC shell
 $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
