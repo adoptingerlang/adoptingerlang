@@ -758,7 +758,7 @@ ALSO
 :EXPORT_FILE_NAME: external_dependencies
 :END:
 
-** Multi-App ProjectsP
+** Multi-App Projects
 :PROPERTIES:
 :EXPORT_FILE_NAME: umbrella_projects
 :END:
