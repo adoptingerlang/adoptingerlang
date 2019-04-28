@@ -144,6 +144,7 @@ Erlang versions are numbered according to a =<Major>.<Minor>.<Patch>= scheme, as
 
 Here are some example possible versions:
 
+- 22.0
 - 22.0-rc3
 - 21.3
 - 21.2.3
