@@ -42,7 +42,7 @@
 
 So you've been checking Erlang out, and you've read a few tutorials and a bunch of books, but you're finding that nothing really tells you how you should set up a modern project for you and your team, and you have then found this text.  The Erlang community has collectively spent years writing introductory content, and a lot of it is still really good. So what's the hope for yet another book?
 
-Frankly, most of the material out there is really solid to teach you the Erlang basics, and we have no pretension of replacing them, nor a desire to re-explain the same content they contain once more. Instead, we the authors felt like while they are rock solid in a lot of areas.
+Frankly, most of the material out there is really solid to teach you the Erlang basics, and we have no pretension of replacing them, nor a desire to re-explain the same content they contain once more. Instead, we the authors felt like while they are rock solid in a lot of areas, we could help cover some blind spots.
 
 For example, here are a bunch of interesting books:
 
