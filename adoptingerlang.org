@@ -130,7 +130,7 @@ You can't write Erlang without having Erlang installed, so the unsurprising firs
 
 In fact, as teams grow and they accumulate various projects, chances are that not all services, libraries, or bits of code will all support the same exact version of Erlang, and won't be upgraded all at once. If you talk to developers who use Erlang profesionnally, most (aside from Windows users) will tell you that they just compile their own copies with the options they need, and with a tool that lets them switch between multiple versions. So we'll go through that.
 
-You will also see how to install Rebar3, the official build tool for the Erlang community, and base configurations for various text editors.
+You will also see how to install Rebar3, the official build tool for the Erlang community, and base configurations for various text editors. In later chapters, we'll additionally talk about other tools that aren't specific to Erlang such as Kubernetes or Prometheus, but let's get started with Just Erlang for now.
 
 *** Installing Erlang/OTP
 
