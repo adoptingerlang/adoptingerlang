@@ -1316,7 +1316,7 @@ Running =docker build= with =--target build= and =-t service_discovery_builder:$
 
 The image with the compiled dependencies is now able to be used as a base for images that run rebar3 commands which would otherwise fetch and compile dependencies.
 
-The next stage uses the =builder= image as its base:
+The next stage, named =releaser=, uses the =builder= image as its base:
 
 #+BEGIN_SRC dockerfile
 FROM builder as releaser
@@ -1346,7 +1346,7 @@ This stage copies in all of the project and builds a tarball of the release usin
             }]}.
 #+END_SRC
 
-The profile having =include_erts= set to =true= means the tarball contains the Erlang runtime and can be run on a target that doesn't have Erlang installed. At the end the tarball is unpacked to =/opt/rel= so the image that will copy the release out of the =releaser= does not need to have =tar= installed.
+The profile having =include_erts= set to =true= means the tarball contains the Erlang runtime and can be run on a target that doesn't have Erlang installed. At the end the tarball is unpacked to =/opt/rel= so the image that will copy the release out of the =releaser= stage does not need to have =tar= installed.
 
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
