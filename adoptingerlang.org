@@ -128,7 +128,7 @@ The first section of this book is dedicated to getting a working installation wo
 
 You can't write Erlang without having Erlang installed, so the unsurprising first steps covered in this chapter will be to go through the basic steps required to install Erlang/OTP on most major platforms. The instructions will aim for a basic set-up on most platforms, but you'll find out that real world Erlang development is rarely done with just the basic instructions.
 
-In fact, as teams grow and they accumulate various projects, chances are that not all services, libraries, or bits of code will all support the same exact version of Erlang, and won't be upgraded all at once. If you talk to developers who use Erlang profesionnally, most (aside from Windows users) will tell you that they just compile their own copies with the options they need, and with a tool that lets them switch between multiple versions. So we'll go through that.
+In fact, as teams grow and they accumulate various projects, chances are that not all services, libraries, or bits of code will all support the same exact version of Erlang, and won't be upgraded all at once. If you talk to developers who use Erlang professionally, most (aside from Windows users) will tell you that they just compile their own copies with the options they need, and with a tool that lets them switch between multiple versions. So we'll go through that.
 
 You will also see how to install Rebar3, the official build tool for the Erlang community, and base configurations for various text editors.
 
