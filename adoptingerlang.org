@@ -40,9 +40,9 @@
 :EXPORT_FILE_NAME: _index
 :END:
 
-There's a ton of Erlang books available out there, and a bunch more websites that can help you get started. The Erlang community has collectively spent years writing introductory content, and a lot of it is still really good. So what's the hope for yet another book?
+So you've been checking Erlang out, and you've read a few tutorials and a bunch of books, but you're finding that nothing really tells you how you should set up a modern project for you and your team, and you have then found this text.  The Erlang community has collectively spent years writing introductory content, and a lot of it is still really good. So what's the hope for yet another book?
 
-Frankly, most of the material out there is really solid to teach you the Erlang basics, and we have no pretension of replacing them, nor a desire to re-explain the same content they contain once more. Instead, we the authors felt like while they are rock solid in a lot of areas, they still have a bunch of weaknesses.
+Frankly, most of the material out there is really solid to teach you the Erlang basics, and we have no pretension of replacing them, nor a desire to re-explain the same content they contain once more. Instead, we the authors felt like while they are rock solid in a lot of areas, we could help cover some blind spots.
 
 For example, here are a bunch of interesting books:
 
@@ -79,7 +79,7 @@ So this is what _Adopting Erlang_ is all about. This book (and website!) is all 
 
 By opposition, we will _not_ cover things like basic Erlang, core OTP behaviours, and so on. They have been covered multiple times in other resources in the past, many of which are freely available. We still have put together an appendix of cheat sheets you can refer to if you need a refresher.
 
-Essentially, we hope for _Adopting Erlang_ to be the missing link between all the various starter books with their various approaches, and the material like _Erlang in Anger_ that lets you debug stuff in production. We want this book to teach you how to go from "Okay, I think I got the basics" to "let's get this project going, and let's do it right." After reading this book, you should be able to know exactly what the best practices are to fit right in with the rest of the Erlang community.
+Essentially, we hope for _Adopting Erlang_ to be the missing link between all the various starter books with their various approaches, and the more advanced material like _Erlang in Anger_ that lets you debug stuff in production. We want this book to teach you how to go from "Okay, I think I got the basics" to "let's get this project going, and let's do it right." After reading this book, you should be able to know exactly what the best practices are to fit right in with the rest of the Erlang community.
 
 ** About the Authors
 :PROPERTIES:
@@ -126,9 +126,11 @@ The first section of this book is dedicated to getting a working installation wo
 :EXPORT_FILE_NAME: setup
 :END:
 
-In this chapter, you will go through the basic steps required to install Erlang/OTP on most major platforms. The instructions will aim for a basic set-up, and in some more popular platforms, will also target running multiple Erlang/OTP versions at once, as a team with growing projects is likely to have to test multiple deploy scenarios.
+You can't write Erlang without having Erlang installed, so the unsurprising first steps covered in this chapter will be to go through the basic steps required to install Erlang/OTP on most major platforms. The instructions will aim for a basic set-up on most platforms, but you'll find out that real world Erlang development is rarely done with just the basic instructions.
 
-You will also see how to install Rebar3, the official build tool for the Erlang community, and base configurations for various text editors.
+In fact, as teams grow and they accumulate various projects, chances are that not all services, libraries, or bits of code will all support the same exact version of Erlang, and won't be upgraded all at once. If you talk to developers who use Erlang professionally, most (aside from Windows users) will tell you that they just compile their own copies with the options they need, and with a tool that lets them switch between multiple versions. So we'll go through that.
+
+You will also see how to install Rebar3, the official build tool for the Erlang community, and base configurations for various text editors. In later chapters, we'll additionally talk about other tools that aren't specific to Erlang such as Kubernetes or Prometheus, but let's get started with Just Erlang for now.
 
 *** Installing Erlang/OTP
 
@@ -142,7 +144,8 @@ Erlang versions are numbered according to a =<Major>.<Minor>.<Patch>= scheme, as
 
 Here are some example possible versions:
 
-- 22.0-rc1
+- 22.0
+- 22.0-rc3
 - 21.3
 - 21.2.3
 - 21.1
@@ -163,9 +166,9 @@ As you can see, the =Patch= version is not mentioned when no patch is required. 
 Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [[http://erlang.org/doc/system_principles/misc.html][Support, Compatibility, Deprecations, and Removal]] document published by the OTP team at Ericsson.
 #+end_alert
 
-In some rare scenarios, hard-and-fast deprecations do happen, and it may take a few weeks for the community to come up with workarounds.
+In some rare scenarios, hard-and-fast deprecations do happen (mostly by accident), and it may take a few weeks for the community to come up with workarounds.
 
-A team that adopts Erlang will therefore likely want to adopt a maintenance schedule that fits the main releases if they want to avoid falling too far behind. While it is possible to only upgrade occasionally, you will find that it is often easier to do a bit of maintenance somewhat often than a lot of maintenance at once.
+A team that adopts Erlang will therefore likely want to adopt a maintenance schedule that fits the main releases if they want to avoid falling too far behind. While it is possible to only upgrade occasionally, you will find that it is often easier to do a bit of maintenance here and there than a lot of maintenance all at once.
 
 Do note that patch-level releases are often only announced on the [[http://erlang.org/mailman/listinfo/erlang-questions][mailing lists]] and tagged on [[https://github.com/erlang/otp][the main git repository on GitHub]], but are otherwise not packaged on the main website.
 
@@ -173,12 +176,24 @@ Do note that patch-level releases are often only announced on the [[http://erlan
 
 If you are a Windows user, it is recommended that you use Windows 10 for any Erlang development. Prior versions can work, but community tools such as Rebar3 are only tested on Windows 10, for example.
 
-Building on Windows from source has been notoriously difficult, and it is therefore recommended that you stick to the pre-built copies distributed on [[https://www.erlang.org/downloads][www.erlang.org/downloads]], or alternatively those built by [[https://www.erlang-solutions.com/resources/download.html][Erlang Solutions Ltd.]].
+Building on Windows from source has been notoriously difficult, and it is therefore recommended that you stick to the pre-built copies.
+
+If you are a user of [[https://chocolatey.org][Chocolatey]], you can grab the [[https://chocolatey.org/packages/erlang][Erlang]] packages, and install them as you wish, with commands such as:
+
+#+NAME: choco
+#+BEGIN_SRC sh
+choco install erlang                   # for the latest
+choco install erlang --version 21.2 -m # allow many versions
+choco install erlang --version 20.1 -m # and one more versions
+#+END_SRC
+
+This will add all the versions you want to your =PATH= variable, which you will then need to maintain in the right order.
+
+Without Chocolatey, use binaries distributed on [[https://www.erlang.org/downloads][www.erlang.org/downloads]], or alternatively those built by [[https://www.erlang-solutions.com/resources/download.html][Erlang Solutions Ltd.]].
 
 The installer for these versions comes with a wizard that will take you through all the required steps.
 
 Do not forget to add Erlang/OTP to your =PATH= variable to contain your Erlang/OTP installation, since this will let you call it from the command-line:
-
 
 1. In the start menu, search for "system environment variables" and select the "Edit the System and Environment Variables (Control Panel)" option
 2. At the bottom of the "System Properties" window that has just open, press the "Environment Variables..." button
@@ -228,6 +243,7 @@ You can set the following options in your environment:
 SSL_PATH=/usr/local/Cellar/openssl/1.0.2q/
 export KERL_BUILD_BACKEND="git"
 export KERL_CONFIGURE_OPTIONS="--without-javac \
+                               --with-dynamic-trace=dtrace \
                                --with-ssl=${SSL_PATH}"
 #+END_SRC
 
@@ -276,7 +292,8 @@ First, you can set options as follows in your environment:
 #+NAME: kerlcfg_linux
 #+BEGIN_SRC sh
 export KERL_BUILD_BACKEND="git"
-export KERL_CONFIGURE_OPTIONS="--without-javac"
+export KERL_CONFIGURE_OPTIONS="--without-javac \
+                               --with-dynamic-trace=systemtap"
 #+END_SRC
 
 And ensure it's active (for example, call =source ~/.bashrc=). These options specify what is accepted or expected from the build tool. The one here disables Java bindings, but they would be skipped automatically anyway. You can look at the [[https://github.com/erlang/otp/blob/master/HOWTO/INSTALL.md#configuring-1][Build Instructions]] for more configuration options.
