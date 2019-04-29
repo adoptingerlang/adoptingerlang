@@ -805,6 +805,10 @@ ALSO
 *** Dialyzer
 *** XRef
 *** Continuous Integration
+**** Docker
+
+(just point to the later Docker section here? the main thing is the plt building)
+
 **** CircleCI
 ***** surefire ct output
 ***** Microsoft's visual studio output
@@ -1103,7 +1107,6 @@ Preparing a release to be deployed to production benefits from having different 
 {profiles, [{prod, [{relx, [{dev_mode, false},
                             {include_erts, true},
                             {include_src, false},
-                            %%{include_hrl, false}, undecided?
                             {debug_info, strip}]}]
             }]}.
 #+END_SRC
@@ -1283,6 +1286,8 @@ RUN rebar3 compile
 
 Because of the order of operations in the Dockerfile each run of =docker build .= only compiles the project's source, assuming there is a change, otherwise an existing layer is used here as well. Any command that doesn't need to be rerun if there are changes to the project need to come before either of the =COPY= commands. For example, installing Alpine packages needed by later steps =RUN apk add --no-cache git=.
 
+We will make use of the =--cache-from= argument. When Docker builds layers, =--cache-from= specifies an image name to use as a cache to find the layer already built. If the image isn't found locally it will be pulled from the registry. If it isn't in the registry Docker will ignore it. The argument can be given multiple times, making multiple images potential sources of cached layers.
+
 Now this is all well and good but the layer with the built dependencies that will not be used if =rebar.config= or =rebar.lock= is changed also contains the Hex package cache rebar3 creates under =~/.cache/rebar3/hex=. Any change to those two files will result in all the packages having to be downloaded again.
 
 This issue is resolved as of Docker 18.09 -- when environment variable =DOCKER_BUILDKIT= is set, enabling the use of Buildkit as the Docker backend -- through a new mount type, =cache=, that can be passed directly to the =RUN= command:
@@ -1328,7 +1333,7 @@ Running =docker build= with =--target build= and =-t service_discovery_builder:$
 
 The image with the compiled dependencies is now able to be used as a base for images that run rebar3 commands which would otherwise fetch and compile dependencies.
 
-The next stage uses the =builder= image as its base:
+The next stage, named =releaser=, uses the =builder= image as its base:
 
 #+BEGIN_SRC dockerfile
 FROM builder as releaser
@@ -1336,13 +1341,15 @@ FROM builder as releaser
 # tar for unpacking the target system
 RUN apk add --no-cache tar
 
-# copy in the source and build the release tarball
-COPY . /src
-RUN rebar3 as prod tar
-
-# unpack tarball to be copied into the image built next
+# create the directory to unpack the release to
 RUN mkdir -p /opt/rel
-RUN tar -zxvf /src/_build/prod/rel/*/*.tar.gz -C /opt/rel
+
+# copy in the source
+COPY . /src
+# build the release tarball and then unpack
+# to be copied into the image built in the next stage
+RUN rebar3 as prod tar && \
+    tar -zxvf /src/_build/prod/rel/*/*.tar.gz -C /opt/rel
 #+END_SRC
 
 This stage copies in all of the project and builds a tarball of the release using the =prod= profile:
@@ -1352,12 +1359,11 @@ This stage copies in all of the project and builds a tarball of the release usin
 {profiles, [{prod, [{relx, [{dev_mode, false},
                             {include_erts, true},
                             {include_src, false},
-                            %%{include_hrl, false}, undecided?
                             {debug_info, strip}]}]
             }]}.
 #+END_SRC
 
-The profile having =include_erts= set to =true= means the tarball contains the Erlang runtime and can be copied to a target without Erlang and be run. At the end the tarball is unpacked to =/opt/rel= so the image that will copy the release out of the =releaser= does not need to have =tar= installed.
+The profile having =include_erts= set to =true= means the tarball contains the Erlang runtime and can be run on a target that doesn't have Erlang installed. At the end the tarball is unpacked to =/opt/rel= so the image that will copy the release out of the =releaser= stage does not need to have =tar= installed.
 
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
@@ -1365,10 +1371,10 @@ The profile having =include_erts= set to =true= means the tarball contains the E
 Why tar the release at all?
 #+end_notice
 
-Now to build and tag the =release= target:
+Now to build and tag the =release= target using the builder image and, if it exists, a previously build of the image that has the same tag as a cache:
 
 #+BEGIN_SRC shell
-$ docker build --cache_from=${PROJECT}_builder:${CHKSUM} --target releaser -t ${PROJECT}_releaser:${CHKSUM} .
+$ docker build --cache-from=${PROJECT}_builder:${CHKSUM} --cache-from=${PROJECT}_releaser:${CHKSUM} --target releaser -t ${PROJECT}_releaser:${CHKSUM} .
 #+END_SRC
 
 The second image using =builder= as a base is a cache of the project's PLT:
@@ -1381,21 +1387,25 @@ RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 dialyzer \
 
 ENTRYPOINT ["rebar3"]
 
-CMD ["dialyzer", "--plt-location", "$/root/.cache/rebar3", "--plt-prefix",
+CMD ["dialyzer", "--plt-location", "/root/.cache/rebar3", "--plt-prefix",
     "deps", "--base-plt-prefix", "otp"]
 #+END_SRC
 
 Like with the =compile= command the rebar3 cache is mounted and is where all PLT output is stored. Usually rebar3 will store only the PLT of the OTP libraries in the global cache directory and use the profile directory under =_build/= for the PLT which also contains the dependencies. So the argument =--plt-location= is used to set where the PLT will be stored. This is done because when running the container the project must be mounted as a volume to the same directory. Mounting a volume overrides any existing files on the path it is mounted to. Storing the PLT in a separate location ensure it is not lost when the volume is mounted and isn't rebuilt on each run.
 
+Now to build the PLT image using the builder image as a cache (note that the stages =releaser= and =runner= will be skipped since they are not needed by the =plt= stage):
+
 #+BEGIN_SRC shell
-$ docker build --cache_from=${PROJECT}_builder:$CHKSUM --target plt -t ${PROJECT}:$CHKSUM .
+$ docker build --cache-from=${PROJECT}_builder:$CHKSUM --target plt -t ${PROJECT}:$CHKSUM .
 #+END_SRC
+
+To run dialyzer on the current code use a volume to mount the current directory to =/src=:
 
 #+BEGIN_SRC dockerfile
 $ docker run -v $(pwd):/src <image>
 #+END_SRC
 
-The deployable image uses just a base OS image. In this case =alpine:3.9= is used as the base image. Any shared libraries needed to run the release are installed first and then the unpacked release from the build stage we named =releaser= is copied to =/opt/service_discovery=:
+Finally, the deployable image uses a regular OS image (=alpine:3.9=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the build stage we named =releaser= is copied to =/opt/service_discovery=:
 
 #+attr_latex: :options label=Dockerfile
 #+BEGIN_SRC dockerfile
@@ -1421,7 +1431,7 @@ CMD ["foreground"]
 =/opt/service_discovery= is owned by root and it is recommended to not run the container as root. When the release is run =sys.config= and =vm.args= need to be generated from their respective =.src= files. By default these are placed in the same directory as the original =.src= files. If =RELX_OUT_FILE_PATH= is set, its location will be used instead. Here, the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
 
 #+BEGIN_SRC shell
-$ docker build --cache_from=${PROJECT}_releaser:${CHKSUM} --cache_from=${PROJECT}_builder:${CHKSUM} --target runner -t ${PROJECT}:${CHKSUM} .
+$ docker build --cache-from=${PROJECT}_releaser:${CHKSUM} --cache-from=${PROJECT}_builder:${CHKSUM} --target runner -t ${PROJECT}:${CHKSUM} .
 #+END_SRC
 
 *** Running a Container
