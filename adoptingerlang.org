@@ -2069,16 +2069,43 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
+Kubernetes is a container orchestration system. When our backend contains many distinct services that need to be kept running, cross communicating and scaling an orchestration system becomes essential. And with the growing popularity of containers Kubernetes for orchestration has grown as well.
+
+With containers and Kubernetes we have a shared method of deployment, discovery, scaling and monitoring across the various languages and runtimes we might have running and interacting in our system. So in this chapter we will go over the core components of Kubernetes and how to use them to deploy and manage the =service_discovery= service we built in the previous chapters.
+
+*** Running Kubernetes
+
+In order to develop and test the Kubernetes deploy we will need to run Kubernetes. Kubernetes locally for testing purposes and briefly discuss options for production deployments.
+
+**** Locally
+
+- [[https://github.com/kubernetes/minikube][minikube]]: The longest existing option that is now part of the Kubernetes project. minikube offers support for various hypervisors. It has an option to run without creating a new virtual machine but it suggests still doing so within a Linux VM and not directly on your machine.
+- [[https://docs.docker.com/docker-for-mac/#kubernetes][Docker for Mac Kubernetes]]: The easiest to get going with when running on MacOS.
+- [[https://microk8s.io/][microk8s]]: An offering from Ubuntu, but runs on any [[https://docs.snapcraft.io/installing-snapd/6735][Linux distro that supports]] [[https://snapcraft.io/][snaps]]. microk8s is simple to install and get started with, and it runs locally, not within a VM like minikube, so is less of a resource hog.
+
+**** Production
+
+All the big cloud providers offer managed Kubernetes clusters: [[https://cloud.google.com/kubernetes-engine/][Google Kubernetes Engine]], [[https://www.digitalocean.com/products/kubernetes/][Digital Ocean Kubernetes]], [[https://aws.amazon.com/eks/][AWS Elastic Container Service for Kubernetes]] and [[https://azure.microsoft.com/en-us/services/kubernetes-service/][Azure Kubernetes Service]].
+
+And there are [[https://kubernetes.io/docs/setup/pick-right-solution/#table-of-solutions][many more options]] for deploying to the cloud or on-premise. Many factors go into play when choosing a solution, like in the case of an existing company, where are your services currently being hosted. Luckily with Kubernetes your deployment will not be locked in to any one provider.
+
 *** Deployment
+
+**** Resources
+***** CPUs
+****** Active Schedulers
+
+CPU settings don't actually limit the number of cores available to the VM.
+
+Request only taken into account when scheduling what node a pod goes on
+
+Limit is what is translated to cgroup quota and period for cpu.
+
+****** +sbwt none
+
 *** Service
 *** StatefulSet
-*** Resources
-**** CPUs
-***** Active Schedulers
-***** +sbwt none
-*** Testing Locally
-**** Minikube, Microk8s, Docker for Machine
-**** Tilt
+
 ** Operations
 :PROPERTIES:
 :EXPORT_FILE_NAME: operations
