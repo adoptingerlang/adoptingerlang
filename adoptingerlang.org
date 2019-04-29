@@ -1269,7 +1269,7 @@ RUN rebar3 compile
 
 Because of the order of operations in the Dockerfile each run of =docker build .= only compiles the project's source, assuming there is a change, otherwise an existing layer is used here as well. Any command that doesn't need to be rerun if there are changes to the project need to come before either of the =COPY= commands. For example, installing Alpine packages needed by later steps =RUN apk add --no-cache git=.
 
-To use remote and/or multiple images to check for existing layers =docker build= accepts the =--cache-from= argument. =--cache-from= takes an image name to use as a cache source for finding layers and if the image does not exist locally it will attempt to pull it from the registry. If the image can't be found in the registry either it will be ignored.
+We will make use of the =--cache-from= argument. When Docker builds layers, =--cache-from= specifies an image name to use a cache to find the layer already built. If the image isn't found locally it will be pulled from te registry. If it isn't in the registry Docker will ignore it. The argument can be given multiple times, making multiple images potential sources of cached layers.
 
 Now this is all well and good but the layer with the built dependencies that will not be used if =rebar.config= or =rebar.lock= is changed also contains the Hex package cache rebar3 creates under =~/.cache/rebar3/hex=. Any change to those two files will result in all the packages having to be downloaded again.
 
