@@ -446,21 +446,24 @@ This is the very basic stuff, obviously. Fancier integration is possible, but th
 :EXPORT_FILE_NAME: otp_high_level
 :END:
 
+
+Erlang/OTP is different from most programming environments out there, even those that also use a virtual machine. Erlang has a strong opinion about how your applications should be structured, the level of isolation they should have, and a separation between what Erlang's VM can do, and what your softwafe can do. It's not just a programming language, it's a whole framework for building systems. Understanding its core principles is the key to getting started fast without having to rewrite everything later.
+
+In this chapter, we'll cover the Erlang virtual machine and the core concepts of OTP at the highest level.
+
 *** The Erlang Run-Time System
 
-Erlang/OTP is different from most programming environments out there, even those that also use a virtual machine. You may have heard people comparing Erlang to an operating system and that is an apt comparison. It's not that Erlang provides low-level primitives and drivers that let you run without an operating system--you'll still need that. Rather, it is that Erlang has a strong opinion about how your applications should be structured, the level of isolation they should have, and a separation between what Erlang's VM can do, and what your softwafe can do.
+The foundational block for everything is the Erlang virtual machine itself, called BEAM. BEAM is technically a single implementation of the Erlang virtual machine, as there could be others. For example, Erllvm is an implementation over LLVM (using some custom patches to make everything possible), and an older implementation in the 90s was called JAM. The Erlang VM is implemented in C, and contains a lot of fancy stuff: schedulers to run processes, garbage collection, memory allocators, a timer wheel for events, a bunch of smart switches to abstract over operating system features and provide unified interfaces (such as over time management, file-handling drivers, and so on), a few built-in functions that go faster than what Erlang can do on its own (BIFs) and an interface for functions implemented natively in other languages (NIFs) along with special scheduluers for them. There's obviously a lot more, but you can think of all that stuff the way you would with the kernel in BSD or Linux: low level stuff that you need in order to build fancier stuff.
 
-The foundational block for everything is the Erlang virtual machine itself, called BEAM. BEAM is technically a single implementation of the Erlang virtual machine, as there could be others. For example, Erllvm is an implementation over LLVM (using some custom patches to make everything possible), and an older implementation in the 90s was called JAM. The Erlang VM is implemented in C, and contains a lot of fancy stuff: schedulers to run processes, garbage collection, memory allocators, a timer wheel for events, a bunch of smart switches to abstract over operating system features and provide unified interfaces (such as over time management, file-handling drivers, and so on), a few built-in functions that go faster than what Erlang can do on its own (BIFs) and an interface for functions implemented natively in other languages (NIFs) along with special schedulures for them. There's obviously a lot more, but you can think of all that stuff the way you would with the kernel in BSD or Linux: low level stuff that you need in order to build fancier stuff.
+If all you have is the virtual machine with nothing else, you can't run Erlang code. You don't have a standard library, you don't have libraries to even load code. To get it all going, there's some tricky bootstrapping going on that we don't need to understand. Just know that there's a limited set of pre-loaded Erlang modules that ship with the virtual machine, and those can be used to set up networking and file-handling stuff that allows to further load and run modules. If you're interested in knowing more though, please consult [[https://happi.github.io/theBeamBook/][The BEAM Book]] or [[http://beam-wisdoms.clau.se/en/latest/][BEAM Wisdoms]].
 
-If all you have is the virtual machine with nothing else, you can't run Erlang code. You don't have a standard library, you don't have libraries to even load code. There's some odd bootstrapping going on that we don't need to understand. Just know that there's a limited set of pre-loaded Erlang modules that ship with the virtual machine, and those can be used to set up networking and file-handling stuff that allows to further load and run modules. If you're interested in knowing more though, please consult [[https://happi.github.io/theBeamBook/][The BEAM Book]] or [[http://beam-wisdoms.clau.se/en/latest/][BEAM Wisdoms]].
+If you take the virtual machine and the pre-loaded stuff, along with all the little utilities that make code-loading possible, you have what is essentially called the _Erlang Run-Time System_ (ERTS). The Run-Time System, when starting, follows the instructions of a thing called a _boot script_ (which nobody writes by hand) that specifies what to start.
 
-If you take the virtual machine and the pre-loaded stuff, along with all the little utilities that make code-loading possible, you have what is essentially called the _Erlang Run-Time System_ (ERTS). The Run-Time System, when starting, follows the values of a thing called a _boot script_ (which nobody writes by hand) that specifies what to start. Erlang, by default, provides boot scripts that load code described in the next section as part of its boot sequence.
-
-With this basic stuff in place, we fall into Erlang's space, something akin to userspace if we want to keep the comparison operating systems.
+Erlang, by default, provides boot scripts that load a minimal amount of code required to start a shell and write your own applications. Once this is done, we can start thinking about Erlang, and not just the virtual machine.
 
 *** Erlang/OTP
 
-If what we have right now is equivalent to the kernel, we need the foundational blocks for the userspace components. In Erlang, this is essentially what OTP is about. OTP specifies how "components" that run on the virtual machine should be structured. From the first start, there is more than just "processes and messages", there's one way to structure your code.
+What we have described so far is equivalent to an operating system's kernel. We now need the foundational blocks for the userspace components. In Erlang, this is essentially what OTP is about. OTP specifies how "components" that run on the virtual machine should be structured. There's more to the language than just "processes and messages": there's one well-defined way to structure your code.
 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
@@ -468,7 +471,7 @@ If what we have right now is equivalent to the kernel, we need the foundational 
 OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
 #+end_alert
 
-This is done through the use of components named _OTP Applications_. Every Erlang install that you use ships with a few of them, because it would be way too much trouble not to. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and regular _OTP Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
+Erlang/OTP systems are structured through components named _OTP Applications_. Every Erlang version you have installed or system built with it that you use ships with a few OTP Applications. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and regular _OTP Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
 
 - _Library Applications_: stateless collections of modules
 - _Runnable Applications_: OTP applications that start stateful supervision tree structures with processes running in them
@@ -476,9 +479,9 @@ This is done through the use of components named _OTP Applications_. Every Erlan
 
 By default, the two OTP applications everyone includes are called =stdlib=, which is a library application that contains the core standard library modules such as =list= or =maps=, and =kernel=, which is a runnable application and sets up the core structure for an Erlang system that relies on OTP applications to work.
 
-The way things go is that the modules from all required OTP applications are loaded in memory. Then =kernel= is started. Kernel manages the lifecycle of the system from this point on. All other OTP applications and their configuration are handled through it, and so are unique features like distribution and hot code updates. If we go back to the operating system comparison, you can think of the =kernel= OTP application a bit like you could think of =systemd= for the Linux kernel (or =init= if you hate =systemd= or use a BSD -- Windows users can think of it as the service that runs other services)
+When a node boots, the modules from all required OTP applications are loaded in memory. Then =kernel= is started. =kernel= manages the lifecycle of the system from this point on. All other OTP applications and their configuration are handled through it, and so are unique features like distribution and hot code updates. If we go back to the operating system comparison, you can think of the =kernel= OTP application a bit like you could think of =systemd= for the Linux kernel (or =init= if you hate =systemd= or use a BSD -- Windows users can think of it as the service that runs other services)
 
-In fact, kernel and stdlib are the only two applications you need for a basic working Erlang shell. When you type in =erl= (or start =werl= on Windows), this boots up the VM, along with kernel, with =stdlib= pre-loaded. Everything else is optional and can be loaded at a later time.
+In fact, =kernel= and =stdlib= are the only two applications you need for a basic working Erlang shell. When you type in =erl= (or start =werl= on Windows), this boots up the VM, along with kernel, with =stdlib= pre-loaded. Everything else is optional and can be loaded at a later time.
 
 The standard Erlang distribution contains applications such as:
 
@@ -493,9 +496,9 @@ The standard Erlang distribution contains applications such as:
 - compiler (the Erlang compiler to build your own project)
 - and so on
 
-All of these are put together into what is called an Erlang _release_. A release is a collection of OTP applications, possibly bundled together with a full virtual machine. As such, when you download and install Erlang, you just get a release whose name is something like _Erlang/OTP-21.3.4_. You're free to build your own releases, which will take some of the OTP applications in the standard distribution, and then bundle them with some of your own apps.
+All of these are put together into what is called an Erlang _release_. A release is a collection of OTP applications, possibly bundled together with a full copy of the virtual machine. As such, when you download and install Erlang, you just get a release whose name is something like _Erlang/OTP-21.3.4_. You're free to build your own releases, which will take some of the OTP applications in the standard distribution, and then bundle them with some of your own apps.
 
-So if we to write an app named =proxy= that relies on =ssh= and =ssl= (which themselves depend on =public_key=, =crypto=, =stdlib=, and =kernel=), we make a release with all of these components in it:
+So if we were to write an app named =proxy= that relies on =ssh= and =ssl= (which themselves depend on =public_key=, =crypto=, =stdlib=, and =kernel=), we would make a release with all of these components in it:
 
 - ERTS
 - kernel
@@ -516,7 +519,7 @@ Essentially, building an Erlang system is re-bundling the VM, along with some st
 
 *** Living in Erlang/OTP
 
-Standard tools developed and used by the community such as rebar3 basically operate on the idea that what you write and publish are OTP applications, and contains all the functionality required to deal with them. That's a big shift from a lot of programming languages that only ask of you to have a function named =main()= somewhere in one of your files. This is why the programming language is often called =Erlang/OTP= rather than just 'Erlang': it's not just a programming language, it's a general development framework that mandates some basic structure for everything you do.
+Standard tools developed and used by the community such as rebar3 operate on the idea that what you write and publish are OTP applications, and as such contain all the functionality required to deal with them. That's a big shift from a lot of programming languages that only ask of you to have a function named =main()= somewhere in one of your files. This is why the programming language is often called =Erlang/OTP= rather than just 'Erlang': it's not just a programming language, it's a general development framework that mandates some basic structure for everything you do.
 
 And everyone follows it, whether they are writing embedded software, blockchain systems, or distributed databases. It's OTP or nothing. Whereas other languages usually mandate nothing specific to get started, but then add some requirements later on (such as when integrating with a package manager), Erlang--and its entire community--expects you to just write OTP applications, which the rest of the tools can handle.
 
@@ -627,7 +630,7 @@ mylib/
    └─ mylib.erl
 #+END_SRC
 
-The =_build/= directory is the build tool's playground, where it can stash all the artifacts it needs. You should never have to touch what is in there by hand. This directory is nonetheless interesting because it shows how rebar3 structures things.
+The =_build/= directory is the build tool's playground, where it can stash all the artifacts it needs. You should never have to touch what is in there by hand, but should feel free to blow it away when you want. This directory is nonetheless interesting because it shows how rebar3 structures things.
 
 Everything in =_build/= is split by [[https://www.rebar3.org/docs/profiles][profile]], which lets rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in fact, you can define as many profiles as you want, and compose them together. The rebar3 documentation explains how this works.
 
@@ -642,9 +645,9 @@ If we had any dependencies (see [[/docs/development/dependencies][The Dependenci
 
 In general, you will want to ignore the =_build/= directory entirely and avoid tracking it in your source control: if you look at the =.gitignore= file, you will see that it automatically ignores =_build/= for you.
 
-Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open soruce work), going for the [[https://en.wikipedia.org/wiki/Apache_License#Version_2.0][Apache 2.0]] license that Erlang ships with. Feel free to replace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
+Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open source work), going for the [[https://en.wikipedia.org/wiki/Apache_License#Version_2.0][Apache 2.0]] license that Erlang ships with. Feel free toreplace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
 
-Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by rebar3 to track which versions of any dependencies you were using, and should be checked into source control. The [[/docs/development/dependencies][Dependencies chapter]] contains more details.
+Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by rebar3 to track which versions you were using for any dependency in the project, and should therefore be checked into source control. The [[/docs/development/dependencies][Dependencies chapter]] contains more details.
 
 The =rebar.config= file is a complete declarative configuration file that exposes options for all the Erlang tools that rebar3 integrates with. [[https://www.rebar3.org/docs/configuration][The official documentation]] explains all the values possible, but by default it is quite empty. In fact, if you only want default values with no dependencies, you can just delete the file. As long as your project is structured like an OTP application, rebar3 will figure out what needs to be done.
 
@@ -652,7 +655,7 @@ Let's see what the standards are for that to happen.
 
 *** What Makes a Lib an App
 
-You've possibly guessed it, but the directory structure is one of the basic requirements of a framework like OTP. As long as your library has an =ebin/= directory once compiled with an =<appname>.app= file in it, the Erlang runtime system will be able to load your modules and run your code.
+As with any other framework, there are some things you have to do to conform to its expectations. You've possibly guessed it, but the directory structure is one of the basic requirements of a framework like OTP. As long as your library has an =ebin/= directory once compiled with an =<appname>.app= file in it, the Erlang runtime system will be able to load your modules and run your code.
 
 This basic requirement guides the project structure of the entire Erlang ecosystem. Let's look at what a built =.app= file looks like:
 
@@ -674,7 +677,7 @@ $ cat _build/default/lib/mylib/ebin/mylib.app
 ]}.
 #+END_SRC
 
-This is essentially a metadata file that describes everything about the application. We've taken the time to annotate it for you, so check it out. A lot of the content in there is annoying to write by hand so if you look at the source file (=src/mylib.app.src=), you'll see that the fields are mostly pre-populated. You may also notice that =modules= is empty. That's on purpose: rebar3 will populate the list for you.
+This is essentially a metadata file that describes everything about the application. We've taken the time to annotate it for you, so check it out. A lot of the content in there is annoying to write by hand so if you look at the source file (=src/mylib.app.src=), you'll see that the fields are mostly pre-populated when you apply the rebar3 template. You may also notice that =modules= is empty. That's on purpose: rebar3 will populate the list for you when compiling your code.
 
 By far, the most critical field to keep up to date in there is the =applications= tuple. It lets Erlang libraries know the order in which OTP applications must be started to work, and also allows build tools to build a dependency graph between all available OTP applications to know which to keep and which to remove from the distribution when building a release.
 
@@ -682,9 +685,9 @@ A more subtle thing to notice is that even if what we have here is a _library_, 
 
 For now, let's focus on what exactly is the difference between a stateless and a stateful application.
 
-*** What Makes an App an App
+*** What Makes a Runnable App an App
 
-To make a stateful application, we're going to use the "app" template in rebar3, and see what are the differences with a stateless application.
+To make a runnable application, we're going to use the "app" template in rebar3, and see what are the differences with a stateless application.
 
 So let's grab your command line tool and run the following:
 
@@ -701,7 +704,7 @@ $ rebar3 new app myapp
 $ cd myapp
 #+END_SRC
 
-If you're careful, you'll see that we now have two new modules instead of =<appname>.erl=: we have =<appname>_app.erl= and =<appname>_sup.erl=. We'll study them real soon, but first, let's focus on the top-level metadata file for the application, the =myapp.app.src= file:
+If you're careful, you'll see that we now have two modules instead of =<appname>.erl=: we have =<appname>_app.erl= and =<appname>_sup.erl=. We'll study them real soon, but first, let's focus on the top-level metadata file for the application, the =myapp.app.src= file:
 
 #+NAME: myapp.app.src
 #+BEGIN_SRC erlang
@@ -754,8 +757,6 @@ The =stop/1= callback is called _after_ the whole supervision tree has been take
 But all in all, this little additional =mod= line in the app file and the presence of a supervision structure are what differentiates a runnable application from a library application.
 
 You now understand most of the weird stuff about Erlang/OTP's project structure and everything that has to do with these mysterious "OTP Applications". Starting with next chapter, we'll start digging a bit in supervision trees, so that you know how to set things up in a stateful runnable application.
-
-ALSO
 
 ** Supervision Trees
 :PROPERTIES:
