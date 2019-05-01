@@ -471,7 +471,7 @@ What we have described so far is equivalent to an operating system's kernel. We 
 OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
 #+end_alert
 
-Erlang/OTP systems are structured through components named _OTP Applications_. Every Erlang version you have installed or system built with it that you use ships with a few OTP Applications. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and regular _OTP Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
+Erlang/OTP systems are structured through components named _OTP Applications_. Every Erlang version you have installed or system built with it that you use ships with a few OTP Applications. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and _Runnable Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
 
 - _Library Applications_: stateless collections of modules
 - _Runnable Applications_: OTP applications that start stateful supervision tree structures with processes running in them
@@ -645,7 +645,7 @@ If we had any dependencies (see [[/docs/development/dependencies][The Dependenci
 
 In general, you will want to ignore the =_build/= directory entirely and avoid tracking it in your source control: if you look at the =.gitignore= file, you will see that it automatically ignores =_build/= for you.
 
-Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open source work), going for the [[https://en.wikipedia.org/wiki/Apache_License#Version_2.0][Apache 2.0]] license that Erlang ships with. Feel free toreplace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
+Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open source work), going for the [[https://en.wikipedia.org/wiki/Apache_License#Version_2.0][Apache 2.0]] license that Erlang ships with. Feel free to replace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
 
 Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by rebar3 to track which versions you were using for any dependency in the project, and should therefore be checked into source control. The [[/docs/development/dependencies][Dependencies chapter]] contains more details.
 
