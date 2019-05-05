@@ -2063,6 +2063,18 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 (service_discovery@960409ea0bc0)1>
 #+END_SRC
 
+*** Building and Publishing Images in CI
+
+It would be tedious to have to manually build the images needed and publish to the registry. Instead including image building as part of the Continuous Integration process is common. Usually this is restricted to only occur on a merge to master or a new tag being created, but it can also be useful to always build the images, even for branches, for testing purposes. In this section we will cover a couple options for automating this process. However, there is no shortage of solutions and chances are if you are already using a particular CI tool it will be capable of doing the same with a similar approach.
+
+**** Google Cloud Build
+
+
+
+*** Next Steps
+
+In this chapter we built images for our service and finished off by creating a CI pipeline for continually building and publishing those images when changes are made to the repository. In the next chapter we will cover how to build a deployment to Kubernetes from these images. After we are running in Kubernetes the following chapter covers observability, such as connecting to a running node, well structured logs, reporting metrics and distributed traces.
+
 ** Kubernetes
 :PROPERTIES:
 :EXPORT_FILE_NAME: kubernetes
