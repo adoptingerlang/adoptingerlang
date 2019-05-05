@@ -2103,8 +2103,59 @@ And there are [[https://kubernetes.io/docs/setup/pick-right-solution/#table-of-s
 
 *** Deployment
 
+In Kubernetes containers are part of a =Pod=. Each =Pod= has 1 or more containers, and optionally =init-containers= which run once before the containers that make up the running =Pod= are started. For an application a higher level abstraction, a =Deployment=, is used so individual =Pods= don't have to be created for scaling or deploying. A =Deployment= is a declarative way to create and update how many =Pods= of our application are to be run and how they are to be deployed.
+
+Each Kubernetes resource is defined in a =yaml= file containing the =kind= of resource, =metadata=, such as a name, and the resource's specification:
+
+#+BEGIN_SRC yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-discovery-deployment
+spec:
+#+END_SRC
+
+The =Deployment= spec entries we will cover here are =selector=, =replicas= and =template=. The =selector= is a specification for which =Pods= belong to a =Deployment=. =matchLabels= in this case means that =Pods= with the label =app= with value =service-discovery= will be considered part of the =Deployment=. =replicas= declares how many instances of the =Pod= should be running.
+
+#+BEGIN_SRC yaml
+spec:
+  selector:
+    matchLabels:
+      app: service-discovery
+  replicas: 1
+  template:
+#+END_SRC
+
+The =template= section is a =Pod= template and defines the specification of the =Pods= to be run by the =Deployment=:
+
+#+BEGIN_SRC yaml
+  template:
+    metadata:
+      labels:
+        app: service-discovery
+    spec:
+      containers:
+      - name: service-discovery
+        image: tsloughter/service_discovery:06f522015c0d4c9ddcba73fdd632cf667cdb482c
+        ports:
+        - containerPort: 8053
+          protocol: UDP
+#+END_SRC
+
+First, the =Pod= metadata sets the label to match with the =selector= from the =Deployment= spec. Then, the =Pod= spec has a list of containers. In this case there is one container that exposes port =8053= for UDP.
+
 **** Resources
+
+Each container spec in the =Pod= spec can include resource requests and limits for memory and CPU.
+
 ***** CPUs
+
+#+BEGIN_SRC
++sbwt none
+
++S 2
+#+END_SRC
+
 ****** Active Schedulers
 
 CPU settings don't actually limit the number of cores available to the VM.
@@ -2115,7 +2166,30 @@ Limit is what is translated to cgroup quota and period for cpu.
 
 ****** +sbwt none
 
+
 *** Service
+
+Now that our application is able to run in Kubernetes through a =Deployment= we need a way to communicate with the =Pods= on their exposed port, =8053=. A =Service= defines a policy for accessing a set of =Pods= and provides environmental variables and DNS (technically an optional cluster addon) for finding them.
+
+#+BEGIN_SRC yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: service-discovery
+spec:
+  selector:
+    app: service-discovery
+  ports:
+  - protocol: UDP
+    port: 8053
+    targetPort: 8053
+#+END_SRC
+
+#+BEGIN_SRC shell
+$ dig service-discovery.default
+
+#+END_SRC
+
 *** StatefulSet
 
 ** Operations
