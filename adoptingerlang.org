@@ -773,7 +773,7 @@ You now understand most of the weird stuff about Erlang/OTP's project structure 
 :EXPORT_FILE_NAME: supervision_trees
 :END:
 
-The biggest difference between Erlang and every other programming language out there is not in its concurrency, but rather in its fault tolerance. Almost everything in the language [[https://ferd.ca/the-zen-of-erlang.html][was designed for fault tolerance]], and supervisors are one of the core parts of it. In this chapter, we'll cover the basics of superivsion trees, what is in a supervisor, and how to structure supervision trees in your own system. When we're done, you'll be able to set up and manage most of the state your system will need.
+The biggest difference between Erlang and every other programming language out there is not in its concurrency, but rather in its fault tolerance. Almost everything in the language [[https://ferd.ca/the-zen-of-erlang.html][was designed for fault tolerance]], and supervisors are one of the core parts of this design. In this chapter, we'll cover the basics of supervision trees, what is in a supervisor, and how to structure supervision trees in your own system. When we're done, you'll be able to set up and manage most of the state your system will need.
 
 *** Basics
 
