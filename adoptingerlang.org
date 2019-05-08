@@ -777,7 +777,7 @@ The biggest difference between Erlang and every other programming language out t
 
 *** Basics
 
-Erlang is a kind of two-tiered language. At the lowest level, you have a functional subset. All you get is a bunch of data structrures, functions, and pattern matching to modify and transform them. The data is immutable, local, and side-effects are rather limited if not unnecessary. At the higher level, you have the concurrent subset, where long-lived state is managed, and where it gets communicated from process to process.
+Erlang is a kind of two-tiered language. At the lowest level, you have a functional subset. All you get is a bunch of data structures, functions, and pattern matching to modify and transform them. The data is immutable, local, and side-effects are rather limited if not unnecessary. At the higher level, you have the concurrent subset, where long-lived state is managed, and where it gets communicated from process to process.
 
 The functional subset is rather straightforward and easy to learn with any of the resources mentioned in the book's [[/docs/introduction][Introduction]]: you get a data structure, you change it, and return a new one. All program transformations are handled as pipelines of functions applied to a piece of data to get a new one. It's a solid foundation on which to build.
 
