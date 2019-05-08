@@ -789,7 +789,7 @@ In the end what you may end up with is a kind of layered system where you hopefu
 
 IMAGE 1 HERE
 
-The kind of structure this gives is usually very explicit regarding the domain modelling, but rather ambiguous with regards to how interactions and side-effects should be structured: how should failures contacting an external service bubble up? How would the inability to save a transformation on a core domain entity impact the outer-edge interactions when it comes from some event-driven mechanism?
+The kind of structure this gives is usually very explicit regarding the domain modelling, but rather ambiguous with regards to how interactions and side-effects should be structured. How should failures contacting an external service bubble up? How would the inability to save a transformation on a core domain entity impact the outer-edge interactions when it comes from some event-driven mechanism?
 
 The domain modelling you'd do in object-oriented systems can still be done in Erlang. We'd stick all of that in the functional subset of the language, usually in a library application that regroups all the relevant modules that do the changes and transformation you need, or in some cases within specific modules of a runnable application.
 
