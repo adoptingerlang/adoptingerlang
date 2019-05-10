@@ -787,7 +787,9 @@ In most programming languages, this is all done in a rather informal and ad-hoc 
 
 In the end what you may end up with is a kind of layered system where you hopefully have a bunch of pure domain-specific entities in the core, a bunch of interaction mechanisms on the outer edge, and a few layers in-between whose role is to coordinate and wrap all activities between entities:
 
-IMAGE 1 HERE
+#+CAPTION: Hexagonal architecture as frequently recommended in OO design
+#+NAME: fig:hexagonal
+[[./static/img/hexagonal.png]]
 
 The kind of structure this gives is usually very explicit regarding the domain modelling, but rather ambiguous with regards to how interactions and side-effects should be structured. How should failures contacting an external service bubble up? How would the inability to save a transformation on a core domain entity impact the outer-edge interactions when it comes from some event-driven mechanism?
 
@@ -795,7 +797,9 @@ The domain modelling you'd do in object-oriented systems can still be done in Er
 
 The richness of failure and fault handling, however, will be explicitly encoded within a supervision structure. Because the stateful parts of the system are encoded using processes, the structure of dependencies and their respective instantialization is all laid out for everyone to see:
 
-IMAGE 2 HERE
+#+CAPTION: Sample supervision tree
+#+NAME: fig:suptree
+[[./static/img/suptree.png]]
 
 In such a tree, all the processes are started depth-first, from left to right. This means that before the cache process and [[http://erlang.org/doc/man/ets.html][ETS table]] can be started, the database's supervision structure (and all its workers), must first be started. Similarly, before the HTTP server and its handler can be started, the whole business domain subtree will have been to be created, and since it depends on the cache table, we will similarly ensure that this one (and the database workers) will be ready to go.
 
@@ -817,7 +821,9 @@ There are 3 types of policies to handle:
 
 Each of them is simple enough in isolation, but choosing good ones can become a bit tricky. Let's start with the supervisor type:
 
-IMAGE 3 HERE
+#+CAPTION: The three supervisor types
+#+NAME: fig:suptypes
+[[./static/img/suptypes.png]]
 
 There are three types of strategies:
 
@@ -853,21 +859,9 @@ We can now declare a supervisor:
 
 -define(SERVER, ?MODULE).
 
-%%====================================================================
-%% API functions
-%%====================================================================
-
 start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
-%%====================================================================
-%% Supervisor callbacks
-%%====================================================================
-
-%% Child :: #{id => Id, start => {M, F, A}}
-%% Optional keys are restart, shutdown, type, modules.
-%% Before OTP 18 tuples must be used to specify a child. e.g.
-%% Child :: {Id,StartFunc,Restart,Shutdown,Type,Modules}
 init([]) ->
     {ok, {{one_for_all, 1, 10}, [ % one failure per 10 seconds
         #{id => internal_name,                % mandatory
@@ -879,7 +873,7 @@ init([]) ->
     ]}}.
 #+END_SRC
 
-You can define as many children as you want at once in there (except for =simple_one_for_one=, which [[http://erlang.org/doc/man/supervisor.html#Module:init-1][expects a description template]]). Other arguments you can specify for a child include =shutdown=, which gives a number of milliseconds to wait for the proper termination of the child, and a definition on whether a process is a =worker= or a =supervisor=. This =type= field, along with =modules=, are only used when doing live code upgrades with releases, and the latter can generally be ignored and be left to its default value.
+You can define as many children as you want at once in there (except for =simple_one_for_one=, which [[http://erlang.org/doc/man/supervisor.html#Module:init-1][expects a description template]]). Other arguments you can specify for a child include =shutdown=, which gives a number of milliseconds to wait for the proper termination of the child (or =brutal_kill= to kill it right away), and a definition on whether a process is a =worker= or a =supervisor=. This =type= field, along with =modules=, are only used when doing live code upgrades with releases, and the latter can generally be ignored and be left to its default value.
 
 Let's try to add a supervisor with a worker to an application, running what is essentially the heaviest _Hello World_ on the planet.
 
