@@ -9,11 +9,17 @@
 
 <body>
   <input type="checkbox" style="display: none" id="menu-control" />
+  <header class="header-container">
+    <!-- <ul><li><a href="/">Home</a></li></ul> -->
+    <div></div>
+    <ul><li class="title">Adopting Erlang</li></ul>
+    <div></div>
+    <!-- <ul><li><a href="/contact">Contact</a></li></ul> -->
+  </header>
   <main class="flex container">
-
     <aside class="book-menu fixed">
       <nav role="navigation">
-        {{ partial "docs/brand" . }}
+        <!-- {{ partial "docs/brand" . }} -->
         {{ partial "docs/inject/menu-before" . }}
 
         {{ if .Site.Params.BookMenuBundle }}

@@ -1,3 +1,4 @@
+resources/_gen
 content/docs/*.md
 content/docs/appendix/
 content/docs/development/
