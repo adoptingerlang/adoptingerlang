@@ -1192,6 +1192,34 @@ $ rebar3 as prod tar
 
 Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= that can be copied to a target and run.
 
+*** Runtime Configuration
+*** Coming Up
+
+To get a feel for what we will be doing in the next chapters copy =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= to =/tmp/service_discovery= and unpack it:
+
+#+BEGIN_SRC shell
+$ mkdir /tmp/service_discovery
+$ cp _build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz /tmp/service_discovery
+$ cd /tmp/service_discovery
+$ tar -xvf service_discovery-0.1.0.tar.gz && rm service_discovery-0.1.0.tar.gz
+...
+$ ls
+bin  erts-10.3.3  lib  releases
+$ bin/service_discovery console
+...
+(service_discovery@localhost)1>
+#+END_SRC
+
+Running =console= gives an interactive Erlang shell. To run the release without an interactive shell use =foreground=, which is how we will be running the release in a Docker container in the next chapter. With the release running with =foreground= or =console= open a separate terminal and try the same script with the argument =remote_console=:
+
+#+BEGIN_SRC shell
+$ bin/service_discovery remote_console
+...
+(service_discovery@localhost)1>
+#+END_SRC
+
+=remote_console= uses =-remsh= [[http://erlang.org/doc/man/erl.html#flags][erl]] flag for connecting an interactive shell to the running release. The command knows which running Erlang node to connect to based on the same configuration, from =vm.args=, that sets the name and cookie for the node that was run originally. This means any environment variables used to populate =vm.args= when the node is started must be set the same when connecting the remote console.
+
 ** Docker
 :PROPERTIES:
 :EXPORT_FILE_NAME: docker
