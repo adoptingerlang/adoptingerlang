@@ -1,0 +1,12 @@
+name = "Custom"
+license = "MIT"
+licenselink = "https://github.com/alex-shpak/hugo-book/blob/master/LICENSE"
+description = "Tweaked Hugo documentation theme"
+homepage = "https://github.com/alex-shpak/hugo-book"
+tags = ["responsive", "clean", "documentation", "docs", "flexbox"]
+features = []
+min_version = "0.43"
+
+[author]
+  name = "Alex Shpak"
+  homepage = "https://github.com/alex-shpak/"

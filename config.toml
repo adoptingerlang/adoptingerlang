@@ -1,7 +1,7 @@
 baseURL = "/"
 languageCode = "en-us"
 title = "Adopting Erlang"
-theme = "book"
+theme = "custom"
 
 pygmentsUseClassic=true
 pygmentsUseClasses=true
