@@ -2190,6 +2190,42 @@ $ dig service-discovery.default
 
 #+END_SRC
 
+*** Using Kustomize to Simplify Deployment
+
+[[https://kustomize.io/][Kustomize]] is a tool builtin to =kubectl= providing a template-free way to customize Kubernetes yaml resources. We will use it to create different configurations for different environments, starting with =dev=.
+
+#+BEGIN_SRC shell
+$ tree deployment
+deployment
+├── base
+│   ├── deployment.yaml
+│   ├── kustomization.yaml
+│   └── service.yaml
+└── dev
+    └── kustomization.yaml
+#+END_SRC
+
+#+BEGIN_SRC yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-discovery-deployment
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: service-discovery
+        image: tsloughter/service_discovery
+        ports:
+        - containerPort: 8053
+          protocol: UDP
+#+END_SRC
+
+#+BEGIN_SRC shell
+$ kubectl apply -k deployment/dev
+#+END_SRC
+
 *** StatefulSet
 
 ** Operations
