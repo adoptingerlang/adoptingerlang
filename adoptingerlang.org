@@ -983,9 +983,136 @@ And that's what we just did. Supervisors only start and restart processes; they'
 
 *** Structuring Supervision Trees
 
-The most complex part of supervisors isn't their declaration, it's their composition. They're a simple tool up to a complex task.
+The most complex part of supervisors isn't their declaration, it's their composition. They're a simple tool up to a complex task. In this section, we'll cover why supervision trees can work, and how to best structure them to gain the most out of them.
 
-it's about the guarantees
+**** What Makes Supervisors Work
+
+Everyone has heard "have you tried turning it off and on again?" as a general bug-fixing approach. It works surprisingly often, and Erlang supervision trees operate under that principle. Of course, restarting can't solve all bugs, but it can cover a lot.
+
+The reason restarting works is due to the nature of bugs encountered in production systems. To discuss this, we have to refer to the terms _Bohrbug_ and _Heisenbug_ coined by [[https://www.hpl.hp.com/techreports/tandem/TR-85.7.pdf][Jim Gray in 1985]]. Basically, a bohrbug is a bug that is solid, observable, and easily repeatable. They tend to be fairly simple to reason about. Heisenbugs by contrast, have unreliable behaviour that manifests itself under certain conditions, and which may possibly be hidden by the simple act of trying to observe them. For example, concurrency bugs are notorious for disappearing when using a debugger that may force every operation in the system to be serialised.
+
+Heisenbugs are these nasty bugs that happen once in a thousand, million, billion, or trillion times. You know someone's been working on figuring one out for a while once you see them print out pages of code and go to town on them with a bunch of markers.
+
+With these terms defined, let's look at how easy it should be to find bugs in production:
+
+| Type of Feature | Repeatable              | Transient |
+|-----------------+-------------------------+-----------|
+| Core            | Easy                    | Hard      |
+| Secondary       | Easy (often overlooked) | Hard      |
+
+If you have bohrbugs in your system's core features, they should usually be very easy to find before reaching production. By virtue of being repeatable, and often on a critical path, you should encounter them sooner or later, and fix them before shipping.
+
+Those that happen in secondary, less used features, are far more of a hit and miss affair. Everyone admits that fixing all bugs in a piece of software is an uphill battle with diminishing returns; weeding out all the little imperfections takes proportionally more time as you go on. Usually, these secondary features will tend to gather less attention because either fewer customers will use them, or their impact on their satisfaction will be less important. Or maybe they're just scheduled later and slipping timelines end up deprioritising their work.
+
+Heisenbugs are pretty much impossible to find in development. Fancy techniques like formal proofs, model checking, exhaustive testing or property-based testing may increase the likelihood of uncovering some or all of them (depending on the means used), but frankly, few of us use any of these unless the task at hand is extremely critical. A once in a billion issue requires quite a lot of tests and validation to uncover, and chances are that if you've seen it, you won't be able to generate it again just by luck.
+
+So let's take a look at the previous table of bug types, but let's focus on how often they _will_ happen in production:
+
+| Type of Feature | Repeatable | Transient |
+|--------+------------+-----------|
+| Core | Should Never | All the time |
+| Secondary | Pretty often | All the time |
+
+
+First of all, easy repeatable bugs in core features should just not make it to production. If they do, you have essentially shipped a broken product and no amount of restarting or support will help your users. Those require modifying the code, and may be the result of some deeply entrenched issues within the organisation that produced them.
+
+Repeatable bugs in side-features will pretty often make it to production. This is often a result of not taking or having the time to test them properly, but there's also a strong possibility that secondary features often get left behind when it comes to partial refactorings, or that the people behind their design do not fully consider whether the feature will coherently fit with the rest of the system.
+
+On the other hand, transient bugs will show up all the damn time. Jim Gray, who coined these terms, reported that on 132 bugs noted at a given set of customer sites, only one was a Bohrbug. 131/132 of errors encountered in production tended to be heisenbugs. They're hard to catch, and if they're truly statistical bugs that may show once in a million times, it just takes some load on your system to trigger them all the time; a once in a billion bug will show up every 3 hours in a system doing 100,000 requests a second, and a once in a million bug could similarly show up once every 10 seconds on such a system, but their occurrence would still be rare in tests.
+
+That's a lot of bugs, and a lot of failures if they are not handled properly. Let's rework the table, but now we're considering whether restarts can handle these faults:
+
+| Type of Feature | Repeatable | Transient |
+|--------+------------+-----------|
+| Core | No | Yes |
+| Secondary | It depends | Yes |
+
+For repeatable bugs on core features, restarting is useless. For repeatable bugs in less frequently used code paths, it depends; if the feature is a thing very important to a very small amount of users, restarting won't do much. If it's a side-feature used by everyone, but to a degree they don't care much about, then restarting or ignoring the failure altogether can work well.
+
+For transient bugs though, restarting is extremely effective, and they tend to be the majority of bugs you'll meet live. Because they are hard to reproduce, that their showing up is often dependent on very specific circumstances or interleavings of bits of state in the system, and that their appearance tends to be in a very small fraction of all operations, restarting tends to make them disappear altogether.
+
+Supervisors allows a part of your system hit by such a bug to roll back to a known stable state. Once you've rolled back to that state, trying again is unlikely to hit the same weird context that caused the first bug. And just like that, what could have been a catastrophe has become little more than a hiccup for the system, something users quickly learn to live with.
+
+**** It's About the Guarantees
+
+One very important part of Erlang supervisors and their supervision trees is that their start phase is synchronous. Each OTP Process started has a period during which it can do its own thing, preventing the entire boot sequence of its siblings and cousins to come. If the process dies there, it's retried again, and again, until it works, or fails too often.
+
+That's where people make a very common mistake. There isn't a backoff or cooldown period before a supervisor restarts a crashed child. When people write a network-based application and try to set up a connection in this initialization phase, and that the remote service is down, the application fails to boot after too many fruitless restarts. Then the system may shut down.
+
+Many Erlang developers end up arguing in favor of a supervisor that has a cooldown period. This sentiment is wrong for one simple reason: it's all about the guarantees.
+
+Restarting a process is about bringing it back to a stable, known state. From there, things can be retried. When the initialization isn't stable, supervision is worth very little. An initialized process should be stable no matter what happens. That way, when its siblings and cousins get started later on, they can be booted fully knowing that the rest of the system that came up before them is healthy.
+
+If you don't provide that stable state, or if you were to start the entire system asynchronously, you get very little benefit from this structure that a =try ... catch= in a loop wouldn't provide.
+
+Supervised processes provide guarantees in their initialization phase, not a best effort. This means that when you're writing a client for a database or service, you shouldn't need a connection to be established as part of the initialization phase unless you're ready to say it will always be available no matter what happens.
+
+You could force a connection during initialization if you know the database is on the same host and should be booted before your Erlang system, for example. Then a restart should work. In case of something incomprehensible and unexpected that breaks these guarantees, the node will end up crashing, which is desirable: a pre-condition to starting your system hasn't been met. It's a system-wide assertion that failed.
+
+If, on the other hand, your database is on a remote host, you should expect the connection to fail. In this case, the only guarantee you can make in the client process is that your client will be able to handle requests, but not that it will communicate to the database. It could return ={error, not_connected}= on all calls during a net split, for example.
+
+The reconnection to the database can then be done using whatever cooldown or backoff strategy you believe is optimal, without impacting the stability of the system. It can be attempted in the initialization phase as an optimization, but the process should be able to reconnect later on if anything ever disconnects.
+
+If you expect failure to happen on an external service, do not make its presence a guarantee of your system. We're dealing with the real world here, and failure of external dependencies is always an option. 
+
+Of course, the libraries and processes that call the client will then error out if they didn't expect to work without a database. That's an entirely different issue in a different problem space, but not one that is always impossible to work around. For example, let's pretend the client is to a statistics service for Ops people—then the code that calls that client could very well ignore the errors without adverse effects to the system as a whole. In other cases, an event queue could be added in front of the client to avoid losing state when things go sour.
+
+The difference in both initialization and supervision approaches is that the client's callers make the decision about how much failure they can tolerate, not the client itself. That's a very important distinction when it comes to designing fault-tolerant systems. Yes, supervisors are about restarts, but they should be about restarts to a stable known state.
+
+**** Growing Trees
+
+When you structure Erlang programs, everything you feel is fragile and should be allowed to fail has to move deeper into the hierarchy, and what is stable and critical needs to be reliable is higher up. Supervision structures allow the encoding of partial failures and fault propagation, so we must think properly about all of these things. Let's take a look at our sample supervision tree again:
+
+#+NAME: fig:suptree_repeat
+[[./static/img/suptree.png]]
+
+If a worker in the =DB= subtree dies, and =DB= is a supervisor with a =one_for_one= strategy, then we are encoding that each worker is allowed to fail independently from each other. On the other hand, if =event_sup= has a =rest_for_one= strategy, we are encoding in our system that the worker handling subscriptions _must_ restart if the event listener dies; we say that there is a direct dependency.
+
+Implicitly, there is also a statement that the event handling subtree is not directly impacted by the database, as long as it has managed to successfully boot at some point.
+
+This supervision tree can be read like a schedule and a map to the system faults. The HTTP server won't start unless the domain-specific workers are available, and the HTTP handler failing will not do anything that might compromise the database cache. Of course, if the HTTP handler relies on the domain worker, which relies on the cache's ETS table and that table vanishes, then all these processes will may together.
+
+What's truly interesting here is that we can at a glance know how even unknown failures may impact our system. I don't need to know _why_ a database worker may fail, whether it's due to a disconnection, a dying database, or a bug in the protocol implementation; I know that no matter what, this should leave the cache in place, and possibly let me do stale reads until the database sub-tree becomes available again.
+
+This is where a child's restart policy, combined with the supervisor's accepted failure frequency comes in play. If all the workers and their supervisor are marked =permanent=, then there is a possibility that frequent crashes will take down the whole node. However, you can do a  special little trick:
+
+#+CAPTION: The manager worker pattern
+#+NAME: fig:manager
+[[./static/img/manager.png]]
+
+1. mark the workers as =permanent= or =transient=, so that if they fail they get restarted
+2. mark the workers' direct supervisor (in the square) as =temporary=, so that if it fails, it gives up and does not get restarted
+3. add a new supervisor above it (this one can use any policy you want), but make it =one_for_one=.
+4. add a new process under the new supervisor (a sibling of the =temporary= supervisor). Have this process _linked_ to the old supervisor. This is the _manager_.
+
+The temporary supervisor can be used to tolerate an acceptable restart frequency. It could say that it's normal for a worker to die every two minutes, for example. However, if we exceed this threshold, something bad is happening, and we want to stop retrying without risking to destabilize the node. The supervisor shuts down, and since it's temporary, the super-supervisor (above the square) will just stay there doing nothing.
+
+The manager can then look at whether the =sup= supervisor is alive or dead, and apply any policy it want when it comes to restarting it: use an exponential backoff, wait until a [[https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern][circuit breaker]] untrips, wait for an external service registry to say the dependent service is healthy again, or ask for user input on what to do. The manager can then ask its own parent supervisor to restart the temporary supervisor, which will then restart its own workers. 
+
+This is one of the few _design patterns_ in Erlang. Because smart systems make stupid mistakes, we want to keep the supervisors as simple and predictable as they can be. The manager is us grafting a brain onto the supervisor, and making fancier decisions. This lets us separate policies for transient errors from policies for more major or persistent faults that can't just be dealt with through restarting.
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+This pattern can be adapted however you want. The authors have, for example, used these two other variants for restart management:
+
+- multiple supervision trees are nested into each other, each representing a worker pool for a physical device. Each physical device is allowed to fail, go offline, or lose power. The managing process would routinely compare the running subtrees to a configuration service that was off-site. It would then start all the subtrees that were missing, and shut down all those that no longer existed. This let the manager handle run-time configuration synchonisation while also handling restarts for tricky hardware failure scenarios.
+- The manager does nothing. However, the Erlang release shipped with a script that could be called by an operator. The script sent a message to the manager, asking it to restart the missing subtree. This variant was used because the subtree died only in the rarest of occasions (a whole region's storage going down) without wanting to kill the rest of the system, but upon recovery, operators could re-enable traffic that way.
+
+While it would be difficult to bake that kind of functionality in a generic supervisor, a manager can easily provide the flexibility required for tailor-made solutions of this kind.
+#+end_alert
+
+One exercise we would recommend you do is to take your system, and then draw its supervision tree on a white board. Go through all the workers and supervisors, and ask the following questions:
+
+- Is it okay if this dies?
+- Should other processes be taken down with this one?
+- Does this process depend on anything else that will be weird once it restarts?
+- How many crashes are too many for this supervisor?
+- If this part of the system is flat out broken, should the rest of it keep working or should we give up?
+
+Discuss these with your team. Shuffle supervisors around, adjust the strategies and policies. Add or remove supervision layers, and in some cases, add managers. 
+
+Repeat this exercise from time to time, and eventually do some [[https://principlesofchaos.org/][chaos engineering]] by killing Erlang processes on a running node to see if it behaves and recovers the way you think it should (you can of course do chaos engineering on entire nodes, as is more common). What you'll end up with is a fault tolerant piece of code. You will also build a team with a strong understanding of the failure semantics that are baked in their system, with a good mental model of how things should break down when they inevitably do. This is worth its weight in gold.
 
 ** Dependencies
 :PROPERTIES:
