@@ -1093,14 +1093,14 @@ This is one of the few _design patterns_ in Erlang. Because smart systems make s
 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
-#+begin_alert
+#+begin_notice
 This pattern can be adapted however you want. The authors have, for example, used these two other variants for restart management:
 
 - multiple supervision trees are nested into each other, each representing a worker pool for a physical device. Each physical device is allowed to fail, go offline, or lose power. The managing process would routinely compare the running subtrees to a configuration service that was off-site. It would then start all the subtrees that were missing, and shut down all those that no longer existed. This let the manager handle run-time configuration synchonisation while also handling restarts for tricky hardware failure scenarios.
 - The manager does nothing. However, the Erlang release shipped with a script that could be called by an operator. The script sent a message to the manager, asking it to restart the missing subtree. This variant was used because the subtree died only in the rarest of occasions (a whole region's storage going down) without wanting to kill the rest of the system, but upon recovery, operators could re-enable traffic that way.
 
 While it would be difficult to bake that kind of functionality in a generic supervisor, a manager can easily provide the flexibility required for tailor-made solutions of this kind.
-#+end_alert
+#+end_notice
 
 One exercise we would recommend you do is to take your system, and then draw its supervision tree on a white board. Go through all the workers and supervisors, and ask the following questions:
 
