@@ -783,7 +783,7 @@ The functional subset is rather straightforward and easy to learn with any of th
 
 The challenge of functional languages comes when you have to handle side-effects. How will you take something like a program's configuration and pass it through the entire stack? Where is it going to be stored and modified? How do you take something inherently mutable and stateful, like a network stream, and embed it in an immutable and stateless application?
 
-In most programming languages, this is all done in a rather informal and ad-hoc matter. In object-oriented languages, for example, we would tend to pick where side-effects live according to the [[https://en.wikipedia.org/wiki/Domain-driven_design][boundaries of their domain], possibly while trying to respect principles such as [[https://deviq.com/persistence-ignorance/][persistence ignorance]] or [[https://fideloper.com/hexagonal-architecture][hexagonal architecture]].
+In most programming languages, this is all done in a rather informal and ad-hoc matter. In object-oriented languages, for example, we would tend to pick where side-effects live according to the [[https://en.wikipedia.org/wiki/Domain-driven_design][boundaries of their domain]], possibly while trying to respect principles such as [[https://deviq.com/persistence-ignorance/][persistence ignorance]] or [[https://fideloper.com/hexagonal-architecture][hexagonal architecture]].
 
 In the end what you may end up with is a kind of layered system where you hopefully have a bunch of pure domain-specific entities in the core, a bunch of interaction mechanisms on the outer edge, and a few layers in-between whose role is to coordinate and wrap all activities between entities:
 
@@ -844,7 +844,7 @@ This lets you say that some processes are expected to never stop (permanent), so
 
 The final bit of configuration we can set is the frequency at which restarts are allowed. This is done through two parameters, =intensity= and =period=, which respectively stand for how many crashes have been spotted and during how many seconds they took place. We can then specify that a supervisor should tolerate only one crash per hour, or a dozen per second if we want it so.
 
-We can now declare a supervisor:
+This is how you declare a supervisor:
 
 #+NAME: myapp_sup
 #+BEGIN_SRC erlang
@@ -875,14 +875,113 @@ init([]) ->
 
 You can define as many children as you want at once in there (except for =simple_one_for_one=, which [[http://erlang.org/doc/man/supervisor.html#Module:init-1][expects a description template]]). Other arguments you can specify for a child include =shutdown=, which gives a number of milliseconds to wait for the proper termination of the child (or =brutal_kill= to kill it right away), and a definition on whether a process is a =worker= or a =supervisor=. This =type= field, along with =modules=, are only used when doing live code upgrades with releases, and the latter can generally be ignored and be left to its default value.
 
-Let's try to add a supervisor with a worker to an application, running what is essentially the heaviest _Hello World_ on the planet.
+That's all that's needed. Let's see how we can put that in practice.
 
-TODO: fill hello world
+*** Trying Your Own Supervisor
 
+Let's try to add a supervisor with a worker to an application, running what is essentially the heaviest _Hello World_ on the planet. We'll build a whole release for that:
+
+#+NAME: hello_world
+#+BEGIN_SRC sh
+$ rebar3 new release hello_world
+===> Writing hello_world/apps/hello_world/src/hello_world_app.erl
+===> Writing hello_world/apps/hello_world/src/hello_world_sup.erl
+===> Writing hello_world/apps/hello_world/src/hello_world.app.src
+===> Writing hello_world/rebar.config
+===> Writing hello_world/config/sys.config
+===> Writing hello_world/config/vm.args
+===> Writing hello_world/.gitignore
+===> Writing hello_world/LICENSE
+===> Writing hello_world/README.md
+$ cd hello_world
+#+END_SRC
+
+You should recognize the release structure, where all OTP applications are in the =apps/= subdirectory.
+
+Open up =hello_world_sup= module, and make sure it looks like this:
+
+
+#+NAME: hello_world_sup.erl
+#+BEGIN_SRC erlang
+%%%----------------------------------------------------------
+%% @doc hello_world top level supervisor.
+%% @end
+%%%----------------------------------------------------------
+
+-module(hello_world_sup).
+-behaviour(supervisor).
+
+-export([start_link/0]).
+-export([init/1]).
+
+-define(SERVER, ?MODULE).
+
+start_link() ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+
+init([]) ->
+    SupFlags = #{strategy => one_for_all,
+                 intensity => 0,
+                 period => 1},
+    ChildSpecs = [
+        #{id => main,
+          start => {hello_world_serv, start_link, []}}
+    ],
+    {ok, {SupFlags, ChildSpecs}}.
+#+END_SRC
+
+This establishes a single child, which will be in the module =hello_world_serv=. This will be a straightforward =gen_server= that does nothing, using only its =init= function:
+
+#+NAME: hello_world_serv
+#+BEGIN_SRC erlang
+-module(hello_world_serv).
+-export([start_link/0, init/1]).
+
+start_link() ->
+    gen_server:start_link(?MODULE, [], []).
+
+init([]) ->
+    %% Here we ignore what OTP asks of us and just do
+    %% however we please.
+    io:format("Hello, heavy world!~n"),
+    halt(0). % shut down the VM without error
+#+END_SRC
+
+This file just starts an OTP process, outputs =Hello, heavy world!=, and then shuts the whole virtual machine down.
+
+Let's build a release and see what happens:
+
+#+BEGIN_SRC sh
+$ rebar3 release
+===> Verifying dependencies...
+===> Compiling hello_world
+===> Starting relx build process ...
+===> Resolving OTP Applications from directories:
+          /Users/ferd/code/self/adoptingerlang/hello_world/_build/default/lib
+          /Users/ferd/code/self/adoptingerlang/hello_world/apps
+          /Users/ferd/bin/erls/21.1.3/lib
+===> Resolved hello_world-0.1.0
+===> Dev mode enabled, release will be symlinked
+===> release successfully created!
+#+END_SRC
+
+And now we can start it. We'll use the =foreground= argument, which means we'll boot the release to see all of its output, but do so in a non-interactive mode (without a shell):
+
+#+BEGIN_SRC sh
+$ ./_build/default/rel/hello_world/bin/hello_world foreground
+<debug output provided by wrappers bundled with rebar3>
+Hello, heavy world!
+#+END_SRC
+
+What happens here is that the tools generate a script at =/_build/default/rel/hello_world/bin/hello_world=. This script puts a bunch of stuff together to make sure your release boots with all the right configuration and environment values.
+
+Everything starts with the virtual machine starting, and eventually spawning the root process in Erlang itself. The =kernel= OTP application boots, and then sees in the config data that it has to start the =hello_world= application.
+
+This is done by calling =hello_world_app:start/2=, which in turn calls =hello_world_sup=, which starts the =hello_world_serv= process, which outputs text and then makes a hard call to the VM telling it to shut down.
+
+And that's what we just did. Supervisors only start and restart processes; they're simple, but their power comes from how they can be composed and used to structure a system.
 
 *** Structuring Supervision Trees
-
-TODO
 
 The most complex part of supervisors isn't their declaration, it's their composition. They're a simple tool up to a complex task.
 
