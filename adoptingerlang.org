@@ -1193,9 +1193,43 @@ $ rebar3 as prod tar
 Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= that can be copied to a target and run.
 
 *** Runtime Configuration
+
+Running a release involves two levels of configuration. First there is the underlying Erlang virtual machine's configuration. These values have to be set before the VM has started, so are not able to be part of a configuration file like =sys.config= as that requires the VM for reading and parsing the Erlang term file. Instead, the arguments are passed directly to the =erl= command. To simplify this the =erl= command has an argument =-args_file= to allow command-line arguments be be read from a plain text file. This file is commonly named =vm.args=.
+
+The second level is configuration for the Erlang applications that make up the release. This is done with a file passed to =erl= through the =-config= argument. The file is a list of 2-tuples where the first element is the name of the application to set the environment of and the second element is a list of key-value pairs to set in the environment.
+
+Of course static files can be pretty limiting and it has become common to want to set configuration through OS environment variables. To offer flexibility and support for environment variable configuration the release start script generated when using =rebar3= can replace variables of the form =${FOO}= with the value found in the current environment. This is done automatically if the files end with extension =.src=.
+
+In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include the file and signal that they are templates -- this is necessary so that the release building does not attempt to verify that =sys.config= is a proper list of Erlang terms, which, for example, ={port, ${PORT}}= is not:
+
+#+BEGIN_SRC erlang
+{sys_config_src, "config/sys.config.src"},
+{vm_args_src, "config/vm.args.src"},
+#+END_SRC
+
+In the Docker and Kubernetes chapters we will discuss needing to set the number of Erlang schedulers manually, but for now we just care about how it would be done in =vm.args.src=:
+
+#+BEGIN_SRC shell
++S ${SCHEDULERS}
+#+END_SRC
+
+And in =sys.config.src= we will make the =logger= level a variable as well so we could, for example, turn on =debug= or =info= level logging to get more details when investigating the deployed service:
+
+#+BEGIN_SRC erlang
+{kernel, [{logger_level, ${LOGGER_LEVEL}}]}
+#+END_SRC
+
+Now when running the release we must set these variables or the release will fail to start.
+
+#+BEGIN_SRC shell
+$ LOGGER_LEVEL=debug SCHEDULERS=1 _build/default/rel/service_discovery/bin/service_discovery console
+Erlang/OTP 21 [erts-10.3.3] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+...
+#+END_SRC
+
 *** Coming Up
 
-To get a feel for what we will be doing in the next chapters copy =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= to =/tmp/service_discovery= and unpack it:
+To get a feel for what we will be doing in the next chapters copy =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= to =/tmp/service_discovery=, unpack it and start the node. Here I am assuming that the necessary environment variables are already exported and not repeating them on the line running the bin script's commands.
 
 #+BEGIN_SRC shell
 $ mkdir /tmp/service_discovery
