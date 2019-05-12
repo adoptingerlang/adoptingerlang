@@ -1200,7 +1200,7 @@ The second level is the configuration for the Erlang applications that make up t
 
 Of course static files can be pretty limiting and it has become common to want to set configuration through OS environment variables. To offer flexibility and support for environment variable configuration the release start script generated when using =rebar3= can replace variables of the form =${FOO}= with the value found in the current environment. This is done automatically if the files end with extension =.src=.
 
-In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include the file and signal that they are templates -- this is necessary so that the release building does not attempt to verify that =sys.config= is a proper list of Erlang terms, which, for example, ={port, ${PORT}}= is not:
+In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include the files and signal that they are templates -- this is necessary so that the release building does not attempt to verify that =sys.config= is a proper list of Erlang terms, which, for example, ={port, ${PORT}}= is not:
 
 #+BEGIN_SRC erlang
 {sys_config_src, "config/sys.config.src"},
