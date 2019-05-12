@@ -1194,7 +1194,7 @@ Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-0.1.0
 
 *** Runtime Configuration
 
-Running a release involves two levels of configuration. First there is the underlying Erlang virtual machine's configuration. These values have to be set before the VM has started, so are not able to be part of a configuration file like =sys.config= as that requires the VM for reading and parsing the Erlang term file. Instead, the arguments are passed directly to the =erl= command. To simplify this the =erl= command has an argument =-args_file= to allow command-line arguments be be read from a plain text file. This file is commonly named =vm.args=.
+Running a release involves two levels of configuration. First there is the underlying Erlang virtual machine's configuration. Its values have to be set before the VM has started, so they cannot be part of a configuration file like =sys.config=, which requires a running VM to read and parse the Erlang term file. Instead, the VM arguments are passed directly to the =erl= command. To simplify this the =erl= command has an =-args_file= argument to allow command-line arguments to be read from a plain text file. This file is commonly named =vm.args=.
 
 The second level is configuration for the Erlang applications that make up the release. This is done with a file passed to =erl= through the =-config= argument. The file is a list of 2-tuples where the first element is the name of the application to set the environment of and the second element is a list of key-value pairs to set in the environment.
 
