@@ -102,16 +102,16 @@ ul.pagination {
 }
 
 .book-menu {
-  flex: 0 0 $menu-width;
-  font-size: $font-size-14;
-
-  nav {
+    flex: 0 0 $menu-width;
+    font-size: $font-size-14;
     width: $menu-width;
     max-height: calc(100vh - 55px);
     @include fixed;
-  }
+    nav {
+        position: sticky;
+    }
 
-  @include dark-links;
+    @include dark-links;
 }
 
 .book-page {
@@ -203,34 +203,56 @@ aside nav,
   will-change: transform, margin-left;
 }
 
-@media screen and (max-width: $md-breakpoint) {
+// @media screen and (max-width: $md-breakpoint) {
+@media screen and (max-width: 92rem) {
   .book-toc {
     display: none;
   }
+  .container {
+      justify-content: left;
+  }
 }
 
-@media screen and (max-width: $sm-breakpoint) {
-  .book-menu {
-    margin-left: -$menu-width;
+// @media screen and (max-width: $sm-breakpoint) {
+@media screen and (max-width: 79rem) {
+    .container {
+      // justify-content: center;
+  }
+    .book-toc {
+        display: none;
+    }
+    .book-menu {
+        // margin-left: -$menu-width;
+        // display: none;
+        visibility: hidden;
   }
 
   .book-header {
     display: flex;
   }
 
-  #menu-control:checked + main {
-    .book-menu nav,
-    .book-page {
-      transform: translateX($menu-width);
-    }
+  #menu-control:checked ~ main {
+      .book-menu {
+          visibility: visible;
+          transform: translateX($menu-width);
 
-    .book-header label {
-      transform: rotate(90deg);
-    }
+          nav {
+              position: fixed;
+          }
+      }
+      .book-header label {
+          transform: rotate(90deg);
+      }
 
-    .markdown {
-      opacity: 0.25;
-    }
+      .markdown {
+          opacity: 0.25;
+
+      }
+      .book-page {
+          opacity: 0.25;
+
+      }
+
   }
 }
 
