@@ -1196,7 +1196,7 @@ Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-0.1.0
 
 Running a release involves two levels of configuration. First there is the underlying Erlang virtual machine's configuration. Its values have to be set before the VM has started, so they cannot be part of a configuration file like =sys.config=, which requires a running VM to read and parse the Erlang term file. Instead, the VM arguments are passed directly to the =erl= command. To simplify this the =erl= command has an =-args_file= argument to allow command-line arguments to be read from a plain text file. This file is commonly named =vm.args=.
 
-The second level is configuration for the Erlang applications that make up the release. This is done with a file passed to =erl= through the =-config= argument. The file is a list of 2-tuples where the first element is the name of the application to set the environment of and the second element is a list of key-value pairs to set in the environment.
+The second level is the configuration for the Erlang applications that make up the release. This is done with a file passed to =erl= through the =-config= argument. The file is a list of 2-tuples where the first element is the name of the application to set the environment of and the second element is a list of key-value pairs to set in the environment.
 
 Of course static files can be pretty limiting and it has become common to want to set configuration through OS environment variables. To offer flexibility and support for environment variable configuration the release start script generated when using =rebar3= can replace variables of the form =${FOO}= with the value found in the current environment. This is done automatically if the files end with extension =.src=.
 
