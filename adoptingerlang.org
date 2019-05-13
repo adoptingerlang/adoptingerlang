@@ -1203,8 +1203,11 @@ Of course static files can be pretty limiting and it has become common to want t
 In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include the files and signal that they are templates -- this is necessary so that the release building does not attempt to verify that =sys.config= is a proper list of Erlang terms, which, for example, ={port, ${PORT}}= is not:
 
 #+BEGIN_SRC erlang
-{sys_config_src, "config/sys.config.src"},
-{vm_args_src, "config/vm.args.src"},
+{relx, [...
+        {sys_config_src, "config/sys.config.src"},
+        {vm_args_src, "config/vm.args.src"},
+        ...
+       ]}.
 #+END_SRC
 
 In the Docker and Kubernetes chapters we will discuss needing to set the number of Erlang schedulers manually, but for now we just care about how it would be done in =vm.args.src=:
