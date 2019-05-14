@@ -31,8 +31,9 @@
 }
 
 @mixin fixed {
-  overflow-x: hidden;
-  overflow-y: auto;
+    position: fixed;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 @mixin dark-links {

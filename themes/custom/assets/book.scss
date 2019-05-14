@@ -38,6 +38,7 @@ main {
     display: flex;
     flex-wrap: wrap;
     box-sizing: border-box;
+    min-height: calc(100vh - 55px);
 }
 
 h1,
@@ -105,10 +106,11 @@ ul.pagination {
     flex: 0 0 $menu-width;
     font-size: $font-size-14;
     width: $menu-width;
-    max-height: calc(100vh - 55px);
-    @include fixed;
+    min-height: calc(100vh - 55px);
     nav {
-        position: sticky;
+        max-height: calc(100vh - 55px);
+        @include fixed;
+        overflow-y: auto;
     }
 
     @include dark-links;
@@ -216,50 +218,49 @@ aside nav,
 // @media screen and (max-width: $sm-breakpoint) {
 @media screen and (max-width: 79rem) {
     .container {
-      // justify-content: center;
-  }
+        // justify-content: center;
+    }
     .book-toc {
         display: none;
     }
     .book-menu {
-        // margin-left: -$menu-width;
-        // display: none;
-        visibility: hidden;
-  }
+        min-height: 0px;
+        margin-left: -$menu-width;
+    }
 
-  .book-header {
-    display: flex;
-  }
+    .book-header {
+        display: flex;
+    }
 
-  #menu-control:checked ~ main {
-      .book-menu {
-          visibility: visible;
-          transform: translateX($menu-width);
+    #menu-control:checked ~ main {
+        .book-menu {
+            display: flex;
+            transform: translateX($menu-width);
+        }
+        .book-header label {
+            transform: rotate(90deg);
+        }
 
-          nav {
-              position: fixed;
-          }
-      }
-      .book-header label {
-          transform: rotate(90deg);
-      }
+        .markdown {
+            opacity: 0.25;
+        }
 
-      .markdown {
-          opacity: 0.25;
+        .book-page {
+            transform: translateX($menu-width);
+            opacity: 0.25;
+        }
 
-      }
-      .book-page {
-          opacity: 0.25;
-
-      }
-
-  }
+    }
 }
 
 // Extra space for big screens
 @media screen and (min-width: $container-max-width) {
+    .book-menu {
+      padding-right: $padding-16;
+      padding-left: $padding-16;
+  }
+
   .book-page,
-  .book-menu nav,
   .book-toc nav {
       padding: $padding-16 * 2 $padding-16;
   }
