@@ -1540,6 +1540,71 @@ $ rebar3 as prod tar
 
 Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= that can be copied to a target and run.
 
+*** Runtime Configuration
+
+Running a release involves two levels of configuration. First there is the underlying Erlang virtual machine's configuration. Its values have to be set before the VM has started, so they cannot be part of a configuration file like =sys.config=, which requires a running VM to read and parse the Erlang term file. Instead, the VM arguments are passed directly to the =erl= command. To simplify this the =erl= command has an =-args_file= argument to allow command-line arguments to be read from a plain text file. This file is commonly named =vm.args=.
+
+The second level is the configuration for the Erlang applications that make up the release. This is done with a file passed to =erl= through the =-config= argument. The file is a list of 2-tuples where the first element is the name of the application to set the environment of and the second element is a list of key-value pairs to set in the environment.
+
+Of course static files can be pretty limiting and it has become common to want to set configuration through OS environment variables. To offer flexibility and support for environment variable configuration the release start script generated when using =rebar3= can replace variables of the form =${FOO}= with the value found in the current environment. This is done automatically if the files end with extension =.src=.
+
+In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include the files and signal that they are templates -- this is necessary so that the release building does not attempt to verify that =sys.config= is a proper list of Erlang terms, which, for example, ={port, ${PORT}}= is not:
+
+#+BEGIN_SRC erlang
+{relx, [...
+        {sys_config_src, "config/sys.config.src"},
+        {vm_args_src, "config/vm.args.src"},
+        ...
+       ]}.
+#+END_SRC
+
+In the Docker and Kubernetes chapters we will discuss needing to set the number of Erlang schedulers manually, but for now we just care about how it would be done in =vm.args.src=:
+
+#+BEGIN_SRC shell
++S ${SCHEDULERS}
+#+END_SRC
+
+And in =sys.config.src= we will make the =logger= level a variable as well so we could, for example, turn on =debug= or =info= level logging to get more details when investigating the deployed service:
+
+#+BEGIN_SRC erlang
+{kernel, [{logger_level, ${LOGGER_LEVEL}}]}
+#+END_SRC
+
+Now when running the release we must set these variables or the release will fail to start.
+
+#+BEGIN_SRC shell
+$ LOGGER_LEVEL=debug SCHEDULERS=1 _build/default/rel/service_discovery/bin/service_discovery console
+Erlang/OTP 21 [erts-10.3.3] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+...
+#+END_SRC
+
+*** Coming Up
+
+To get a feel for what we will be doing in the next chapters copy =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= to =/tmp/service_discovery=, unpack it and start the node. Here I am assuming that the necessary environment variables are already exported and not repeating them on the line running the bin script's commands.
+
+#+BEGIN_SRC shell
+$ mkdir /tmp/service_discovery
+$ cp _build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz /tmp/service_discovery
+$ cd /tmp/service_discovery
+$ tar -xvf service_discovery-0.1.0.tar.gz && rm service_discovery-0.1.0.tar.gz
+...
+$ ls
+bin  erts-10.3.3  lib  releases
+$ bin/service_discovery console
+...
+(service_discovery@localhost)1>
+#+END_SRC
+
+Running =console= gives an interactive Erlang shell. To run the release without an interactive shell use =foreground=, which is how we will be running the release in a Docker container in the next chapter. With the release running with =foreground= or =console= open a separate terminal and try the same script with the argument =remote_console=:
+
+#+BEGIN_SRC shell
+$ bin/service_discovery remote_console
+...
+(service_discovery@localhost)1>
+#+END_SRC
+
+=remote_console= uses =-remsh= [[http://erlang.org/doc/man/erl.html#flags][erl]] flag for connecting an interactive shell to the running release. The command knows which running Erlang node to connect to based on the same configuration, from =vm.args=, that sets the name and cookie for the node that was run originally. This means any environment variables used to populate =vm.args= when the node is started must be set the same when connecting the remote console.
+
 ** Docker
 :PROPERTIES:
 :EXPORT_FILE_NAME: docker
