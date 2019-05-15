@@ -38,7 +38,7 @@ main {
     display: flex;
     flex-wrap: wrap;
     box-sizing: border-box;
-    min-height: calc(100vh - 55px);
+    min-height: 100vh;
 }
 
 h1,
@@ -106,9 +106,9 @@ ul.pagination {
     flex: 0 0 $menu-width;
     font-size: $font-size-14;
     width: $menu-width;
-    min-height: calc(100vh - 55px);
+    min-height: 100vh;
     nav {
-        max-height: calc(100vh - 55px);
+        max-height: 100vh;
         @include fixed;
         overflow-y: auto;
     }
@@ -138,15 +138,10 @@ header {
     justify-content: space-between;
 }
 
-header ul li {
-    display: inline-block;
-    padding: 0 1.4em 0 0;
-    font-size: 0.9em;
-}
-
-header ul li a {
-    text-decoration: none;
-    color: #7D7C7D;
+.header-title {
+    text-align: center;
+    font-size: larger;
+    font-weight: bolder;
 }
 
 li a:hover {
@@ -157,9 +152,11 @@ li a:hover {
   flex: 0 0 $toc-width;
   font-size: $font-size-12;
   max-height: 100vh;
+  top: 0;
+  bottom: 0;
   nav {
     width: $toc-width;
-    padding: $padding-16;
+    padding: $padding-16 $padding-16;
 
     @include fixed;
   }
@@ -205,8 +202,7 @@ aside nav,
   will-change: transform, margin-left;
 }
 
-// @media screen and (max-width: $md-breakpoint) {
-@media screen and (max-width: 92rem) {
+@media screen and (max-width: $md-breakpoint) {
   .book-toc {
     display: none;
   }
@@ -215,10 +211,8 @@ aside nav,
   }
 }
 
-// @media screen and (max-width: $sm-breakpoint) {
-@media screen and (max-width: 79rem) {
+@media screen and (max-width: $sm-breakpoint) {
     .container {
-        // justify-content: center;
     }
     .book-toc {
         display: none;
@@ -255,13 +249,8 @@ aside nav,
 
 // Extra space for big screens
 @media screen and (min-width: $container-max-width) {
-    .book-menu {
-      padding-right: $padding-16;
-      padding-left: $padding-16;
-  }
-
   .book-page,
   .book-toc nav {
-      padding: $padding-16 * 2 $padding-16;
+      // padding: $padding-16 * 2 $padding-16 * 3;
   }
 }

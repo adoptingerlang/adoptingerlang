@@ -29,6 +29,7 @@
 #+HUGO_SECTION: docs
 #+HUGO_PAIRED_SHORTCODES: %alert
 #+HUGO_PAIRED_SHORTCODES: %notice
+#+hugo_auto_set_lastmod: t
 
 * Introduction
 :PROPERTIES:
