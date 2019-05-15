@@ -6,7 +6,7 @@
 {{- end -}}
 
 {{ define "book-section" }} <!-- Single section of menu (recursive) -->
-  <ul>
+<ul>
     {{ range .Section.Sections }}
     <li {{- if .Params.bookflatsection}} class="flat-section" {{ end }}>
       {{- if .Content -}}

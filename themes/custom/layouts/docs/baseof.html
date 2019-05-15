@@ -2,49 +2,46 @@
 {{- partial "docs/shared" -}}
 <html>
 
-<head>
-  {{ partial "docs/html-head" . }}
-  {{ partial "docs/inject/head" . }}
-</head>
+  <head>
+    {{ partial "docs/html-head" . }}
+    {{ partial "docs/inject/head" . }}
+  </head>
 
-<body>
+  <body>
+    <input type="checkbox" style="display: none" id="menu-control" />
+    <main class="flex container">
 
-  <header class="header-container">
-    <!-- <ul><li><a href="/">Home</a></li></ul> -->
-    <div></div>
-    <ul><li class="title">Adopting Erlang</li></ul>
-    <div></div>
-    <!-- <ul><li><a href="/contact">Contact</a></li></ul> -->
-  </header>
-  <input type="checkbox" style="display: none" id="menu-control" />
-  <main class="flex container">
+      <aside class="book-menu fixed">
+        <nav role="navigation">
+          <div class="header-container">
+            <p class="header-title" style="">Adopting Erlang</p>
+          </div>
+          <div style="padding-left: 16px; max-width: 18rem;">
+            <!-- {{ partial "docs/brand" . }} -->
+            {{ partial "docs/inject/menu-before" . }}
 
-    <aside class="book-menu fixed">
-      <nav role="navigation">
-        <!-- {{ partial "docs/brand" . }} -->
-        {{ partial "docs/inject/menu-before" . }}
+            {{ if .Site.Params.BookMenuBundle }}
+            {{ partial "docs/menu-bundle" . }}
+            {{ else }}
+            {{ partial "docs/menu-filetree" . }}
+            {{ end }}
 
-        {{ if .Site.Params.BookMenuBundle }}
-          {{ partial "docs/menu-bundle" . }}
-        {{ else }}
-          {{ partial "docs/menu-filetree" . }}
-        {{ end }}
+            {{ partial "docs/inject/menu-after" . }}
+          </div>
+        </nav>
+      </aside>
 
-        {{ partial "docs/inject/menu-after" . }}
-      </nav>
-    </aside>
+      <div class="book-page">
+        {{ partial "docs/mobile-header" . }}
+        {{ template "main" . }}
+        {{ partial "docs/git-footer" . }}
+      </div>
 
-    <div class="book-page">
-      {{ partial "docs/mobile-header" . }}
-      {{ template "main" . }}
-      {{ partial "docs/git-footer" . }}
-    </div>
+      {{ template "toc" . }}
+    </main>
 
-    {{ template "toc" . }}
-  </main>
-
-  {{ partial "docs/inject/body" . }}
-  {{ template "_internal/google_analytics_async.html" . }}
-</body>
+    {{ partial "docs/inject/body" . }}
+    {{ template "_internal/google_analytics_async.html" . }}
+  </body>
 
 </html>
