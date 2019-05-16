@@ -148,6 +148,11 @@ li a:hover {
     color: #B6B6B6;
 }
 
+.active {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
 .book-toc {
   flex: 0 0 $toc-width;
   font-size: $font-size-12;
