@@ -39,6 +39,9 @@
 ** Index
 :PROPERTIES:
 :EXPORT_FILE_NAME: _index
+:EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Introduction"
+:EXPORT_HUGO_MENU: :menu main :weight 1001
 :END:
 
 So you've been checking Erlang out, and you've read a few tutorials and a bunch of books, but you're finding that nothing really tells you how you should set up a modern project for you and your team, and you have then found this text.  The Erlang community has collectively spent years writing introductory content, and a lot of it is still really good. So what's the hope for yet another book?
@@ -85,6 +88,7 @@ Essentially, we hope for _Adopting Erlang_ to be the missing link between all th
 ** About the Authors
 :PROPERTIES:
 :EXPORT_FILE_NAME: about_the_authors
+:EXPORT_HUGO_MENU: :menu main :parent introduction
 :END:
 
 *** Tristan Sloughter
@@ -118,6 +122,9 @@ He is a Systems Architect at Genetec, a company offering video systems, access c
 ** Index
 :PROPERTIES:
 :EXPORT_FILE_NAME: _index
+:EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Development"
+:EXPORT_HUGO_MENU: :menu main :weight 2001
 :END:
 
 The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
@@ -125,6 +132,7 @@ The first section of this book is dedicated to getting a working installation wo
 ** Setup
 :PROPERTIES:
 :EXPORT_FILE_NAME: setup
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 You can't write Erlang without having Erlang installed, so the unsurprising first steps covered in this chapter will be to go through the basic steps required to install Erlang/OTP on most major platforms. The instructions will aim for a basic set-up on most platforms, but you'll find out that real world Erlang development is rarely done with just the basic instructions.
@@ -445,6 +453,7 @@ This is the very basic stuff, obviously. Fancier integration is possible, but th
 ** OTP at a High Level
 :PROPERTIES:
 :EXPORT_FILE_NAME: otp_high_level
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 
@@ -530,6 +539,7 @@ So the key to getting started fast in Erlang is to know the framework, which is 
 ** OTP Applications
 :PROPERTIES:
 :EXPORT_FILE_NAME: otp_applications
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 Since every component to be shipped in an Erlang/OTP release needs to be an OTP Application, it will do you a great good to understand what they are and how they work. In this chapter, we'll go over the basic structure of an OTP application, and what that means for your project.
@@ -772,6 +782,7 @@ You now understand most of the weird stuff about Erlang/OTP's project structure 
 ** Supervision Trees
 :PROPERTIES:
 :EXPORT_FILE_NAME: supervision_trees
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 The biggest difference between Erlang and every other programming language out there is not in its concurrency, but rather in its fault tolerance. Almost everything in the language [[https://ferd.ca/the-zen-of-erlang.html][was designed for fault tolerance]], and supervisors are one of the core parts of this design. In this chapter, we'll cover the basics of supervision trees, what is in a supervisor, and how to structure supervision trees in your own system. When we're done, you'll be able to set up and manage most of the state your system will need.
@@ -1118,36 +1129,43 @@ Repeat this exercise from time to time, and eventually do some [[https://princip
 ** Dependencies
 :PROPERTIES:
 :EXPORT_FILE_NAME: dependencies
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 ** External Dependencies
 :PROPERTIES:
 :EXPORT_FILE_NAME: external_dependencies
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 ** Multi-App Projects
 :PROPERTIES:
 :EXPORT_FILE_NAME: umbrella_projects
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 ** Rebar3 Shell
 :PROPERTIES:
 :EXPORT_FILE_NAME: rebar3_shell
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 ** Configuration
 :PROPERTIES:
 :EXPORT_FILE_NAME: configuration
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 ** Documentation
 :PROPERTIES:
 :EXPORT_FILE_NAME: documentation
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 ** Testing
 :PROPERTIES:
 :EXPORT_FILE_NAME: testing
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 *** Common Test
@@ -1168,6 +1186,7 @@ Repeat this exercise from time to time, and eventually do some [[https://princip
 ** Things Hard to Get Right
 :PROPERTIES:
 :EXPORT_FILE_NAME: hard_to_get_right
+:EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
 You probably have a fairly decent understanding of how an Erlang project should be structured by now. Along with any guide about the language basics, you should be mostly good to get started. However, there are a few complex topics that are currently not covered well in any of the Erlang documentation out there. In this chapter, we'll go through the task of providing guidance around handling Unicode, time, and SSL/TLS configurations.
@@ -1322,6 +1341,9 @@ This should hopefully demistify Erlang's strings.
 ** Index
 :PROPERTIES:
 :EXPORT_FILE_NAME: _index
+:EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Production"
+:EXPORT_HUGO_MENU: :menu main :weight 3001
 :END:
 
 Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service. In this part we'll build a deployable artifact (a release), create a docker image of the release and deploy to a Kubernetes cluster.
@@ -1336,6 +1358,7 @@ However, containers and Kubernetes are not appropriate in all cases. Kubernetes 
 ** Releases
 :PROPERTIES:
 :EXPORT_FILE_NAME: releases
+:EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
 In OTP at a High Level we took a bird's-eye view of how applications are combined into a release and in Development we built and tested OTP applications. Now we'll configure and build a release of the =service_discovery= project.
@@ -1609,6 +1632,7 @@ $ bin/service_discovery remote_console
 ** Docker
 :PROPERTIES:
 :EXPORT_FILE_NAME: docker
+:EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
 [[https://docker.com][Docker]] helped popularize Linux containers through its ease of use and registry of pre-built images, and became a word often used interchangably with "Linux container".
@@ -1872,6 +1896,7 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 ** Kubernetes
 :PROPERTIES:
 :EXPORT_FILE_NAME: kubernetes
+:EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
 *** Deployment
@@ -1887,6 +1912,7 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 ** Operations
 :PROPERTIES:
 :EXPORT_FILE_NAME: operations
+:EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 *** Remote access
 *** Metrics
@@ -1903,11 +1929,15 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 ** Index
 :PROPERTIES:
 :EXPORT_FILE_NAME: _index
+:EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Team Building"
+:EXPORT_HUGO_MENU: :menu main :weight 4001
 :END:
 
 ** Who to Put on The Team
 :PROPERTIES:
 :EXPORT_FILE_NAME: on_the_team
+:EXPORT_HUGO_MENU: :menu main :parent team-building
 :END:
 
 *** Building Around an Expert
@@ -1916,11 +1946,13 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 ** Repository Structures
 :PROPERTIES:
 :EXPORT_FILE_NAME: repo_structures
+:EXPORT_HUGO_MENU: :menu main :parent team-building
 :END:
 
 ** Processes
 :PROPERTIES:
 :EXPORT_FILE_NAME: processes
+:EXPORT_HUGO_MENU: :menu main :parent team-building
 :END:
 
 *** Code Reviews
@@ -1930,6 +1962,7 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 ** How To Hire
 :PROPERTIES:
 :EXPORT_FILE_NAME: how_to_hire
+:EXPORT_HUGO_MENU: :menu main :parent team-building
 :END:
 
 *** It Takes One to Know One
@@ -1938,6 +1971,7 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 * Appendix 1: Erlang/OTP Cheat Sheets
 :PROPERTIES:
 :EXPORT_FILE_NAME: cheat_sheets
+:EXPORT_HUGO_MENU: :menu main :weight 5001
 :END:
 
 This section contains various reminders to jog your memory if you're not too fresh on basic Erlang data, types, or syntax.
@@ -2325,9 +2359,11 @@ The =Actions= value is any combination of the following list (non-inclusive): =p
 | ={state_timeout, T, Msg}= | =Action= return value | =state_timeout= | =Msg= | A specific timeout that can be set and received internally when the state machine has not transitioned to a new different state in =T= milliseconds |
 | ={next_event, internal, Msg}= | =Action= return value | =internal= | =Msg= | Internal messages that can be generated by a state machine wanting to trigger itself without looking like external calls |
 
-* Appendix 2: Systemd
+* TODO Appendix 2: Systemd
 :PROPERTIES:
 :EXPORT_FILE_NAME: systemd
+:EXPORT_FILE_NAME: cheat_sheets
+:EXPORT_HUGO_MENU: :menu main :weight 6001
 :END:
 
 *** Systemd Unit
