@@ -1183,7 +1183,7 @@ Repeat this exercise from time to time, and eventually do some [[https://princip
  https://github.com/ferd/trx
 
 
-** Things Hard to Get Right
+** Hard Things to Get Right
 :PROPERTIES:
 :EXPORT_FILE_NAME: hard_to_get_right
 :EXPORT_HUGO_MENU: :menu main :parent development
