@@ -1246,7 +1246,7 @@ In Erlang, you have to be aware of the following possible encodings for strings:
 
 If you want to work with Unicode content, you will want to use the various string-related modules in Erlang.
 
-The first one is [[http://erlang.org/doc/man/string.html][string]], which contains functions such as =equal/2-4= to handle string comparison while dealing with case sensitivity and normalization, =find/2-3= to look for substrings, =length/1= to get the number of grapheme clusters, =lexemes/2= to split a string on some pattern, =next_codepoint/1= and =next_grapheme/1= to consume bits of a string, =replace/3-4= for substitutions, =to_graphemes/1= to turn a string into lists of graphemes, and finally functions like =lowercase/1=, =uppercase/1=, and =titlecase/1= to play with casing. The module contains more content still, but that should be representative.
+The first one is [[http://erlang.org/doc/man/string.html][string]], which contains functions such as =equal/2-4= to handle string comparison while dealing with case sensitivity and normalization, =find/2-3= to look for substrings, =length/1= to get the number of grapheme clusters, =lexemes/2= to split a string on some pattern, =next_codepoint/1= and =next_grapheme/1= to consume bits of a string, =replace/3-4= for substitutions, =to_graphemes/1= to turn a string into lists of grapheme clusters, and finally functions like =lowercase/1=, =uppercase/1=, and =titlecase/1= to play with casing. The module contains more content still, but that should be representative.
 
 You will also want to use the [[http://erlang.org/doc/man/unicode.html][unicode]] module to handle all kinds of conversions across string formats, encodings, and normalization forms. The regular expression module [[http://erlang.org/doc/man/re.html][re]] handles unicode fine (just pass in the =unicode= atom to its options lists), and lets you use [[http://erlang.org/doc/man/re.html#generic_character_types][Generic Character Types]] if you pass in the =ucp= option. Finally, the =file= and =io= modules all support specific options to make unicode work fine.
 
@@ -1327,8 +1327,90 @@ Do note that pattern matching is still risky there. Ideally you'd want to do a r
 This should hopefully demistify Erlang's strings.
 
 *** Handling Time
+
+Time is something very simple to live, but absurdly difficult to describe. It has taken philosophers and scientists centuries of debate to kind of get to a general agreement, and we software folks decided that counting seconds since January 1st 1970 ought to be good enough. It's harder than that. We won't get into all the details about calendaring rules and conversions, timezones, concepts of leap seconds and so on; that's too general a topic. However, we'll cover some important distinctions between _wall clocks_ and _monotonic time_, and how the Erlang virtual machine can help us deal with this stuff.
+
 **** Background Information on Time
+
+If we want to be very reductionist, there are a few specific use cases for time measurements, and they are often rather distinct:
+
+1. Knowing the duration between two given events, or "how long does something take?", which requires having a single value in a unit such as microseconds, hours, or years
+2. Placing an event on the timeline in a way we can pinpoint it and understand when it happened, or "when does something happen?", usually based on a [[https://en.wikipedia.org/wiki/ISO_8601][datetime]].
+
+Essentially those both have to do with time, but are not measured the same way. 
+
+The short answer for Erlang is that you should use [[http://erlang.org/doc/man/erlang.html#monotonic_time-0][=erlang:monotonic_time/0-1=]] to calculate durations, and [[http://erlang.org/doc/man/erlang.html#system_time-0][=erlang:system_time/0-1=]] for the system time (such as a [[https://www.unixtimestamp.com/][UNIX timestamp]]). If you want to understand _why_, then you will want to read the rest of this chapter.
+
+A datetime is usually based on a calendar date (most of readers are likely using the [[https://en.wikipedia.org/wiki/Gregorian_calendar][Gregorian Calendar]]) along with a given hour, minute, and seconds value, along with a timezone and optionally, a higher precision value for milliseconds or microseconds. This value needs to be understandable by humans, and is entirely rooted into a social system that people agree means something for a given period of time: we all know that the year 1000 refers to a specific part of time even if our current Gregorian calendar was introduced in 1582 and technically none of the dates before have happened under that system -- they may have been lived under the Julian calendar or the mayan calendar, but not the gregorian one. The whole concept is eventually attached to astronomical phenomena such as Earth's orbit, or [[https://en.wikipedia.org/wiki/Solar_time#Mean_solar_time][mean solar days]].
+
+On the other hand, a time interval, particularly for computers, is based on some cyclical event which we count. [[https://en.wikipedia.org/wiki/Water_clock][Water clocks]] or hourglasses would have a given rate at which drops or grains of sands would fall, and when it was empty, a given period of time would have gone through. Modern computers use various mechanisms like [[https://en.wikipedia.org/wiki/Clock_signal][clock signals]], [[https://en.wikipedia.org/wiki/Crystal_oscillator][crystal oscillators]], or if you're very fancy, [[https://en.wikipedia.org/wiki/Atomic_clock][atomic clocks]]. By synchronizing these cyclical countable events up with concepts such as solar days, we can adjust the measured cycles to a broader point of reference, and join our two time accounting systems: durations and pinpointing in time can be reconciliated.
+
+We as humans are used to considering these two concepts as two facets of the same "time" value, but when it comes to computers, they're really not that good at doing both at the same time. It really helps a lot if we keep both concepts distinct: durations are not the same thing as absolute points in times, and should be handled differently.
+
+To give an example, many programmers are aware of [[https://en.wikipedia.org/wiki/Unix_time][Unix Time]] (a duration in seconds since January 1st 1970), and many programmers are aware of [[https://en.wikipedia.org/wiki/Coordinated_Universal_Time][UTC]] as a standard. However, few developers are aware that both are actually tricky to convert because UTC handles [[https://en.wikipedia.org/wiki/Leap_second][leap seconds]], but unix timestamps do not, and it can cause all kinds of weird, funny issues. Using them interchangeably can introduce subtle bugs in software.
+
+One particular challenge is that computer clocks are not particularly good at being accurate over long periods of time, a concept known as [[https://en.wikipedia.org/wiki/Clock_drift][clock drift]]. One result of this is that while we might have a very decent resolution over short intervals (a few minutes or hours), over weeks, months, or years, clocks drift _a lot_. The frequency of the computer clock varies here and there, but overall doesn't change too much. All the short-time calculations you'll make will be fine, but they won't be good enough to keep track of most longer spans of time. Instead, protocols such as [[https://en.wikipedia.org/wiki/Network_Time_Protocol][NTP]] are required to re-synchronize computer clocks with far more accurate (and more expensive) ones, over the network.
+
+This means that it is to be expected that the time on your computer might just jump around for fun. Even more so if the operator just plays with things like changing timezones or system time.
+
 **** Handling Time in Erlang
+
+The way your computer handles time is based on the previously mentioned clocks that simply increment by counting microseconds or milliseconds (depending on hardware and operating systems). To represent time in units that makes sense to us humans, a conversion is done from some _epoch_ (an arbitrary starting point) to some time standard (UTC). Because computer clocks drift and shift with time, an _offset_ value is kept that allows to correct the local ever-increasing clock so that it makes sense to people. This is usually all hidden, and unless you know where to look, you won't know it happens.
+
+Erlang's runtime system uses the same kind of mechanisms, but makes them explicit. It exposes two clocks:
+
+1. A _monotonic_ clock, which means a clock that is just a counter that always returns increasing values (or the same number as before, if you call it during the same microsecond). It can have a high precision and is useful to calculate intervals.
+2. A _system_ clock, which exposes the time the user usually cares about as a human being. This tends to be done by using the unix POSIX time (seconds since January 1st 1970), which is widely used by computers everywhere, and plenty of conversion libraries exist for all other kinds of time formats. It presents a kind of lowest common denominator for human time.
+
+Overall, all the clocks on your system may end up looking like Figure [[fig:clocks]]:
+
+#+NAME: fig:clocks
+[[./static/img/clock-compare.png]]
+
+There is some real perceived time (which we'll assume is rather constant, if we ignore [[https://en.wikipedia.org/wiki/Time_dilation][relativistic effects]]), which the computer's clock more or less matches. Voltage, temperature, humidity, and hardware quality may all impact its reliability. The Erlang VM provides its own monotonic clock, which is synchronized on the hardware clock (if any), and allows some additional control which we'll describe soon.
+
+The system time, for its own part, is always calculated as a given offset from its underlying monotonic clock. The objective is to take the arbitrary number of clock ticks of the hardware clock, and turn them into seconds from 1970, which can then be converted to other formats.
+
+If the offset is a constant 0, then the VM's monotonic and system times will be the same. If the offset is modified positively or negatively, the Erlang system time may be made to match the OS system time while the Erlang monotonic time is left independent. In practice, it is possible for the monotonic clock to be some large negative number, and the system clock to be modified by the offset to represent the positive POSIX timestamp.
+
+This means that in Erlang, you'll want to use the following functions for specific use cases:
+
+- [[http://erlang.org/doc/man/erlang.html#monotonic_time-0][=erlang:monotonic_time/0-1=]] for the Erlang monotonic time. It may return very low negative numbers, but they'll never get more negative. You can use something like =T0=erlang:monotonic_time(millisecond), do_something(), T1=erlang:monotonic_time(millisecond)= and get the total duration of the operation by calculating =T1 - T2=. Note that the time units should be the same across comparisons (see notice).
+- [[http://erlang.org/doc/man/erlang.html#system_time-0][=erlang:system_time/0-1=]] for the Erlang system time (after the offset has been applied) when you need a UNIX timestamp
+- [[http://erlang.org/doc/man/erlang.html#time_offset-0][=erlang:time_offset/0-1=]] to figure out the difference between the Erlang monotonic and Erlang system clocks
+- [[http://erlang.org/doc/man/calendar.html#local_time-0][=calendar:local_time/0=]] to return the system time converted to the operating system's current clock (meaning in the user's current timezone and daylight saving times) in a ={{Year, Month, Day},{Hour, Minute, Second}}= format
+- [[http://erlang.org/doc/man/calendar.html#universal_time-0][=calendar:universal_time/0=]] to return the system time converted to the current time in UTC in a ={{Year, Month, Day}, {Hour, Minute, Second}} format.
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+The functions handling time in the =erlang= module almost all take a =Unit= argument, which can be one of =second=, =millisecond=, =microsecond=, =nanosecond=, or =native=. By default, the type of timestamp returned is in the native format. The unit is determined at run time, and =erlang:convert_time_unit(Time, FromUnit, ToUnit)= may be used to convert between time units. For example, =erlang:convert_time_unit(1, seconds, native)= returns =1000000000=.
+#+end_notice
+
+The [[http://erlang.org/doc/man/calendar.html][=calendar=]] module also contains more utility functions, such as [[http://erlang.org/doc/man/calendar.html#valid_date-1][date validation]], conversion [[http://erlang.org/doc/man/calendar.html#system_time_to_rfc3339-1][to]] and [[http://erlang.org/doc/man/calendar.html#rfc3339_to_system_time-1][from]] RFC3339 datetime strings (=2018-02-01T16:17:58+01:00=), time differences, and conversions to days, weeks, or detecting leap years.
+
+The last tool in the arsenal is a new type of monitor, usable to detect when the time offset jumps. It can be called as =erlang:monitor(time_offset, clock_service)=. It returns a reference and when time drifts, the message received will be ={'CHANGE', MonitorRef, time_offset, clock_service, NewTimeOffset}=.
+
+**** Time Warping
+
+If you use the previous functions in the right context, you'll almost never have a problem handling time. The only thing you have to care about now is how to handle weird cases such as the host computer going to sleep and waking up with a brand new clock, dealing with a system administrator playing with the time, having NTP force a clock forwards and backwards in time, and so on. Not caring for them can make your system behave in very weird ways. 
+
+Fortunately, the Erlang VM lets you pick and choose from pre-established strategies, and as long as you stick with using the right functions at the right time (monotonic clocks for intervals and benchmarks, system time for pinpointing events in time), you can just choose whichever option you feel is more appropriate. Picking the right functions for the right use cases ensures that your code is [[http://erlang.org/doc/apps/erts/time_correction.html#Dos_and_Donts][time warp safe]].
+
+These options can be passed by passing the =+C= (warp mode) and =+c= (time correction) switches to the =erl= executable. The warp mode (=+C=) defines how the offset between monotonic and system time is handled, and the time correction (=+c=) defines how the VM will adjust the monotonic clock it exposes when the system clock changes.
+
+- =+C multi_time_warp +c true=: The time offset can change at any time without any limitations to provide good system time, and the Erlang monotonic clock frequency can be adjusted by the VM to be as accurate as possible. This is what you want to specify on any modern platform, and tends to have better performance, scale better, and behave better.
+- =+C no_time_warp +c true=: The time offset is chosen at VM start time, and then is never modified. Instead, the monotonic clock is sped up or slowed down to slowly correct time drift. This is the default mode for backwards compatibility reasons, but you might want to pick a different one that is more in line with proper time usage.
+- =+C multi_time_warp +c false=: The time offset can change at any time, but the Erlang monotonic clock frequency may not be reliable. If the OS system time leaps forwards, the monotonic clock will also leap forward. If the OS system time leaps backwards, the Erlang monotonic clock may pause briefly.
+- =+C no_time_warp +c false=: The time offset is chosen at VM start time, and then is never modified. The monotonic clock is allowed to stall or jump forwards in large leaps. You generally do not want this mode.
+- =+C single_time_warp +c true=: This is a special hybrid mode to be used on embedded hardware when you know Erlang boots before the OS clock is synchronized (for example, you boot your software before NTP synchronization can take place). When the VM boots, the Erlang monotonic clock is kept as stable as possible, but no system time adjustments are made. Once time synchronization is done at the OS level, the user calls =erlang:system_flag(time_offset, finalize)=, the Erlang system time warps once to match the OS system time, and then the clocks become equivalent to those under =no_time_warp=.
+- =+C single_time_warp +c true=: This is a special hybrid mode to be used on embedded hardware when you know Erlang boots before the OS clock is synchronized (for example, you boot your software before NTP synchronization can take place). No attempts are made to synchronize the Erlang system time with the OS system time, and any changes in the OS system times may have impacts on the Erlang monotonic clock. Once time synchronization is done at the OS level, the user calls =erlang:system_flag(time_offset, finalize)=, the Erlang system time warps once to match the OS system time, and then the clocks become equivalent to those under =no_time_warp=
+
+You generally want to always have =+c true= as an option (it's the default), and to force =+C multi_time_warp= (which is not default). If you want to emulate old Erlang systems where clock frequency is adjusted, pick =+C no_time_warp=, and if you work in embedded systems where the first clock synchronization can jump really far in time and after that you expect it to be more stable _and_ you don't want =+C multi_time_warp= (you should want it!), then look for =single_time_warp=.
+
+In short, if you can, pick =+C multi_time_warp +c true=. It's the best option for accurate time handling out there.
+
+
 *** SSL Configurations
 **** Background Information on TLS
 **** Handling TLS in Erlang
