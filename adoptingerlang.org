@@ -1921,6 +1921,19 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 **** Custom
 *** Logging
 *** Distributed tracing
+*** Performance analysis
+Erlang has a reputation as a slow language, and it is, relatively, depending on the type of code that you're writing.  However, all of this needs to be put into context.  While Erlang might not be the ideal language for writing high-performance numerical analysis and simulation, it's quite a lot faster than a number of other languages in which production systems are written, and has the advantage of having a mature, multi-threaded runtime, so you can run large servers without the overhead running many separate processes on the same machine glued together with various IPC tools.  On most IO bound workloads, Erlang can easily keep up, and its runtime design typically means that you don't have to work too terribly hard to keep your application or server quite responsive.
+
+That said, if you work with any language long enough, you'll run into performance problems, and here we'd like to cover some tools techniques for figuring out what the problem is and fixing it.  We won't go into any great depth here about the machine level tools that are available, but it's always good to keep in mind things like =perf=, =Dtrace=, and =SystemTap= TODO add links.  
+**** Profiling
+Your first stop once you've identified a particular performance problem should likely be a statistical profiler.  Erlang has three
+***** System performance tools
+***** Flame graphs?
+**** Locking and extended counters
+**** =recon= and =redbug=
+**** =mochiglobal= and the persistent term store
+**** =eminstat=
+**** Performance anti-patterns
 * Team Building
 :PROPERTIES:
 :EXPORT_HUGO_SECTION: docs/team_building
