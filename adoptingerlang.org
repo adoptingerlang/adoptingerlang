@@ -29,6 +29,7 @@
 #+HUGO_SECTION: docs
 #+HUGO_PAIRED_SHORTCODES: %alert
 #+HUGO_PAIRED_SHORTCODES: %notice
+#+HUGO_PAIRED_SHORTCODES: codecaption
 #+hugo_auto_set_lastmod: t
 
 * Introduction
@@ -521,6 +522,30 @@ If you like using Flycheck then [[https://github.com/abo-abo/hydra][hydra]] is w
   (">" flycheck-next-error :color pink)
   ("l" flycheck-list-errors))
 #+END_SRC
+
+
+#+attr_shortcode: lang="elisp" title="Hydra Flycheck"
+#+BEGIN_codecaption elisp
+(use-package hydra
+  :defer 2
+  :bind ("C-c f" . hydra-flycheck/body))
+
+(defhydra hydra-flycheck (:color blue)
+  "
+  ^
+  ^Errors^
+  ^──────^
+  _<_ previous
+  _>_ next
+  _l_ list
+  _q_ quit
+  ^^
+  "
+  ("q" nil)
+  ("<" flycheck-previous-error :color pink)
+  (">" flycheck-next-error :color pink)
+  ("l" flycheck-list-errors))
+#+END_codecaption
 
 Lastly, a couple packages that are not Erlang specific but are worth calling out as very useful when developing on a project:
 

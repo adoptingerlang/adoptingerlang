@@ -41,6 +41,42 @@ main {
     min-height: 100vh;
 }
 
+figure {
+    width: 100%;
+    display: inline-block;
+    // border: 1px solid;
+    border: none;
+    margin: 0;
+}
+
+figure figcaption {
+    // border: 1px solid;
+    border: none;
+    text-align: center;
+}
+
+.codewrapper .highlighttable {
+    width: 100%;
+    border: none;
+}
+
+.codewrapper .highlighttable .linenos {
+    max-width: 1rem;
+    border: none;
+    padding: 0;
+}
+
+
+.codewrapper .highlighttable .code {
+    border: none;
+    padding: 0;
+}
+
+.markdown td pre {
+    padding: 0;
+    margin: 0;
+}
+
 h1,
 h2,
 h3,
