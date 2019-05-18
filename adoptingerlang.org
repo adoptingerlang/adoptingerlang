@@ -434,7 +434,100 @@ All you've got to do then is configure themes and more general extensions to you
 
 **** Emacs
 
-TODO
+Erlang/OTP comes with an Emacs mode in the =tools= application, =lib/tools/emacs/=. The authors of this book who use Emacs stick to using this mode by having Emacs load directly from the latest Erlang version installed. There are a number of options for alternative modes and addons to use for fancier support in =erlang-mode=, here we will only discuss [[https://oremacs.com/swiper/][Ivy]] completions and [[https://www.flycheck.org/en/latest/][Flycheck]] syntax checking. But first we need [[https://jwiegley.github.io/use-package/][use-package]] which is a tool for isolating package configuration. Code for automatically installing =use-package= can be [[https://github.com/CachesToCaches/getting_started_with_use_package/blob/7d260ddf7b15160c027915340ff0c70ce05ea315/init-use-package.el][found here]]. Include that code in your =~/.emacs.d/init.el= so that on startup =use-package= is installed. Or use the [[https://jwiegley.github.io/use-package/installation/][installation instructions]] found on the =use-package= website.
+
+This following bit of =elisp= code can be used to setup just =erlang-mode=, no Ivy or Flycheck involved, and have it load for =rebar3=, =relx= and other Erlang configuration files:
+
+#+BEGIN_SRC elisp
+(use-package erlang
+  :load-path ("<PATH TO OTP>/lib/erlang/lib/tools-3.0/emacs/")
+  :mode (("\\.erl?$" . erlang-mode)
+         ("rebar\\.config$" . erlang-mode)
+         ("relx\\.config$" . erlang-mode)
+         ("sys\\.config\\.src$" . erlang-mode)
+         ("sys\\.config$" . erlang-mode)
+         ("\\.config\\.src?$" . erlang-mode)
+         ("\\.config\\.script?$" . erlang-mode)
+         ("\\.hrl?$" . erlang-mode)
+         ("\\.app?$" . erlang-mode)
+         ("\\.app.src?$" . erlang-mode)
+         ("\\Emakefile" . erlang-mode)))
+#+END_SRC
+
+For using Ivy to get completion support add the =ivy-erlang-complete= package, set a custom Erlang root for it to use and run its =init= when the Erlang mode is configured:
+
+#+BEGIN_SRC elisp
+(use-package ivy-erlang-complete
+  :ensure t)
+
+(use-package erlang
+  :load-path ("<PATH TO OTP>/lib/erlang/lib/tools-3.0/emacs/")
+  :hook (after-save . ivy-erlang-complete-reparse)
+  :custom (ivy-erlang-complete-erlang-root "<PATH TO OTP>/lib/erlang/")
+  :config (ivy-erlang-complete-init)
+  :mode (("\\.erl?$" . erlang-mode)
+         ("rebar\\.config$" . erlang-mode)
+         ("relx\\.config$" . erlang-mode)
+         ("sys\\.config\\.src$" . erlang-mode)
+         ("sys\\.config$" . erlang-mode)
+         ("\\.config\\.src?$" . erlang-mode)
+         ("\\.config\\.script?$" . erlang-mode)
+         ("\\.hrl?$" . erlang-mode)
+         ("\\.app?$" . erlang-mode)
+         ("\\.app.src?$" . erlang-mode)
+         ("\\Emakefile" . erlang-mode)))
+#+END_SRC
+
+Flycheck comes with =rebar3= support and can automatically detect a rebar3 project, so all that is needed is the =flycheck= package. =use-package=  The packages =flycheck-inline= and =flycheck-pos-tip= improve usability but are optional:
+
+#+BEGIN_SRC elisp
+(use-package delight
+  :ensure t)
+
+(use-package flycheck-inline
+  :ensure t)
+
+(use-package flycheck
+  :ensure t
+  :delight
+  :config (global-flycheck-mode))
+
+(use-package flycheck-pos-tip
+  :ensure t)
+#+END_SRC
+
+The =:config (global-flycheck-mode)= argument to =use-package= will enable Flycheck for all code you edit in Emacs, the expressions given with =:config= are run after the package has been loaded. The =:delight= argument tells =use-package= to use the =delight= utility to disable showing Flycheck in the mode line. Keeping it out of the mode line saves space and especially since it is enabled globally we don't need it being called out as currently enabled in the mode line.
+
+If you like using Flycheck then [[https://github.com/abo-abo/hydra][hydra]] is worth checking out for stepping through and viewing the full list of errors. The Hydra macro sets up short keybindings that work only when the initial Hydra binding has been run. The following code will setup basic bindings for viewing Flycheck errors when =C-c f= is called:
+
+#+BEGIN_SRC elisp
+(use-package hydra
+  :defer 2
+  :bind ("C-c f" . hydra-flycheck/body))
+
+(defhydra hydra-flycheck (:color blue)
+  "
+  ^
+  ^Errors^
+  ^──────^
+  _<_ previous
+  _>_ next
+  _l_ list
+  _q_ quit
+  ^^
+  "
+  ("q" nil)
+  ("<" flycheck-previous-error :color pink)
+  (">" flycheck-next-error :color pink)
+  ("l" flycheck-list-errors))
+#+END_SRC
+
+Lastly, a couple packages that are not Erlang specific but are worth calling out as very useful when developing on a project:
+
+- [[https://magit.vc/][magit]]: An Emacs interface for [[https://git-scm.com/][Git]]. Magit does not just allow for calling Git from Emacs but provides a streamlined interface for everything from staging changes to interactive rebases.
+- =counsel-rg=: [[https://github.com/abo-abo/swiper/][counsel]] is a collection of commands that utilize Ivy, the package we used earlier for Erlang completions. =counsel-rg= uses  [[https://github.com/BurntSushi/ripgrep][ripgrep]] to search for strings across the files in a project -- when in a git project they act like =git grep=, only searching in files in the git repo and honoring =.gitignore=. Since ripgrep is an external commands it must be installed separately, for example on Ubuntu or Debian run =sudo apt-get install ripgrep=. When =ripgrep= is installed it will also be used by =ivy-erlang-complete= for faster searches.
+- [[https://github.com/abo-abo/swiper/][swiper]]: An alternative to =isearch= for searching in a buffer that uses Ivy.
+- [[https://company-mode.github.io/][company-mode]]: When combined with =ivy-erlang-complete= through [[https://github.com/s-kostyaev/company-erlang][company-erlang]] this mode will provide a popup of completions automatically, rather than requiring =C-:= to bring up completions in the minibuffer.
 
 **** Vim
 
