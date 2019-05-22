@@ -2226,6 +2226,9 @@ spec:
 $ kubectl apply -k deployment/dev
 #+END_SRC
 
+*** Database Migrations
+**** Jobs
+**** Init Containers
 *** StatefulSet
 
 ** Operations
