@@ -1910,6 +1910,12 @@ RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
 
 Now when =compile= is run there is a cache of =/root/.cache/rebar3= created separately from the image layer. So future runs of =docker build=, even if the config or lock file has changed, will mount this cache and only new packages will be fetched from Hex.
 
+#+attr_shortcode: note
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+Security notes: Clear cache to update packages.
+#+end_notice
+
 **** Multi-Stage Build
 
 For developing and running an Erlang project we are going to need an image with the built release along with ERTS. With Docker's multi-stage feature we are able define how to build individual images for containing the compiled dependencies, the final release and the Dialyzer Persistent Lookup Table (PLT) all in a single =Dockerfile=.
@@ -2111,7 +2117,7 @@ Each Kubernetes resource is defined in a =yaml= file containing the =kind= of re
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: service-discovery-deployment
+  name: service-discovery
 spec:
 #+END_SRC
 
@@ -2209,7 +2215,7 @@ deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: service-discovery-deployment
+  name: service-discovery
 spec:
   replicas: 1
   template:
