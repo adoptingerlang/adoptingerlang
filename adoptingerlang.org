@@ -2109,7 +2109,7 @@ And there are [[https://kubernetes.io/docs/setup/pick-right-solution/#table-of-s
 
 *** Deployment
 
-In Kubernetes containers are part of a =Pod=. Each =Pod= has 1 or more containers, and optionally =init-containers= which run once before the containers that make up the running =Pod= are started. For an application a higher level abstraction, a =Deployment=, is used so individual =Pods= don't have to be created for scaling or deploying. A =Deployment= is a declarative way to create and update how many =Pods= of our application are to be run and how they are to be deployed.
+In Kubernetes, containers are part of a =Pod=. Each =Pod= has 1 or more containers, and optionally =init-containers= which run once before the other containers are started. For an application a higher level abstraction, called a =Deployment=, is used so individual =Pods= don't have to be manually created for deploying or scaling. A =Deployment= is a declarative way to create and update how many =Pods= of our application are to be run and how they are to be deployed.
 
 Each Kubernetes resource is defined in a =yaml= file containing the =kind= of resource, =metadata=, such as a name, and the resource's specification:
 
@@ -2184,6 +2184,66 @@ In the next section we will see how using an environment variable =${SCHEDULERS}
 
 **** Container Environments and ConfigMaps
 
+Since, as we saw in the Releases chapter, runtime configuration is done through environment variable substitution in =vm.args.src= and =sys.config.src= we to insert those variable to the environment of the container. Each container in a Kubernetes Pod can have a field =env= declaring a set of environment variables:
+
+#+BEGIN_SRC yaml
+env:
+- name: LOGGER_LEVEL
+  value: error
+- name: PORT
+  value: 8053
+#+END_SRC
+
+#+BEGIN_SRC yaml
+env:
+- name: NODE_IP
+  valueFrom:
+    fieldRef:
+      fieldPath: status.podIP
+#+END_SRC
+
+#+BEGIN_SRC yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap
+data:
+  LOGGER_LEVEL: error
+  PORT: 8053
+#+END_SRC
+
+#+BEGIN_SRC yaml
+env:
+- name: LOGGER_LEVEL
+  valueFrom:
+    configMapKeyRef:
+      name: configmap
+      key: LOGGER_LEVEL
+- name: PORT
+  valueFrom:
+    configMapKeyRef:
+      name: configmap
+      key: PORT
+#+END_SRC
+
+A shortcut for bringing in all the variables defined in a ConfigMap as environment variables for the container can be done with =envFrom=:
+
+#+BEGIN_SRC yaml
+envFrom:
+- configMapRef:
+    name: configmap
+#+END_SRC
+
+Now all the variables defined in the ConfigMap will be added to the container without having to individually specify each one.
+
+#+attr_shortcode: note
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+<EXPLAIN THIS BETTER, maybe shouldn't be a note either but its own section in here>
+
+Rolling updates: Do not modify existing ConfigMap. Instead, create a new ConfigMap with the necessary changes and modify the ConfigMap referenced by the deployment. The old ConfigMaps will eventually be garbage collected by kubernetes since they are not referenced anywhere.
+#+end_notice
+
 *** Service
 
 Now that our application is able to run in Kubernetes through a =Deployment= we need a way to communicate with the =Pods= on their exposed port, =8053=. A =Service= defines a policy for accessing a set of =Pods= and provides environmental variables and DNS (technically an optional cluster addon) for finding them.
@@ -2211,16 +2271,43 @@ $ dig service-discovery.default
 
 [[https://kustomize.io/][Kustomize]] is a tool builtin to =kubectl= providing a template-free way to customize Kubernetes yaml resources. We will use it to create different configurations for different environments, starting with =dev=.
 
+Our setup will be a base configuration with overlays for different environments that can add additional resources and make modifications to the resources from the base layer. The directory layout for the base configuration and a dev overlay is:
+
 #+BEGIN_SRC shell
 $ tree deployment
 deployment
 ├── base
+│   ├── application.properties
+│   ├── default.env
 │   ├── deployment.yaml
 │   ├── kustomization.yaml
+│   ├── namespace.yaml
 │   └── service.yaml
-└── dev
-    └── kustomization.yaml
+└── overlays
+    └── dev
+        ├── flyway-deployment.yaml
+        ├── kustomization.yaml
+        ├── pgdata-persistentvolumeclaim.yaml
+        ├── postgres-deployment.yaml
+        └── postgres-service.yaml
 #+END_SRC
+
+The base =kustomization.yaml= includes the main resources of the service discovery project, a namespace, deployment and service:
+
+#+BEGIN_SRC yaml
+namespace: service-discovery
+commonLabels:
+  app: service-discovery
+resources:
+- namespace.yaml
+- deployment.yaml
+- service.yaml
+configMapGenerator:
+- name: configmap
+  env: default.env
+#+END_SRC
+
+The labels under =commonLabels= will be added to each resource and simplifies the Deployment configuration from the earlier section by being able to remove both the =labels= entry and the =selector=:
 
 #+BEGIN_SRC yaml
 apiVersion: apps/v1
@@ -2239,9 +2326,81 @@ spec:
           protocol: UDP
 #+END_SRC
 
+Kustomize will insert the labels as well as the same labels under the =selector= field =matchLabels= automatically. To see what Kustomize creates run =kubectl kustomize= on the base and it will output the generated resources to the screen:
+
 #+BEGIN_SRC shell
-$ kubectl apply -k deployment/dev
+$ kubectl kustomize deployment/base
+...
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: service-discovery
+  name: service-discovery
+  namespace: service-discovery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-discovery
+  template:
+    metadata:
+      labels:
+        app: service-discovery
+...
 #+END_SRC
+
+Another feature for improving creation of Deployments is generation of ConfigMaps. In the previous section on environment variables and ConfigMaps we ended with a Deployment that included environment variables from the data in a ConfigMap:
+
+#+BEGIN_SRC yaml
+envFrom:
+- configMapRef:
+    name: configmap
+#+END_SRC
+
+With Kustomize's =configMapGenerator= field we can declare that the ConfigMap be generated from any file with lines like =VarName=VarValue=:
+
+#+BEGIN_SRC yaml
+configMapGenerator:
+- name: configmap
+  env: default.env
+#+END_SRC
+
+The content of =default.env= is:
+
+#+BEGIN_SRC shell
+LOGGER_LEVEL=debug
+#+END_SRC
+
+The resulting ConfigMap seen in the output for =kubectl kustomize deployment/base= is:
+
+#+BEGIN_SRC yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: service-discovery
+  name: configmap-gdb24h2h47
+  namespace: service-discovery
+data:
+  LOGGER_LEVEL: debug
+#+END_SRC
+
+Note that the name is no longer simply =configmap= but instead =configmap-gdb24h2h47=. Kustomize will create a new ConfigMap with a different name if the content changes and updates any reference to the ConfigMap by the name given to the generator. So in the Deployment we will also have:
+
+#+BEGIN_SRC yaml
+- envFrom:
+  - configMapRef:
+      name: configmap-gdb24h2h47
+#+END_SRC
+
+To apply the resources generated by Kustomize in one step the =-k= option can be passed to =kubectl apply=:
+
+#+BEGIN_SRC shell
+$ kubectl apply -k deployment/overlays/dev
+#+END_SRC
+
+This command will generate the resources based on the =dev= overlay and apply them to the Kubernetes cluster.
 
 *** Database Migrations
 **** Jobs
