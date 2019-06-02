@@ -2166,7 +2166,7 @@ Each container spec in the =Pod= spec can include resource requests and limits f
 
 Additionally, CPU requests are translated to the cgroup property =cpu.shares=. Each CPU is considered 1024 slices and a CPU request tells the kernel how many of those slices to try to give to the process. But there is no upper bound to how much a process can ultimately take when only setting the shares. For throttling a process that is using too much CPU time we need the Kubernetes resource limits.
 
-The limits are translated to CPU bandwidth controls for the Linux kernel scheduler to enforce on the process. Bandwidth control has a period, which is some number of microseconds, and a quota, the maximum number of microseconds a process can use within a period. The period is always 100000 microseconds, so in the case of the example above with CPU limit set to =2000m= the cgroup quota set will be =200000=, meaning 2 CPU can be used every 100000 microseconds.
+The limits are translated to CPU bandwidth controls for the Linux kernel scheduler to enforce on the process. Bandwidth control has a period, which is some number of microseconds, and a quota, the maximum number of microseconds a process can use within a period. The period is always 100000 microseconds, so in the case of the example above with CPU limit set to =2000m= the cgroup quota set will be =200000=, meaning 2 CPUs can be used every 100000 microseconds.
 
 If the limit is exceeded during a period the process will be throttled by kernel not allowing it to run again until the next period. This is why it is also very important to correct set the number of Erlang VM schedulers that are used and to limit the amount of busy waiting done by the VM.
 
