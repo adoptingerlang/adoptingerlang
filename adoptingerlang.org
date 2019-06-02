@@ -2087,7 +2087,7 @@ In this chapter we built images for our service and finished off by creating a C
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
-Kubernetes is a container orchestration system. When our backend contains many distinct services that need to be kept running, cross communicating and scaling an orchestration system becomes essential. And with the growing popularity of containers Kubernetes for orchestration has grown as well.
+Kubernetes is a container orchestration system. When our backend contains many distinct services that need to be kept running, cross communicating and scaling an orchestration system becomes essential. And with the growing popularity of containers, using Kubernetes for orchestration has grown as well.
 
 With containers and Kubernetes we have a shared method of deployment, discovery, scaling and monitoring across the various languages and runtimes we might have running and interacting in our system. So in this chapter we will go over the core components of Kubernetes and how to use them to deploy and manage the =service_discovery= service we built in the previous chapters.
 
