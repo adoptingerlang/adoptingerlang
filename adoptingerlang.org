@@ -2192,6 +2192,8 @@ env:
   value: error
 - name: PORT
   value: 8053
+- name: SCHEDULERS
+  value: 2
 #+END_SRC
 
 #+BEGIN_SRC yaml
@@ -2210,6 +2212,7 @@ metadata:
 data:
   LOGGER_LEVEL: error
   PORT: 8053
+  SCHEDULERS: 2
 #+END_SRC
 
 #+BEGIN_SRC yaml
@@ -2224,6 +2227,11 @@ env:
     configMapKeyRef:
       name: configmap
       key: PORT
+- name: SCHEDULERS
+  valueFrom:
+    configMapKeyRef:
+      name: configmap
+      key: SCHEDULERS
 #+END_SRC
 
 A shortcut for bringing in all the variables defined in a ConfigMap as environment variables for the container can be done with =envFrom=:
@@ -2234,7 +2242,7 @@ envFrom:
     name: configmap
 #+END_SRC
 
-Now all the variables defined in the ConfigMap will be added to the container without having to individually specify each one.
+Now all the variables defined in the ConfigMap will be added to the container without having to individually specify each one. For more on defining ConfigMaps see the upcoming section [Using Kustomize to Simplify Deployment].
 
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
