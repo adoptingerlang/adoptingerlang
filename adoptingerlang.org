@@ -2174,7 +2174,7 @@ A busy wait is a tight loop an Erlang scheduler will enter waiting for more work
 
 In order to disable the scheduler busy waiting and to set the number of schedulers the VM spawns we set the VM arguments =+sbwt= and =+S= in =vm.args.src= as shown here:
 
-#+BEGIN_SRC
+#+BEGIN_SRC shell
 +sbwt none
 
 +S ${SCHEDULERS}
