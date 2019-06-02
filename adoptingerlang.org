@@ -2071,7 +2071,7 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 
 *** Building and Publishing Images in CI
 
-It would be tedious to have to manually build the images needed and publish to the registry. Instead including image building as part of the Continuous Integration process is common. Usually this is restricted to only occur on a merge to master or a new tag being created, but it can also be useful to always build the images, even for branches, for testing purposes. In this section we will cover a couple options for automating this process. However, there is no shortage of solutions and chances are if you are already using a particular CI tool it will be capable of doing the same with a similar approach.
+Since it would be tedious to manually build and publish images images to the registry each release, it is common to include image building as part of the Continuous Integration process.  Usually this is restricted to only occur on a merge to master or a new tag being created, but it can sometimes be useful to also build branch images for testing purposes. In this section we will cover a couple options for automating this process, but whatever CI tool you're already using should be capable of something similar.
 
 **** Google Cloud Build
 
