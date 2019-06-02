@@ -2093,7 +2093,7 @@ With containers and Kubernetes we have a shared method of deployment, discovery,
 
 *** Running Kubernetes
 
-In order to develop and test the Kubernetes deploy we will need to run Kubernetes. Kubernetes locally for testing purposes and briefly discuss options for production deployments.
+In order to develop and test the Kubernetes deploy, we will need to run Kubernetes locally for testing purposes, and then briefly discuss options for production deployments.
 
 **** Locally
 
