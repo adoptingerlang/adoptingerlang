@@ -2109,7 +2109,7 @@ There are [[https://kubernetes.io/docs/setup/pick-right-solution/#table-of-solut
 
 *** Deployment
 
-In Kubernetes, containers are part of a =Pod=. Each =Pod= has 1 or more containers, and optionally =init-containers= which run once before the other containers are started. For an application a higher level abstraction, called a =Deployment=, is used so individual =Pods= don't have to be manually created for deploying or scaling. A =Deployment= is a declarative way to create and update how many =Pods= of our application are to be run and how they are to be deployed.
+In Kubernetes, containers are part of a =Pod=. Each =Pod= has 1 or more containers, optionally including =init-containers= which run once before the other containers are started. For an application a higher level abstraction, called a =Deployment=, is used so individual =Pods= don't have to be manually created for deploying or scaling. A =Deployment= is a declarative way to create and update how many =Pods= of our application are to be run and how they are to be deployed.
 
 Each Kubernetes resource is defined in a =yaml= file containing the =kind= of resource, =metadata=, such as a name, and the resource's specification:
 
