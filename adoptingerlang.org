@@ -2184,7 +2184,7 @@ In the next section we will see how using an environment variable =${SCHEDULERS}
 
 **** Container Environments and ConfigMaps
 
-Since, as we saw in the Releases chapter, runtime configuration is done through environment variable substitution in =vm.args.src= and =sys.config.src= we to insert those variable to the environment of the container. Each container in a Kubernetes Pod can have a field =env= declaring a set of environment variables:
+As we've seen in the Releases chapter, runtime configuration is done through environment variable substitution in =vm.args.src= and =sys.config.src=. We therefore have to insert those variable to the environment of the container. Each container in a Kubernetes Pod can have a field =env= declaring a set of environment variables:
 
 #+BEGIN_SRC yaml
 env:
