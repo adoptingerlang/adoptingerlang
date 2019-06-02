@@ -2105,7 +2105,7 @@ In order to develop and test the Kubernetes deploy, we will need to run Kubernet
 
 All the big cloud providers offer managed Kubernetes clusters: [[https://cloud.google.com/kubernetes-engine/][Google Kubernetes Engine]], [[https://www.digitalocean.com/products/kubernetes/][Digital Ocean Kubernetes]], [[https://aws.amazon.com/eks/][AWS Elastic Container Service for Kubernetes]] and [[https://azure.microsoft.com/en-us/services/kubernetes-service/][Azure Kubernetes Service]].
 
-And there are [[https://kubernetes.io/docs/setup/pick-right-solution/#table-of-solutions][many more options]] for deploying to the cloud or on-premise. Many factors go into play when choosing a solution, like in the case of an existing company, where are your services currently being hosted. Luckily with Kubernetes your deployment will not be locked in to any one provider.
+There are [[https://kubernetes.io/docs/setup/pick-right-solution/#table-of-solutions][many more options]] for deploying to the cloud or on-premise. Many factors go into play when choosing a solution, like in the case of an existing company, where are your services currently being hosted. Luckily with Kubernetes your deployment will not be locked in to any one provider.
 
 *** Deployment
 
