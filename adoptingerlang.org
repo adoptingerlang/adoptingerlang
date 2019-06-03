@@ -2097,7 +2097,7 @@ In order to develop and test the Kubernetes deploy, we will need to run Kubernet
 
 **** Locally
 
-- [[https://github.com/kubernetes/minikube][minikube]]: The longest existing option that is now part of the Kubernetes project. minikube offers support for various hypervisors. It has an option to run without creating a new virtual machine but it suggests still doing so within a Linux VM and not directly on your machine.
+- [[https://github.com/kubernetes/minikube][minikube]]: The oldest and most flexible option, this is now an official part of the Kubernetes project. `minikube` offers support for various hypervisors and has an option to run without creating a new virtual machine, but it still suggests doing so within a Linux VM.
 - [[https://docs.docker.com/docker-for-mac/#kubernetes][Docker for Mac Kubernetes]]: The easiest to get going with when running on MacOS.
 - [[https://microk8s.io/][microk8s]]: An offering from Ubuntu, but runs on any [[https://docs.snapcraft.io/installing-snapd/6735][Linux distro that supports]] [[https://snapcraft.io/][snaps]]. microk8s is simple to install and get started with, and it runs locally, not within a VM like minikube, so is less of a resource hog.
 
