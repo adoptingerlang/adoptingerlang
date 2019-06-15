@@ -1834,7 +1834,7 @@ If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organ
 
 ***** Hex Dependencies
 
-Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/rebar3/rebar.config=. Using the experimental Dockerfile syntax =--mount=type=secret= the config can be mounted into the container for just the compile command. The file is mounted to a separate tmpfs filesystem and excluded from build cache calculations:
+Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/rebar3/hex.config=. Using the experimental Dockerfile syntax =--mount=type=secret= the config can be mounted into the container for just the compile command. The file is mounted to a separate tmpfs filesystem and excluded from build cache calculations:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
@@ -1859,8 +1859,8 @@ RUN apk add --no-cache openssh-client git && \
     mkdir -p -m 0600 ~/.ssh && \
     ssh-keyscan github.com >> ~/.ssh/known_hosts && \
     git config --global url."git@github.com:".insteadOf "https://github.com/"
-
-COPY rebar.config rebar.lock /src/app/
+WORKDIR /src
+COPY rebar.config rebar.lock .
 RUN --mount=type=ssh rebar3 compile
 #+END_SRC
 
@@ -1880,7 +1880,7 @@ Additional information and options for the SSH mount type can be found [[https:/
 The order of commands in a Dockerfile is very important to the build time and space required of the images it creates. Docker uses the layers each command in the Dockerfile creates to skip a command if nothing has changed. With rebar3 we take advantage of this by creating a layer containing the built dependencies of our project:
 
 #+BEGIN_SRC dockerfile
-COPY rebar.config rebar.lock /src/
+COPY rebar.config rebar.lock .
 RUN rebar3 compile
 #+END_SRC
 
@@ -1889,22 +1889,22 @@ The =COPY= command will only invalidate the cache of the command that runs =reba
 After the dependencies are built and cached we can copy in the rest of the project and compile it:
 
 #+BEGIN_SRC dockerfile
-COPY . /src/
+COPY . .
 RUN rebar3 compile
 #+END_SRC
 
 Because of the order of operations in the Dockerfile each run of =docker build .= only compiles the project's source, assuming there is a change, otherwise an existing layer is used here as well. Any command that doesn't need to be rerun if there are changes to the project need to come before either of the =COPY= commands. For example, installing Alpine packages needed by later steps =RUN apk add --no-cache git=.
 
-We will make use of the =--cache-from= argument. When Docker builds layers, =--cache-from= specifies an image name to use as a cache to find the layer already built. If the image isn't found locally it will be pulled from the registry. If it isn't in the registry Docker will ignore it. The argument can be given multiple times, making multiple images potential sources of cached layers.
+We will make use of the =--cache-from= argument. When Docker builds layers, =--cache-from= specifies an image to use as a cache to find the layer already built. If the image isn't found locally it will be pulled from the registry. If it isn't in the registry Docker will ignore it. The argument can be given multiple times, making multiple images potential sources of cached layers.
 
 Now this is all well and good but the layer with the built dependencies that will not be used if =rebar.config= or =rebar.lock= is changed also contains the Hex package cache rebar3 creates under =~/.cache/rebar3/hex=. Any change to those two files will result in all the packages having to be downloaded again.
 
-This issue is resolved as of Docker 18.09 -- when environment variable =DOCKER_BUILDKIT= is set, enabling the use of Buildkit as the Docker backend -- through a new mount type, =cache=, that can be passed directly to the =RUN= command:
+This issue is resolved as of Docker 18.09 -- when environment variable =DOCKER_BUILDKIT= is set or ="features":{"buildkit": true}= added to =/etc/docker/daemon.json=, enabling the use of Buildkit as the Docker backend -- through a new mount type, =cache=, that can be passed directly to the =RUN= command:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
 
-COPY rebar.config rebar.lock /src/
+COPY rebar.config rebar.lock .
 RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
 
@@ -1913,14 +1913,14 @@ Now when =compile= is run there is a cache of =/root/.cache/rebar3= created sepa
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-Security notes: Clear cache to update packages.
+There is a security concern to keep in mind when using layer caching. For example, since the =RUN= command only reruns if the text of the command changes, or a previous layer invalidated the cache, any system package installed will remain the same version even if a security fix has been released. For this reason it is good to occasionally run with =--no-cache= which will not reuse any layers when building the image.
 #+end_notice
 
 **** Multi-Stage Build
 
-For developing and running an Erlang project we are going to need an image with the built release along with ERTS. With Docker's multi-stage feature we are able define how to build individual images for containing the compiled dependencies, the final release and the Dialyzer Persistent Lookup Table (PLT) all in a single =Dockerfile=.
+For an Erlang project we are going to need an image with the built release for deploying, but we also need images for running tests and other code analysis. With Docker's multi-stage feature we are able to define how to build individual images for containing the compiled dependencies, the final release and the Dialyzer Persistent Lookup Table (PLT) all in a single =Dockerfile=.
 
-We will step through each stage individually based on the =service_discovery= project's [[https://github.com/adoptingerlang/service_discovery/blob/master/Dockerfile][Dockerfile]]. The first stage is named =builder=:
+We will step through each stage individually based on the =service_discovery= project's [[https://github.com/adoptingerlang/service_discovery/blob/docker-chapter/Dockerfile][Dockerfile]]. The first stage is named =builder=:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
@@ -1933,7 +1933,7 @@ RUN apk add --no-cache git
 WORKDIR /src
 
 # build and cache dependencies as their own layer
-COPY rebar.config rebar.lock /src/
+COPY rebar.config rebar.lock .
 RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
 
@@ -1956,11 +1956,11 @@ FROM builder as releaser
 # tar for unpacking the target system
 RUN apk add --no-cache tar
 
+WORKDIR /src
+
 # create the directory to unpack the release to
 RUN mkdir -p /opt/rel
 
-# copy in the source
-COPY . /src
 # build the release tarball and then unpack
 # to be copied into the image built in the next stage
 RUN rebar3 as prod tar && \
@@ -1986,7 +1986,7 @@ The profile having =include_erts= set to =true= means the tarball contains the E
 Why tar the release at all?
 #+end_notice
 
-Now to build and tag the =release= target using the builder image and, if it exists, a previously build of the image that has the same tag as a cache:
+Now to build and tag the =release= target using the builder image and, if it exists, a previous build of the image that has the same tag (because it was built for the same git commit) as a cache:
 
 #+BEGIN_SRC shell
 $ docker build --cache-from=${PROJECT}_builder:${CHKSUM} --cache-from=${PROJECT}_releaser:${CHKSUM} --target releaser -t ${PROJECT}_releaser:${CHKSUM} .
@@ -2031,12 +2031,11 @@ RUN apk add --no-cache openssl ncurses
 
 WORKDIR /opt/service_discovery
 
-COPY --from=releaser /opt/rel /opt/service_discovery
+COPY --from=releaser /opt/rel .
 
 ENV COOKIE service_discovery
 # write files generated during startup to /tmp
 ENV RELX_OUT_FILE_PATH /tmp
-ENV HOME /opt/service_discovery/bin
 
 ENTRYPOINT ["/opt/service_discovery/bin/service_discovery"]
 
