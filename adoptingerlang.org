@@ -1834,7 +1834,7 @@ If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organ
 
 ***** Hex Dependencies
 
-Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/rebar3/rebar.config=. Using the experimental Dockerfile syntax =--mount=type=secret= the config can be mounted into the container for just the compile command. The file is mounted to a separate tmpfs filesystem and excluded from build cache calculations:
+Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/rebar3/hex.config=. Using the experimental Dockerfile syntax =--mount=type=secret= the config can be mounted into the container for just the compile command. The file is mounted to a separate tmpfs filesystem and excluded from build cache calculations:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
