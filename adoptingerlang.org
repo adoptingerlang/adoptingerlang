@@ -1259,17 +1259,97 @@ Repeat this exercise from time to time, and eventually do some [[https://princip
 *** Common Test
 *** Coverage
 *** Dialyzer
+
+Example from =service_discovery=: adding =port_name= to the endpoints:
+
+#+BEGIN_SRC erlang
+-spec endpoint_from_json(unicode:unicode_binary(), map()) -> {ok, service_discovery:endpoint()} |
+                                                             {error, term()}.
+endpoint_from_json(ServiceName, #{<<"ip">> := IPString,
+                                  <<"port">> := Port,
+                                  <<"tags">> := Tags}) ->
+    case inet:parse_address(binary_to_list(IPString)) of
+        {ok, IP} ->
+            {ok, #{service_name => ServiceName,
+                   ip => IP,
+                   port => Port,
+                   tags => Tags}};
+        {error, einval}=Error ->
+            Error
+    end;
+endpoint_from_json(_, _) ->
+    {error, bad_endpoint_json}.
+#+END_SRC
+
+Missing =port_name= in return results in map that does not match the `service_discovery:endpoint()` spec:
+
+#+BEGIN_SRC erlang
+apps/service_discovery_http/src/sdh_handler.erl
+  42: The pattern 'ok' can never match the type {'error','bad_endpoint_json' | 'einval'}
+ 130: The pattern {'ok', Endpoint} can never match the type {'error','bad_endpoint_json' | 'einval'}
+#+END_SRC
+
 *** XRef
 *** Continuous Integration
-**** Docker
+**** Docker Compose
 
-(just point to the later Docker section here? the main thing is the plt building)
+
 
 **** CircleCI
-***** surefire ct output
-***** Microsoft's visual studio output
+
+#+BEGIN_SRC erlang
+%% generate junit xml report from test results
+{ct_opts, [{ct_hooks, [cth_surefire]}]}.
+#+END_SRC
+
+#+BEGIN_SRC yaml
+version: 2.1
+
+orbs:
+  rebar3: tsloughter/rebar3@0.7.0
+
+executors:
+  erlang_postgres:
+    docker:
+      - image: circleci/erlang:22
+        entrypoint: ["/bin/sh"]
+      - image: circleci/postgres:11-alpine-ram
+        environment:
+          POSTGRES_USER: discovery
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: discovery
+#+END_SRC
+
+#+BEGIN_SRC yaml
+
+#+END_SRC
+
+**** Microsoft's visual studio output
  https://github.com/ferd/trx
 
+**** CirrusCI
+
+
+**** Google Cloud Build
+
+#+BEGIN_SRC yaml
+steps:
+- name: 'docker/compose:1.24.0'
+  args: ['-f', 'docker-compose.yml', 'up', '-d']
+
+- name: 'gcr.io/kaniko-project/executor:latest'
+  args:
+  - --target=releaser
+  - --dockerfile=./Dockerfile.cb
+  - --build-arg=BASE_IMAGE=$_BASE_IMAGE
+  - --build-arg=RUNNER_IMAGE=$_RUNNER_IMAGE
+  - --destination=gcr.io/$PROJECT_ID/service_discovery:tester-$BUILD_ID
+  - --cache=true
+  - --cache-ttl=48h
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['run', '--network', 'workspace_sd_net', '-e', 'BUILD_ID=$BUILD_ID', '--entrypoint', 'rebar3', 'gcr.io/$PROJECT_ID/service_discovery:tester-$BUILD_ID', 'ct']
+#+END_SRC
 
 ** Hard Things to Get Right
 :PROPERTIES:
