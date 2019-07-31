@@ -1360,16 +1360,16 @@ As such, Rebar3 has the following properties:
 - Rebar3 defines its own working area within the =_build= directory; it expects to have control over what goes in there, and for you not to track that directory in version control nor rely on its internal structure (when it builds a thing you want to use, it usually outputs the path in the terminal)
 - All projects are built locally within their own directory based on the Erlang runtime currently loaded in your environment
 - All dependencies are fetched within each project, in the =_build= directory
-- All dependencies can define their own dependencies as well, and rebar3 will recognize this and put them within your own project's =_build= directory as well
+- All dependencies can define their own dependencies, and rebar3 will recognize this and put them within your own project's =_build= directory as well
 - Since version numbers are unreliable (even with semantic versioning), versions are information for humans, not build tools. In case of libraries that end up declared multiple times, the one closest to the project root is chosen to win ([[][warnings]] are emitted), with the assumption that libraries declared closer to the root project are used more thoroughly (and in the case of semver issues, the root project has to pick a winner anyway, which is possible here)
-- circular dependencies are forbidden
-- Rebar3 supports composable per-project [[][_profiles_] that lets you segment or combine configuration settings, including which dependencies are to be used only for tests, or in specific environment (say on a specific target OS)
-- Dependencies are always built with the =prod= profile applied, and once built will not be recompiled unless they are upgraded, even though the tool will make sure they're there every time
+- Circular dependencies are forbidden
+- Rebar3 supports composable per-project [[][_profiles_] that let you segment or combine configuration settings, including which dependencies are to be used only for tests, or in specific environment (say on a specific target OS)
+- Dependencies are always built with the =prod= profile applied, and once built will not be recompiled unless they are upgraded, even though the tool will always make sure they are there, match the lock and are compiled
 - Rebar3 assumes that you'll sometimes need to tweak the configuration of libraries you do not control and supports [[][overrides]] for this purpose
 - Builds are meant to be repeatable. Dependencies are locked, and only upgraded when specifically asked to. The =rebar3.lock= file will overtake whatever versions are declared in =rebar.config= until =rebar3 upgrade= is called to change them.
-- The tool assumes you're developing with a source control mechanism such as =git= or =hg= (mercurial), which means that switching branches may switch dependency versions. Rebar3 automatically finds out about such changes and re-fetches libraries to work well within the current project automatically
+- The tool assumes you're developing with a source control mechanism such as =git= or =hg= (mercurial), which means that switching branches may switch dependency versions in the lock file. Rebar3 automatically finds out about such changes and re-fetches libraries to work well within the current project automatically
 - To ease contribution and publishing, rebar3 does not natively support ways to use relative paths to declare libraries, since this could make builds brittle, non-repeatable, and non-portable
-- knowing relative paths are very common, it however provides temporary workarounds with [[][=_checkouts=]] and the ability for [[][plugins]] to add that functionality
+- Knowing relative paths are very common, it however provides temporary workarounds with [[][=_checkouts=]] and the ability for [[][plugins]] to add that functionality
 - Rebar3 is not an installer of end-user applications and does not support anything related to that; it aims to generate build artifacts that you can then install through the correct dedicated channels. Rebar3 does not expect or need to ever be on a production device or server.
 - Rebar3 is not a sandbox. While it will make sure all dependencies you download match the right signatures and provids repeatable builds, it cannot guarantee that script files invoked during builds or [[][parse transforms]] run during compilation are ever going to be safe, and has no intent in taking on that responsibility.
 
