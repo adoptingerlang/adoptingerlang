@@ -284,7 +284,7 @@ If you are planning on using both Erlang and Elixir on your development machine,
 
 To use it with Erlang, install the [[https://github.com/asdf-vm/asdf-erlang][Erlang plugin]] by calling =asdf plugin-add erlang https://github.com/asdf-vm/asdf-erlang.git=. This plugin wraps =kerl= and reuses all of its options, but transfers the builds under =asdf='s control. As such, the previous configuration instructions remain the same. You just have to change the sequence of calls for:
 
-#+NAME: asdf_osx
+#+NAME: asdf_linux
 #+BEGIN_SRC sh
 # asdf install erlang <version>
 $ asdf install erlang 21.3
