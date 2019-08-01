@@ -280,6 +280,23 @@ $ source ~/bin/erls/21.3/activate
 
 Any installed version can then be activated on-demand. If you want to set a default version, you can put the activation command in your =.bashrc= configuration file (or any shell profile you might have).
 
+If you are planning on using both Erlang and Elixir on your development machine, you might want to take a look at [[https://asdf-vm.com/#/core-manage-asdf-vm][=asdf=]]. It is a plugin-based installer for multiple programming languages, and can handle both Elixir and Erlang at once. You may need to install the =autoconf= package to make it work.
+
+To use it with Erlang, install the [[https://github.com/asdf-vm/asdf-erlang][Erlang plugin]] by calling =asdf plugin-add erlang https://github.com/asdf-vm/asdf-erlang.git=. This plugin wraps =kerl= and reuses all of its options, but transfers the builds under =asdf='s control. As such, the previous configuration instructions remain the same. You just have to change the sequence of calls for:
+
+#+NAME: asdf_osx
+#+BEGIN_SRC sh
+# asdf install erlang <version>
+$ asdf install erlang 21.3
+...
+# asdf global <name> <version> [<version>...]
+# asdf local <name> <version> [<version>...]
+# export ASDF_ERLANG_VERSION=<version>
+#+END_SRC
+
+The main difference between =kerl= and =asdf= from there on is that =kerl= will use environment variables to know which version to run, and =asdf= will optionally use a =.tool-versions= file to trigger the change on a per-directory basis.
+
+
 **** Linux
 
 Linux distributions pretty much all have package managers that let you install pre-built copies of Erlang, or you can still use [[https://www.erlang-solutions.com/resources/download.html][Erlang Solutions Ltd. packages]]. Much like with OSX though, you should only do so if you're trying things out the first time around. If you're planning on doing actual development for the longer haul, you'll instead want to be able to handle multiple versions at once.
@@ -328,6 +345,22 @@ $ source ~/bin/erls/21.3/activate
 #+END_SRC
 
 Any installed version can then be activated on-demand. If you want to set a default version, you can put the activation command in your =.bashrc= configuration file (or any shell profile you might have).
+
+If you are planning on using both Erlang and Elixir on your development machine, you might want to take a look at [[https://asdf-vm.com/#/core-manage-asdf-vm][=asdf=]]. It is a plugin-based installer for multiple programming languages, and can handle both Elixir and Erlang at once. You may need to install the =autoconf= package to make it work.
+
+To use it with Erlang, install the [[https://github.com/asdf-vm/asdf-erlang][Erlang plugin]] by calling =asdf plugin-add erlang https://github.com/asdf-vm/asdf-erlang.git=. This plugin wraps =kerl= and reuses all of its options, but transfers the builds under =asdf='s control. As such, the previous configuration instructions remain the same. You just have to change the sequence of calls for:
+
+#+NAME: asdf_osx
+#+BEGIN_SRC sh
+# asdf install erlang <version>
+$ asdf install erlang 21.3
+...
+# asdf global <name> <version> [<version>...]
+# asdf local <name> <version> [<version>...]
+# export ASDF_ERLANG_VERSION=<version>
+#+END_SRC
+
+The main difference between =kerl= and =asdf= from there on is that =kerl= will use environment variables to know which version to run, and =asdf= will optionally use a =.tool-versions= file to trigger the change on a per-directory basis.
 
 **** FreeBSD
 
