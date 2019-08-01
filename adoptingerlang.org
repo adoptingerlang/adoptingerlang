@@ -1378,7 +1378,7 @@ With that being said, let's use dependencies.
 
 **** Declaring Dependencies
 
-Since dependencies are all project-local, they have to be declared in the =rebar.config= file of your project. This will let Rebar3 know it needs to fetch them, build them, and generally make them available to your project.
+Since dependencies are all project-local, they have to be declared in the =rebar.config= file of your project. This will let Rebar3 know it needs to fetch them, build them, and generally make them available to your project. All dependencies must be individual OTP applications, so that they can be versioned and handled independently from each other.
 
 The following formats are generally valid:
 
