@@ -867,7 +867,7 @@ The net result is that you can run interpreted code without having to bother abo
 
 You now understand most of the weird stuff about Erlang/OTP's project structure and everything that has to do with these mysterious "OTP Applications". Starting with next chapter, we'll start digging a bit in supervision trees, so that you know how to set things up in a stateful runnable application.
 
-** Supervision Trees
+** TODO Supervision Trees
 :PROPERTIES:
 :EXPORT_FILE_NAME: supervision_trees
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1214,43 +1214,43 @@ Discuss these with your team. Shuffle supervisors around, adjust the strategies 
 
 Repeat this exercise from time to time, and eventually do some [[https://principlesofchaos.org/][chaos engineering]] by killing Erlang processes on a running node to see if it behaves and recovers the way you think it should (you can of course do chaos engineering on entire nodes, as is more common). What you'll end up with is a fault tolerant piece of code. You will also build a team with a strong understanding of the failure semantics that are baked in their system, with a good mental model of how things should break down when they inevitably do. This is worth its weight in gold.
 
-** Dependencies
+** TODO Dependencies
 :PROPERTIES:
 :EXPORT_FILE_NAME: dependencies
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-** External Dependencies
+** TODO External Dependencies
 :PROPERTIES:
 :EXPORT_FILE_NAME: external_dependencies
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-** Multi-App Projects
+** TODO Multi-App Projects
 :PROPERTIES:
 :EXPORT_FILE_NAME: umbrella_projects
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-** Rebar3 Shell
+** TODO Rebar3 Shell
 :PROPERTIES:
 :EXPORT_FILE_NAME: rebar3_shell
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-** Configuration
+** TODO Configuration
 :PROPERTIES:
 :EXPORT_FILE_NAME: configuration
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-** Documentation
+** TODO Documentation
 :PROPERTIES:
 :EXPORT_FILE_NAME: documentation
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-** Testing
+** TODO Testing
 :PROPERTIES:
 :EXPORT_FILE_NAME: testing
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1259,19 +1259,99 @@ Repeat this exercise from time to time, and eventually do some [[https://princip
 *** Common Test
 *** Coverage
 *** Dialyzer
+
+Example from =service_discovery=: adding =port_name= to the endpoints:
+
+#+BEGIN_SRC erlang
+-spec endpoint_from_json(unicode:unicode_binary(), map()) -> {ok, service_discovery:endpoint()} |
+                                                             {error, term()}.
+endpoint_from_json(ServiceName, #{<<"ip">> := IPString,
+                                  <<"port">> := Port,
+                                  <<"tags">> := Tags}) ->
+    case inet:parse_address(binary_to_list(IPString)) of
+        {ok, IP} ->
+            {ok, #{service_name => ServiceName,
+                   ip => IP,
+                   port => Port,
+                   tags => Tags}};
+        {error, einval}=Error ->
+            Error
+    end;
+endpoint_from_json(_, _) ->
+    {error, bad_endpoint_json}.
+#+END_SRC
+
+Missing =port_name= in return results in map that does not match the `service_discovery:endpoint()` spec:
+
+#+BEGIN_SRC erlang
+apps/service_discovery_http/src/sdh_handler.erl
+  42: The pattern 'ok' can never match the type {'error','bad_endpoint_json' | 'einval'}
+ 130: The pattern {'ok', Endpoint} can never match the type {'error','bad_endpoint_json' | 'einval'}
+#+END_SRC
+
 *** XRef
 *** Continuous Integration
-**** Docker
+**** Docker Compose
 
-(just point to the later Docker section here? the main thing is the plt building)
+
 
 **** CircleCI
-***** surefire ct output
-***** Microsoft's visual studio output
+
+#+BEGIN_SRC erlang
+%% generate junit xml report from test results
+{ct_opts, [{ct_hooks, [cth_surefire]}]}.
+#+END_SRC
+
+#+BEGIN_SRC yaml
+version: 2.1
+
+orbs:
+  rebar3: tsloughter/rebar3@0.7.0
+
+executors:
+  erlang_postgres:
+    docker:
+      - image: circleci/erlang:22
+        entrypoint: ["/bin/sh"]
+      - image: circleci/postgres:11-alpine-ram
+        environment:
+          POSTGRES_USER: discovery
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: discovery
+#+END_SRC
+
+#+BEGIN_SRC yaml
+
+#+END_SRC
+
+**** Microsoft's visual studio output
  https://github.com/ferd/trx
 
+**** CirrusCI
 
-** Hard Things to Get Right
+
+**** Google Cloud Build
+
+#+BEGIN_SRC yaml
+steps:
+- name: 'docker/compose:1.24.0'
+  args: ['-f', 'docker-compose.yml', 'up', '-d']
+
+- name: 'gcr.io/kaniko-project/executor:latest'
+  args:
+  - --target=releaser
+  - --dockerfile=./Dockerfile.cb
+  - --build-arg=BASE_IMAGE=$_BASE_IMAGE
+  - --build-arg=RUNNER_IMAGE=$_RUNNER_IMAGE
+  - --destination=gcr.io/$PROJECT_ID/service_discovery:tester-$BUILD_ID
+  - --cache=true
+  - --cache-ttl=48h
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['run', '--network', 'workspace_sd_net', '-e', 'BUILD_ID=$BUILD_ID', '--entrypoint', 'rebar3', 'gcr.io/$PROJECT_ID/service_discovery:tester-$BUILD_ID', 'ct']
+#+END_SRC
+
+** TODO Hard Things to Get Right
 :PROPERTIES:
 :EXPORT_FILE_NAME: hard_to_get_right
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1525,7 +1605,7 @@ A common claim heard on forums and comment sections of popular tech news sites i
 However, containers and Kubernetes are not appropriate in all cases. Kubernetes can be overkill, particularly if using a hosted solution isn't an option, or your product could be an embedded device.
 
 
-** Releases
+** TODO Releases
 :PROPERTIES:
 :EXPORT_FILE_NAME: releases
 :EXPORT_HUGO_MENU: :menu main :parent production
@@ -1799,7 +1879,7 @@ $ bin/service_discovery remote_console
 
 =remote_console= uses =-remsh= [[http://erlang.org/doc/man/erl.html#flags][erl]] flag for connecting an interactive shell to the running release. The command knows which running Erlang node to connect to based on the same configuration, from =vm.args=, that sets the name and cookie for the node that was run originally. This means any environment variables used to populate =vm.args= when the node is started must be set the same when connecting the remote console.
 
-** Docker
+** TODO Docker
 :PROPERTIES:
 :EXPORT_FILE_NAME: docker
 :EXPORT_HUGO_MENU: :menu main :parent production
@@ -1924,7 +2004,7 @@ We will step through each stage individually based on the =service_discovery= pr
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
-FROM erlang:21-alpine as builder
+FROM erlang:22-alpine as builder
 
 # git for fetching non-hex depenencies
 # add any other Alpine libraries needed to compile the project here
@@ -1937,7 +2017,7 @@ COPY rebar.config rebar.lock .
 RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
 
-The =builder= stage starts with the base image =erlang:21-alpine=. =as builder= names the stage so we can use it as a target to =docker build=:
+The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a target to =docker build=:
 
 #+BEGIN_SRC shell
 $ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
@@ -2080,7 +2160,7 @@ Since it would be tedious to manually build and publish images images to the reg
 
 In this chapter we built images for our service and finished off by creating a CI pipeline for continually building and publishing those images when changes are made to the repository. In the next chapter we will cover how to build a deployment to Kubernetes from these images. After we are running in Kubernetes the following chapter covers observability, such as connecting to a running node, well structured logs, reporting metrics and distributed traces.
 
-** Kubernetes
+** TODO Kubernetes
 :PROPERTIES:
 :EXPORT_FILE_NAME: kubernetes
 :EXPORT_HUGO_MENU: :menu main :parent production
@@ -2414,7 +2494,7 @@ This command will generate the resources based on the =dev= overlay and apply th
 **** Init Containers
 *** StatefulSet
 
-** Operations
+** TODO Operations
 :PROPERTIES:
 :EXPORT_FILE_NAME: operations
 :EXPORT_HUGO_MENU: :menu main :parent production
@@ -2439,7 +2519,7 @@ This command will generate the resources based on the =dev= overlay and apply th
 :EXPORT_HUGO_MENU: :menu main :weight 4001
 :END:
 
-** Who to Put on The Team
+** TODO Who to Put on The Team
 :PROPERTIES:
 :EXPORT_FILE_NAME: on_the_team
 :EXPORT_HUGO_MENU: :menu main :parent team-building
@@ -2448,13 +2528,13 @@ This command will generate the resources based on the =dev= overlay and apply th
 *** Building Around an Expert
 *** Building Without an Expert
 *** To Remote or Not To Remote
-** Repository Structures
+** TODO Repository Structures
 :PROPERTIES:
 :EXPORT_FILE_NAME: repo_structures
 :EXPORT_HUGO_MENU: :menu main :parent team-building
 :END:
 
-** Processes
+** TODO Processes
 :PROPERTIES:
 :EXPORT_FILE_NAME: processes
 :EXPORT_HUGO_MENU: :menu main :parent team-building
@@ -2464,7 +2544,7 @@ This command will generate the resources based on the =dev= overlay and apply th
 *** Common Architecture Decisions
 *** Prototype and Throw Away
 *** Internal Training
-** How To Hire
+** TODO How To Hire
 :PROPERTIES:
 :EXPORT_FILE_NAME: how_to_hire
 :EXPORT_HUGO_MENU: :menu main :parent team-building
