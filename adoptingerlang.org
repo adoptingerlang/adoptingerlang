@@ -44,6 +44,15 @@
 :EXPORT_HUGO_MENU: :menu main :weight 1001
 :END:
 
+#+BEGIN_EXPORT html
+<header>
+  <h1>Introduction</h1>
+  <h5>
+    <strong>August 3, 2019</strong>
+  </h5>
+</header>
+#+END_EXPORT
+
 So you've been checking Erlang out, and you've read a few tutorials and a bunch of books, but you're finding that nothing really tells you how you should set up a modern project for you and your team, and you have then found this text.  The Erlang community has collectively spent years writing introductory content, and a lot of it is still really good. So what's the hope for yet another book?
 
 Frankly, most of the material out there is really solid to teach you the Erlang basics, and we have no pretension of replacing them, nor a desire to re-explain the same content they contain once more. Instead, we the authors felt like while they are rock solid in a lot of areas, we could help cover some blind spots.
@@ -126,6 +135,15 @@ He is a Systems Architect at Genetec, a company offering video systems, access c
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Development"
 :EXPORT_HUGO_MENU: :menu main :weight 2001
 :END:
+
+#+BEGIN_EXPORT html
+<header>
+  <h1>Development</h1>
+  <h5>
+    <strong>August 3, 2019</strong>
+  </h5>
+</header>
+#+END_EXPORT
 
 The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
 
@@ -1596,6 +1614,15 @@ In short, if you can, pick =+C multi_time_warp +c true=. It's the best option fo
 :EXPORT_HUGO_MENU: :menu main :weight 3001
 :END:
 
+#+BEGIN_EXPORT html
+<header>
+  <h1>Production</h1>
+  <h5>
+    <strong>August 3, 2019</strong>
+  </h5>
+</header>
+#+END_EXPORT
+
 Erlang/OTP is certainly a unique language and runtime, but it is not as different as even some proponents would have you believe. In this part we will see how to build artifacts for deployment and how to operate the deployment in the same environment you would run any other service. In this part we'll build a deployable artifact (a release), create a docker image of the release and deploy to a Kubernetes cluster.
 
 A common claim heard on forums and comment sections of popular tech news sites is, you have OTP, you don't need Kubernetes. Or the opposite, that having Kubernetes replaces OTP. Erlang does not replace Kubernetes, nor does Kubernetes replace Erlang. If an Erlang system didn't need to be monitored and restarted like any other runtime because it has supervision trees then it wouldn't come with [[http://erlang.org/doc/man/heart.html][heart]]. Similarly, if restarting the entire program with =heart= was adequate there wouldn't be supervision trees.
@@ -2518,6 +2545,15 @@ This command will generate the resources based on the =dev= overlay and apply th
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Team Building"
 :EXPORT_HUGO_MENU: :menu main :weight 4001
 :END:
+
+#+BEGIN_EXPORT html
+<header>
+  <h1>Team Building</h1>
+  <h5>
+    <strong>August 3, 2019</strong>
+  </h5>
+</header>
+#+END_EXPORT
 
 ** TODO Who to Put on The Team
 :PROPERTIES:
