@@ -118,9 +118,7 @@ He is a senior infrastructure developer at Postmates. Previously, he was a Syste
 
 *** Evan Vigil-McClanahan
 
-Evan is a Software Engineer at Helium Inc. He particularly cares about distributed systems, performance engineering, and compilers. He has previously worked for TigerConnect, SpaceTime Insight, Heroku, Basho, and Riverbed.
-
-- [[https://twitter.com/evanmcc][@evanmcc]]
+Evan has been writing Erlang professionally since 2012 and in various other languages since 2001.  He's worked with Erlang at Basho Technologies, Heroku, SpaceTime Insight, and most recently Helium, where his broad focus has been on distributed systems along with high- and low-level performance.
 
 * Development
 :PROPERTIES:
