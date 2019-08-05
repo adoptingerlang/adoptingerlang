@@ -92,7 +92,7 @@ So this is what _Adopting Erlang_ is all about. This book (and website!) is all 
 
 By opposition, we will _not_ cover things like basic Erlang, core OTP behaviours, and so on. They have been covered multiple times in other resources in the past, many of which are freely available. We still have put together an appendix of cheat sheets you can refer to if you need a refresher.
 
-Essentially, we hope for _Adopting Erlang_ to be the missing link between all the various starter books with their various approaches, and the more advanced material like _Erlang in Anger_ that lets you debug stuff in production. We want this book to teach you how to go from "Okay, I think I got the basics" to "let's get this project going, and let's do it right." After reading this book, you should be able to know exactly what the best practices are to fit right in with the rest of the Erlang community.
+Essentially, we hope for _Adopting Erlang_ to be the missing link between all the various starter books  and the more advanced material like _Erlang in Anger_ that lets you debug stuff in production. We want this book to teach you how to go from "Okay, I think I got the basics" to "let's get this project going, and let's do it right." After reading this book, you should be able to know exactly what the best practices are to fit right in with the rest of the Erlang community.
 
 ** About the Authors
 :PROPERTIES:
@@ -102,7 +102,11 @@ Essentially, we hope for _Adopting Erlang_ to be the missing link between all th
 
 *** Tristan Sloughter
 
-Tristan is a long time Erlang hacker, having gotten into it in college and then professionally for various companies, eCDMarket, Orbitz Worldwide, Heroku, SpaceTime Insight, and currently as a senior software engineer at Postmates, Inc. Tristan is also one of the maintainers of the release tool Relx and build tool Rebar3.
+Tristan is a long time Erlang programmer, having picked it up for fun while in college and then professionally for various companies, Orbitz Worldwide, eCDMarket, Heroku, SpaceTime Insight, and currently as a senior software engineer at Postmates, Inc.
+
+While at Heroku, Tristan, along with Fred, started the build tool Rebar3 after seeing the struggles involved in onboarding new developers to Erlang projects. He is also a maintainer of the release tool Relx.
+
+Tristan also created the website [[https://howistart.org/][How I Start]] which collects articles for various languages from experienced developers on how they setup a new project and take it to completion, while also giving a peek at the tools and packages these top developers prefer.
 
 - [[https://twitter.com/t_sloughter][@t_sloughter]]
 - [[http://blog.erlware.org/][blog]]
