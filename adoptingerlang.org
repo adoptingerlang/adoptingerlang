@@ -104,11 +104,21 @@ Essentially, we hope for _Adopting Erlang_ to be the missing link between all th
 
 Tristan is a long time Erlang hacker, having gotten into it in college and then professionally for various companies, eCDMarket, Orbitz Worldwide, Heroku, SpaceTime Insight, and currently as a senior software engineer at Postmates, Inc. Tristan is also one of the maintainers of the release tool Relx and build tool Rebar3.
 
+- [[https://twitter.com/t_sloughter][@t_sloughter]]
+- [[http://blog.erlware.org/][blog]]
+
 *** Fred Hebert
 
-Fred is the author of _Learn You Some Erlang_, _Erlang in Anger_, and more recently, _Property-Based Testing with PropEr, Erlang, and Elixir_. He is a maintainer of Rebar3, and of libraries such as recon, pobox, vmstats, and backoff.
+Fred is the author of [[https://learnyousomeerlang.com][_Learn You Some Erlang_]], [[https://erlang-in-anger.com][_Erlang in Anger_]], and more recently, [[https://propertesting.com][_Property-Based Testing with PropEr, Erlang, and Elixir_]]. He is a maintainer of Rebar3, and of libraries such as recon, pobox, vmstats, and backoff.
 
-He is a Systems Architect at Genetec, a company offering video systems, access control, case management, and IoT integration systems. Previously, he was a principal member of technical staff on the Heroku platform, worked in real-time bidding, and provided Erlang training.
+He is a senior infrastructure developer at Postmates. Previously, he was a Systems Architect at Genetec, a company offering video systems, access control, case management, and IoT integration systems, and was also a principal member of technical staff on the Heroku platform, worked in real-time bidding, and provided Erlang training.
+
+- [[https://twitter.com/mononcqc][@mononcqc]]
+- [[https://ferd.ca][blog]]
+
+*** Evan Vigil-McClanahan
+
+Evan has been writing Erlang professionally since 2012 and in various other languages since 2001.  He's worked with Erlang at Basho Technologies, Heroku, SpaceTime Insight, and most recently Helium, where his broad focus has been on distributed systems along with high- and low-level performance.
 
 * Development
 :PROPERTIES:
@@ -2588,6 +2598,8 @@ This command will generate the resources based on the =dev= overlay and apply th
 </header>
 #+END_EXPORT
 
+No business works only with code; it is way more frequent to hear about projects that failed due to bad communications and dysfunctional teams than it is to hear about projects that failed purely due to bad technological choices. This part of the book is dedicated to team-building, to figure out how to bootstrap a team of Erlang developers when you're starting without any in-house expertise.
+
 ** TODO Who to Put on The Team
 :PROPERTIES:
 :EXPORT_FILE_NAME: on_the_team
@@ -2620,6 +2632,7 @@ This command will generate the resources based on the =dev= overlay and apply th
 :END:
 
 *** It Takes One to Know One
+**** Hiring for Mentorship
 *** It is Easier to Train than Hire
 
 * Appendix 1: Erlang/OTP Cheat Sheets
@@ -2916,29 +2929,29 @@ And the semantics for links and monitors, in diagram forms:
 
 #+CAPTION: Monitors are unidirectional informational signals, and they stack
 #+NAME: fig:sig_mon
-[[./static/img/sig_mon.png]]
+[[./static/img/sig_mon_sm.png]]
 
 #+CAPTION: Untrapped links are bidirectional and kill the other process, except if the reason is 'normal'
 #+NAME: fig:sig_linked_notrap
-[[./static/img/sig_linked_notrap.png]]
+[[./static/img/sig_linked_notrap_sm.png]]
 
 #+CAPTION: Trapped links are converted to messages, except for the untrappable 'kill' reason
 #+NAME: fig:sig_linked_trap
-[[./static/img/sig_linked_trap.png]]
+[[./static/img/sig_linked_trap_sm.png]]
 
 OTP processes do have slightly different semantics due to supervision shenanigans:
 
 #+CAPTION: Untrapped links work the same for OTP
 #+NAME: fig:sig_otp_notrap
-[[./static/img/sig_otp_notrap.png]]
+[[./static/img/sig_otp_notrap_sm.png]]
 
 #+CAPTION: Trapped links behave in a special way when the parent of a process is the one that dies
 #+NAME: fig:sig_otp_trap
-[[./static/img/sig_otp_trap.png]]
+[[./static/img/sig_otp_trap_sm.png]]
 
 #+CAPTION: Supervisors log things differently based on the termination reason
 #+NAME: fig:sig_otp_own
-[[./static/img/sig_otp_own.png]]
+[[./static/img/sig_otp_own_sm.png]]
 
 *** Behaviours
 
