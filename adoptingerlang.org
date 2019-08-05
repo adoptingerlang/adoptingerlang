@@ -2931,41 +2931,29 @@ And the semantics for links and monitors, in diagram forms:
 
 #+CAPTION: Monitors are unidirectional informational signals, and they stack
 #+NAME: fig:sig_mon
-#+ATTR_HTML: width="500px"
-#+ATTR_ORG: :width 500
-[[./static/img/sig_mon.png]]
+[[./static/img/sig_mon_sm.png]]
 
 #+CAPTION: Untrapped links are bidirectional and kill the other process, except if the reason is 'normal'
 #+NAME: fig:sig_linked_notrap
-#+ATTR_HTML: width="500px"
-#+ATTR_ORG: :width 500
-[[./static/img/sig_linked_notrap.png]]
+[[./static/img/sig_linked_notrap_sm.png]]
 
 #+CAPTION: Trapped links are converted to messages, except for the untrappable 'kill' reason
 #+NAME: fig:sig_linked_trap
-#+ATTR_HTML: width="500px"
-#+ATTR_ORG: :width 500
-[[./static/img/sig_linked_trap.png]]
+[[./static/img/sig_linked_trap_sm.png]]
 
 OTP processes do have slightly different semantics due to supervision shenanigans:
 
 #+CAPTION: Untrapped links work the same for OTP
 #+NAME: fig:sig_otp_notrap
-#+ATTR_HTML: width="500px"
-#+ATTR_ORG: :width 500
-[[./static/img/sig_otp_notrap.png]]
+[[./static/img/sig_otp_notrap_sm.png]]
 
 #+CAPTION: Trapped links behave in a special way when the parent of a process is the one that dies
 #+NAME: fig:sig_otp_trap
-#+ATTR_HTML: width="500px"
-#+ATTR_ORG: :width 500
-[[./static/img/sig_otp_trap.png]]
+[[./static/img/sig_otp_trap_sm.png]]
 
 #+CAPTION: Supervisors log things differently based on the termination reason
 #+NAME: fig:sig_otp_own
-#+ATTR_HTML: width="500px"
-#+ATTR_ORG: :width 500
-[[./static/img/sig_otp_own.png]]
+[[./static/img/sig_otp_own_sm.png]]
 
 *** Behaviours
 
