@@ -925,7 +925,7 @@ But all in all, this little additional =mod= line in the app file and the presen
 #+begin_notice
 If you do not want to care for a supervision tree and are only interested in getting a =main()= function to get going like you would in most other programming languages, =escript= might be a good option for you.
 
-=escript= is a special C program that wraps the Erlang virtual machine. In wrapping it, it also introduces a small shim that retrofits the idea of a =main()= function to the release structure, by calling your code into the root Erlang process of the virtual machine.
+escript is a special C program that wraps the Erlang virtual machine. In wrapping it, it also introduces a small shim that retrofits the idea of a main() function to the release structure, by calling your code into the root Erlang process of the virtual machine.
 
 The net result is that you can run interpreted code without having to bother about releases, OTP Applications, or supervision tree. You can read more about escripts in <a href="http://erlang.org/doc/man/escript.html">the official Erlang documentation</a>. Rebar3 also <a href="https://www.rebar3.org/docs/commands#escriptize">has a command to create complex escript bundles</a>.
 #+end_notice
