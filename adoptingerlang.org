@@ -177,7 +177,7 @@ The first section of this book is dedicated to getting a working installation wo
 #+BEGIN_EXPORT html
 <div class="pagination">
   <div><a href="/docs/introduction/about_the_authors">← Prev</a></div>
-  <div><a href="/docs/development">Next →</a></div>
+  <div><a href="/docs/development/setup">Next →</a></div>
 </div>
 #+END_EXPORT
 
