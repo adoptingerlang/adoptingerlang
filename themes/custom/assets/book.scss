@@ -144,6 +144,13 @@ header {
     font-weight: bolder;
 }
 
+.pagination {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+
 li a:hover {
     color: #B6B6B6;
 }

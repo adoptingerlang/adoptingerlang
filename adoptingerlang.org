@@ -2,7 +2,6 @@
 #+AUTHOR:    Fred Hebert, Tristan Sloughter
 #+DRAWERS: HIDDEN HINT SOLUTION
 #+EMAIL:     t@crashfast.com
-#+DATE:      \today
 #+DESCRIPTION: Adopting Erlang.
 #+KEYWORDS: erlang
 
@@ -94,6 +93,13 @@ By opposition, we will _not_ cover things like basic Erlang, core OTP behaviours
 
 Essentially, we hope for _Adopting Erlang_ to be the missing link between all the various starter books  and the more advanced material like _Erlang in Anger_ that lets you debug stuff in production. We want this book to teach you how to go from "Okay, I think I got the basics" to "let's get this project going, and let's do it right." After reading this book, you should be able to know exactly what the best practices are to fit right in with the rest of the Erlang community.
 
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/">← Prev</a></div>
+  <div><a href="/docs/introduction/about_the_authors">Next →</a></div>
+</div>
+#+END_EXPORT
+
 ** About the Authors
 :PROPERTIES:
 :EXPORT_FILE_NAME: about_the_authors
@@ -123,6 +129,13 @@ He is a senior infrastructure developer at Postmates. Previously, he was a Syste
 *** Evan Vigil-McClanahan
 
 Evan has been writing Erlang professionally since 2012 and in various other languages since 2001.  He's worked with Erlang at Basho Technologies, Heroku, SpaceTime Insight, and most recently Helium, where his broad focus has been on distributed systems along with high- and low-level performance.
+
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/introduction">← Prev</a></div>
+  <div><a href="/docs/development">Next →</a></div>
+</div>
+#+END_EXPORT
 
 * Development
 :PROPERTIES:
@@ -160,6 +173,13 @@ Evan has been writing Erlang professionally since 2012 and in various other lang
 #+END_EXPORT
 
 The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
+
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/introduction/about_the_authors">← Prev</a></div>
+  <div><a href="/docs/development/setup">Next →</a></div>
+</div>
+#+END_EXPORT
 
 ** Setup
 :PROPERTIES:
@@ -603,6 +623,13 @@ au BufNewFile,BufRead *.erl,*.es,*.hrl,*.xrl,*.config setf erlang
 
 This is the very basic stuff, obviously. Fancier integration is possible, but the one author who uses vim mostly uses only this, and relies on Rebar3 in a terminal to deal with the rest of the language.
 
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/development">← Prev</a></div>
+  <div><a href="/docs/development/otp_high_level">Next →</a></div>
+</div>
+#+END_EXPORT
+
 ** OTP at a High Level
 :PROPERTIES:
 :EXPORT_FILE_NAME: otp_high_level
@@ -688,6 +715,12 @@ And everyone follows it, whether they are writing embedded software, blockchain 
 
 So the key to getting started fast in Erlang is to know the framework, which is often kept as more advanced material. Here we're going to do things upside down and start from a fully functional release, and then dig down into its structure. The next chapters will be dedicated to understanding how to work within these requirements.
 
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/development/setup">← Prev</a></div>
+  <div><a href="/docs/development/otp_applications">Next →</a></div>
+</div>
+#+END_EXPORT
 
 ** OTP Applications
 :PROPERTIES:
@@ -931,6 +964,13 @@ The net result is that you can run interpreted code without having to bother abo
 #+end_notice
 
 You now understand most of the weird stuff about Erlang/OTP's project structure and everything that has to do with these mysterious "OTP Applications". Starting with next chapter, we'll start digging a bit in supervision trees, so that you know how to set things up in a stateful runnable application.
+
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/development/otp_high_level">← Prev</a></div>
+  <div><a href="/docs/production">Next →</a></div>
+</div>
+#+END_EXPORT
 
 ** TODO Supervision Trees
 :PROPERTIES:
@@ -1678,6 +1718,12 @@ A common claim heard on forums and comment sections of popular tech news sites i
 
 However, containers and Kubernetes are not appropriate in all cases. Kubernetes can be overkill, particularly if using a hosted solution isn't an option, or your product could be an embedded device.
 
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/development/otp_applications">← Prev</a></div>
+  <div><a href="/docs/team_building">Next →</a></div>
+</div>
+#+END_EXPORT
 
 ** TODO Releases
 :PROPERTIES:
@@ -2603,6 +2649,12 @@ This command will generate the resources based on the =dev= overlay and apply th
 #+END_EXPORT
 
 No business works only with code; it is way more frequent to hear about projects that failed due to bad communications and dysfunctional teams than it is to hear about projects that failed purely due to bad technological choices. This part of the book is dedicated to team-building, to figure out how to bootstrap a team of Erlang developers when you're starting without any in-house expertise.
+
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/production">← Prev</a></div>
+</div>
+#+END_EXPORT
 
 ** TODO Who to Put on The Team
 :PROPERTIES:
