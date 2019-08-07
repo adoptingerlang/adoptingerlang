@@ -69,9 +69,10 @@ workflows:
           deploy_args: "--prod"
           requires:
             - export
-          branches:
-            only:
-            - master
+          filters:
+            branches:
+              only:
+                - master
 
       - pdf:
           requires:
