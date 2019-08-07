@@ -31,7 +31,7 @@ jobs:
         type: string
         default: ""
     docker:
-      - image: docker.pkg.github.com/tsloughter/adoptingerlang/hugo_netlify
+      - image: docker.pkg.github.com/adoptingerlang/adoptingerlang/hugo_netlify
     steps:
       - checkout
       - attach_workspace:
