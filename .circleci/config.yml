@@ -4,8 +4,17 @@ jobs:
     docker:
       - image: silex/emacs:26.2-alpine
     steps:
+      - restore_cache:
+          keys:
+            - emacs-packages-v1
       - checkout
       - run: emacs -batch adoptingerlang.org -q -l export.el
+
+      - save_cache:
+          key: emacs-packages-v1
+          paths:
+            - /root/.emacs.d
+
       - persist_to_workspace:
           root: .
           paths:
@@ -15,29 +24,21 @@ jobs:
           path: ./adoptingerlang.tex
       - store_artifacts:
           path: ./content
+
   deploy:
+    parameters:
+      deploy_args:
+        type: string
+        default: ""
     docker:
-      - image: circleci/node
-        entrypoint: /bin/sh
+      - image: docker.pkg.github.com/adoptingerlang/adoptingerlang/hugo_netlify
     steps:
       - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            git submodule init
-            git submodule update --remote
       - attach_workspace:
           at: .
       - run: |
-          sudo apt-get install -f python-pygments
-
-          mkdir -p bin
-          curl -L https://github.com/gohugoio/hugo/releases/download/v0.55.5/hugo_extended_0.55.5_Linux-64bit.tar.gz -o bin/hugo.tar.gz
-          tar -xvf bin/hugo.tar.gz -C ./bin
-          bin/hugo --gc --minify
-
-          sudo npm install netlify-cli -g --unsafe-perm
-          netlify deploy --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
+          /opt/hugo --gc --minify
+          netlify deploy << parameters.deploy_args >> --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY_SITE_ID
 
   pdf:
     docker:
@@ -59,9 +60,20 @@ workflows:
   hugo_export:
     jobs:
       - export
+
       - deploy:
           requires:
             - export
+
+      - deploy:
+          deploy_args: "--prod"
+          requires:
+            - export
+          filters:
+            branches:
+              only:
+                - master
+
       - pdf:
           requires:
             - export
