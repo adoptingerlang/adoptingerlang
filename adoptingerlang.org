@@ -2701,8 +2701,6 @@ This section contains various reminders to jog your memory if you're not too fre
 
 *** Data Types
 
-TODO: format this in a table or more compact manner
-
 | Name  | Description  | Dialyzer | Example Syntax |
 |-------+--------------+----------+----------------|
 | integer | number without decimals | =integer()=, =pos_integer()=, =non_neg_integer()= | =1=, =2=, =3=, =-213=, =16#01FF=, =2#101011= |
