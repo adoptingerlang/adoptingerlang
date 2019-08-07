@@ -172,7 +172,7 @@ Evan has been writing Erlang professionally since 2012 and in various other lang
 </header>
 #+END_EXPORT
 
-The first section of this book is dedicated to getting a working installation working, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
+The first section of this book is dedicated to getting a working installation, and understanding the actual structure of a project. This section will also cover how to import dependencies in your project, how to build projects that contain multiple OTP applications, write tests for your projects, and also a few other interesting topics.
 
 #+BEGIN_EXPORT html
 <div class="pagination">
@@ -416,7 +416,7 @@ The main difference between =kerl= and =asdf= from there on is that =kerl= will 
 
 **** FreeBSD
 
-On FreeBSD, some patches are required to make things work as smoothly as on other platforms. The good news is that if you use either the BSD [[https://www.freebsd.org/doc/en/books/handbook/ports-using.html][ports]] or [[https://www.freebsd.org/doc/en/books/handbook/pkgng-intro.html][packages]], it will all work fine out of the box.
+On FreeBSD, the experience with =kerl= (as reported in other sections) has been hit and miss. Sometimes, some patches are required to make things work as smoothly as on other platforms. The good news is that if you use either the BSD [[https://www.freebsd.org/doc/en/books/handbook/ports-using.html][ports]] or [[https://www.freebsd.org/doc/en/books/handbook/pkgng-intro.html][packages]], it will all work fine out of the box.
 
 This is the easiest way forwards, but makes switching across versions a bit trickier since you don't get an Erlang version manager for free. However, BSD ports and packages do let you build any version supported at your liking.
 
@@ -637,13 +637,13 @@ This is the very basic stuff, obviously. Fancier integration is possible, but th
 :END:
 
 
-Erlang/OTP is different from most programming environments out there, even those that also use a virtual machine. Erlang has a strong opinion about how your applications should be structured, the level of isolation they should have, and a separation between what Erlang's VM can do, and what your softwafe can do. It's not just a programming language, it's a whole framework for building systems. Understanding its core principles is the key to getting started fast without having to rewrite everything later: it ensures that all applications can fit well together, that updates can be done live, and that your code is easy to instrument and make observable.
+Erlang/OTP is different from most programming environments out there, even those that also use a virtual machine. Erlang has a strong opinion about how your applications should be structured, the level of isolation they should have, and a separation between what Erlang's VM can do, and what your software can do. It's not just a programming language, it's a whole framework for building systems. Understanding its core principles is the key to getting started fast without having to rewrite everything later: it ensures that all applications can fit well together, that updates can be done live, and that your code is easy to instrument and make observable.
 
 In this chapter, we'll cover the Erlang virtual machine and the core concepts of OTP at the highest level.
 
 *** The Erlang Run-Time System
 
-The foundational block for everything is the Erlang virtual machine itself, called BEAM. BEAM is technically a single implementation of the Erlang virtual machine, as there could be others. For example, Erllvm is an implementation over LLVM (using some custom patches to make everything possible), and an older implementation in the 90s was called JAM. The Erlang VM is implemented in C, and contains a lot of fancy stuff: schedulers to run processes, garbage collection, memory allocators, a timer wheel for events, a bunch of smart switches to abstract over operating system features and provide unified interfaces (such as over time management, file-handling drivers, and so on), a few built-in functions that go faster than what Erlang can do on its own (BIFs) and an interface for functions implemented natively in other languages (NIFs) along with special scheduluers for them. There's obviously a lot more, but you can think of all that stuff the way you would with the kernel in BSD or Linux: low level stuff that you need in order to build fancier stuff.
+The foundational block for everything is the Erlang virtual machine itself, called BEAM. BEAM is technically a single implementation of the Erlang virtual machine, as there could be others. For example, Erllvm is an implementation over LLVM (using some custom patches to make everything possible), and an older implementation in the 90s was called JAM. The Erlang VM is implemented in C, and contains a lot of fancy stuff: schedulers to run processes, garbage collection, memory allocators, a timer wheel for events, a bunch of smart switches to abstract over operating system features and provide unified interfaces (such as over time management, file-handling drivers, and so on), a few built-in functions that go faster than what Erlang can do on its own (BIFs) and an interface for functions implemented natively in other languages (NIFs) along with special schedulers for them. There's obviously a lot more, but you can think of all that stuff the way you would with the kernel in BSD or Linux: low level stuff that you need in order to build fancier stuff.
 
 If all you have is the virtual machine with nothing else, you can't run Erlang code. You don't have a standard library, you don't have libraries to even load code. To get it all going, there's some tricky bootstrapping going on that we don't need to understand. Just know that there's a limited set of pre-loaded Erlang modules that ship with the virtual machine, and those can be used to set up networking and file-handling stuff that allows to further load and run modules. If you're interested in knowing more though, please consult [[https://happi.github.io/theBeamBook/][The BEAM Book]] or [[http://beam-wisdoms.clau.se/en/latest/][BEAM Wisdoms]].
 
@@ -2700,8 +2700,6 @@ No business works only with code; it is way more frequent to hear about projects
 This section contains various reminders to jog your memory if you're not too fresh on basic Erlang data, types, or syntax.
 
 *** Data Types
-
-TODO: format this in a table or more compact manner
 
 | Name  | Description  | Dialyzer | Example Syntax |
 |-------+--------------+----------+----------------|
