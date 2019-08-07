@@ -31,7 +31,7 @@ jobs:
         type: string
         default: ""
     docker:
-      - image: docker.pkg.github.com/adoptingerlang/adoptingerlang/hugo_netlify
+      - image: tsloughter/hugo_netlify
     steps:
       - checkout
       - attach_workspace:
@@ -62,10 +62,12 @@ workflows:
       - export
 
       - deploy:
+          name: "preview"
           requires:
             - export
 
       - deploy:
+          name: "prod"
           deploy_args: "--prod"
           requires:
             - export
