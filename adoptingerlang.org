@@ -35,7 +35,8 @@
 :EXPORT_HUGO_SECTION: docs/introduction
 :END:
 
-** Index
+** DONE Index
+CLOSED: [2019-08-08 Thu 08:05]
 :PROPERTIES:
 :EXPORT_FILE_NAME: _index
 :EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
@@ -100,7 +101,8 @@ Essentially, we hope for _Adopting Erlang_ to be the missing link between all th
 </div>
 #+END_EXPORT
 
-** About the Authors
+** DONE About the Authors
+CLOSED: [2019-08-08 Thu 08:05]
 :PROPERTIES:
 :EXPORT_FILE_NAME: about_the_authors
 :EXPORT_HUGO_MENU: :menu main :parent introduction
@@ -155,7 +157,8 @@ Evan has been writing Erlang professionally since 2012 and in various other lang
 #+latex_header: \DeclareUnicodeCharacter{200D}{\hspace{0pt}}
 
 
-** Index
+** DONE Index
+CLOSED: [2019-08-08 Thu 08:05]
 :PROPERTIES:
 :EXPORT_FILE_NAME: _index
 :EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
@@ -181,7 +184,8 @@ The first section of this book is dedicated to getting a working installation, a
 </div>
 #+END_EXPORT
 
-** Setup
+** DONE Setup
+CLOSED: [2019-08-08 Thu 08:05]
 :PROPERTIES:
 :EXPORT_FILE_NAME: setup
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -630,7 +634,8 @@ This is the very basic stuff, obviously. Fancier integration is possible, but th
 </div>
 #+END_EXPORT
 
-** OTP at a High Level
+** DONE OTP at a High Level
+CLOSED: [2019-08-08 Thu 08:05]
 :PROPERTIES:
 :EXPORT_FILE_NAME: otp_high_level
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -722,7 +727,8 @@ So the key to getting started fast in Erlang is to know the framework, which is 
 </div>
 #+END_EXPORT
 
-** OTP Applications
+** DONE OTP Applications
+CLOSED: [2019-08-08 Thu 08:05]
 :PROPERTIES:
 :EXPORT_FILE_NAME: otp_applications
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1693,7 +1699,8 @@ In short, if you can, pick =+C multi_time_warp +c true=. It's the best option fo
 :EXPORT_HUGO_SECTION: docs/production
 :END:
 
-** Index
+** DONE Index
+CLOSED: [2019-08-08 Thu 08:05]
 :PROPERTIES:
 :EXPORT_FILE_NAME: _index
 :EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
@@ -2631,7 +2638,8 @@ This command will generate the resources based on the =dev= overlay and apply th
 :EXPORT_HUGO_SECTION: docs/team_building
 :END:
 
-** Index
+** DONE Index
+CLOSED: [2019-08-08 Thu 08:06]
 :PROPERTIES:
 :EXPORT_FILE_NAME: _index
 :EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
@@ -2691,7 +2699,8 @@ No business works only with code; it is way more frequent to hear about projects
 **** Hiring for Mentorship
 *** It is Easier to Train than Hire
 
-* Appendix 1: Erlang/OTP Cheat Sheets
+* DONE Appendix 1: Erlang/OTP Cheat Sheets
+CLOSED: [2019-08-08 Thu 08:06]
 :PROPERTIES:
 :EXPORT_FILE_NAME: cheat_sheets
 :EXPORT_HUGO_MENU: :menu main :weight 5001
