@@ -1397,9 +1397,6 @@ apps/service_discovery_http/src/sdh_handler.erl
 *** XRef
 *** Continuous Integration
 **** Docker Compose
-
-
-
 **** CircleCI
 
 #+BEGIN_SRC erlang
@@ -1425,16 +1422,14 @@ executors:
           POSTGRES_DB: discovery
 #+END_SRC
 
-#+BEGIN_SRC yaml
+Common Test HTML output is stored with Circle's artifacts feature which then serves them up over HTTP to view in your browser:
 
-#+END_SRC
+<screenshots of circleci->CT output flow>
 
 **** Microsoft's visual studio output
  https://github.com/ferd/trx
 
 **** CirrusCI
-
-
 **** Google Cloud Build
 
 #+BEGIN_SRC yaml
@@ -1732,7 +1727,7 @@ However, containers and Kubernetes are not appropriate in all cases. Kubernetes 
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
-In OTP at a High Level we took a bird's-eye view of how applications are combined into a release and in Development we built and tested OTP applications. Now we'll configure and build a release of the =service_discovery= project.
+In [[/docs/development/otp_high_level/][OTP at a High Level]] we took a bird's-eye view of how applications are combined into a release and in the follow chapters of [[/docs/development/][Development]] we built and tested OTP applications. Now we'll configure and build a release of the =service_discovery= project.
 
 *** The Nitty Gritty
 
@@ -1748,7 +1743,7 @@ The first thing we need is a =relx= section in =rebar.config=:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
-{relx, [{release, {service_discovery, "0.1.0"},
+{relx, [{release, {service_discovery, {git, long}},
          [service_discovery]},
 
         {sys_config_src, "./config/sys.config.src"},
@@ -1761,21 +1756,27 @@ The first thing we need is a =relx= section in =rebar.config=:
 #+END_SRC
 
 The first tuple in the =relx= configuration list defines a release's name, version and the applications
-included in the release.
+included in the release. The version here is ={git, long}= which tells =relx= to use the full git sha reference of the current commit as the version of the release.
 
 =rebar3 release= runs relx with configuration based on the =relx= section of =rebar.config= and the rebar3 project structure so relx can find the necessary applications for building the release.
 
 #+BEGIN_SRC shell
 $ rebar3 release
+===> Compiling grpcbox_plugin
 ===> Verifying dependencies...
+===> Compiling service_discovery_storage
 ===> Compiling service_discovery
+===> Compiling service_discovery_http
+===> Compiling service_discovery_grpc
+===> Compiling service_discovery_postgres
 ===> Starting relx build process ...
 ===> Resolving OTP Applications from directories:
-          /src/service_discovery/_build/default/lib
-          /src/service_discovery/apps
-          /root/.cache/erls/otps/OTP-21.3.4/dist/lib/erlang/lib
-          /src/service_discovery/_build/default/rel
-===> Resolved service_discovery-0.1.0
+          /app/src/_build/default/lib
+          /app/src/_checkouts
+          /app/src/apps
+          /root/.cache/erls/otps/OTP-22.0.2/dist/lib/erlang/lib
+          /app/src/_build/default/rel
+===> Resolved service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
 ===> Dev mode enabled, release will be symlinked
 ===> release successfully created!
 #+END_SRC
@@ -1792,13 +1793,13 @@ Since this is built with ={dev_mode, true}= symlinks are created in the release'
 
 #+BEGIN_SRC shell
 $ ls -l _build/default/rel/service_discovery/lib
-lrwxrwxrwx ... service_discovery-0.1.0 -> .../_build/default/lib/service_discovery
+lrwxrwxrwx ... service_discovery-c9e1c80 -> .../_build/default/lib/service_discovery
 #+END_SRC
 
 The same is also done for the runtime configuration files =sys.config.src= and =vm.args.src=:
 
 #+BEGIN_SRC shell
-$ ls -l _build/default/rel/service_discovery/releases/0.1.0
+$ ls -l _build/default/rel/service_discovery/releases/c9e1c805d57a78d9eb18af1124962960abe38e70
 lrwxrwxrwx [...] sys.config.src -> [...]/config/sys.config.src
 lrwxrwxrwx [...] vm.args.src -> [...]/config/vm.args.src
 #+END_SRC
@@ -1818,26 +1819,34 @@ _build/default/rel/service_discovery/
 │   ├── nodetool
 │   ├── no_dot_erlang.boot
 │   ├── service_discovery
-│   ├── service_discovery-0.1.0
+│   ├── service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
 │   └── start_clean.boot
 ├── lib/
-│   ├── base32-0.1 -> /src/_build/default/lib/base32
-│   ├── bear-0.8.7 -> /src/_build/default/lib/bear
-│   ├── dns-0.1.0 -> /src/_build/default/lib/dns
-│   ├── erldns-1.0.0 -> /src/_build/default/lib/erldns
-│   ├── folsom-0.8.7 -> /src/_build/default/lib/folsom
-│   ├── iso8601-1.3.1 -> /src/_build/default/lib/iso8601
-│   ├── jsx-2.9.0 -> /src/_build/default/lib/jsx
-│   └── service_discovery-0.1.0 -> /src/_build/default/lib/service_discovery
+│   ├── acceptor_pool-1.0.0 -> /app/src/_build/default/lib/acceptor_pool
+│   ├── base32-0.1.0 -> /app/src/_build/default/lib/base32
+│   ├── chatterbox-0.9.1 -> /app/src/_build/default/lib/chatterbox
+│   ├── dns-0.1.0 -> /app/src/_build/default/lib/dns
+│   ├── elli-3.2.0 -> /app/src/_build/default/lib/elli
+│   ├── erldns-1.0.0 -> /app/src/_build/default/lib/erldns
+│   ├── gproc-0.8.0 -> /app/src/_build/default/lib/gproc
+│   ├── grpcbox-0.11.0 -> /app/src/_build/default/lib/grpcbox
+│   ├── hpack-0.2.3 -> /app/src/_build/default/lib/hpack
+│   ├── iso8601-1.3.1 -> /app/src/_build/default/lib/iso8601
+│   ├── jsx-2.10.0 -> /app/src/_build/default/lib/jsx
+│   ├── recon-2.4.0 -> /app/src/_build/default/lib/recon
+│   ├── service_discovery-c9e1c80 -> /app/src/_build/default/lib/service_discovery
+│   ├── service_discovery_grpc-c9e1c80 -> /app/src/_build/default/lib/service_discovery_grpc
+│   ├── service_discovery_http-c9e1c80 -> /app/src/_build/default/lib/service_discovery_http
+│   └── service_discovery_storage-c9e1c80 -> /app/src/_build/default/lib/service_discovery_storage
 └── releases/
-    ├── 0.1.0
+    ├── c9e1c805d57a78d9eb18af1124962960abe38e70
     │   ├── no_dot_erlang.boot
     │   ├── service_discovery.boot
     │   ├── service_discovery.rel
     │   ├── service_discovery.script
     │   ├── start_clean.boot
-    │   ├── sys.config.src -> /src/config/sys.config.src
-    │   └── vm.args.src -> /src/config/vm.args.src
+    │   ├── sys.config.src -> /app/src/config/sys.config.src
+    │   └── vm.args.src -> /app/src/config/vm.args.src
     ├── RELEASES
     └── start_erl.data
 #+END_SRC
@@ -1857,22 +1866,30 @@ Preparing a release to be deployed to production benefits from having different 
 
 We have two overridden configuration values here. =dev_mode= is set to =false= so all content is copied into the release directory, we can't utilize symlinks to the =_build= directory from another machine and a production release should be an immutable snapshot of the project. =include_erts= copies the Erlang runtime and the Erlang/OTP applications depended on by the release into the release directory and configures the boot script to point to this copy of the runtime.
 
-The entries added to the configuration are setting =include_src= to =false= and and =debug_info= to =strip=. Since running the release in production doesn't require the source code we can drop it from the final release to save on space. Additional space is saved by stripping debug information from the beam files. Tools used during development like the debugger, =xref= and =cover= require debug information but in a release those won't be used and, unless explicitly included, won't be available.
+The entries added to the configuration are setting =include_src= to =false= and =debug_info= to =strip=. Since running the release in production doesn't require the source code we can drop it from the final release to save on space. Additional space is saved by stripping debug information from the beam files. Tools used during development like the debugger, =xref= and =cover= require debug information but in a release those tools won't be used and, unless explicitly included, won't be available.
 
 Building with the production profile enabled results in artifacts being written to the profile directory =_build/prod/= and can be enabled with =as prod=:
 
 #+BEGIN_SRC shell
 $ rebar3 as prod release
+===> Compiling grpcbox_plugin
 ===> Verifying dependencies...
+===> Linking _build/default/lib/uuid to _build/prod/lib/uuid
+===> Linking _build/default/lib/pg_types to _build/prod/lib/pg_types
+===> Linking _build/default/lib/quickrand to _build/prod/lib/quickrand
+===> Compiling service_discovery_storage
 ===> Compiling service_discovery
+===> Compiling service_discovery_http
+===> Compiling service_discovery_grpc
+===> Compiling service_discovery_postgres
 ===> Starting relx build process ...
 ===> Resolving OTP Applications from directories:
-          /src/service_discovery/_build/prod/lib
-          /src/service_discovery/apps
-          /root/.cache/erls/otps/OTP-21.3.4/dist/lib/erlang/lib
-          /src/service_discovery/_build/prod/rel
-===> Resolved service_discovery-0.1.0
-===> Including Erts from /root/.cache/erls/otps/OTP-21.3.4/dist/lib/erlang
+          /app/src/_build/prod/lib
+          /app/src/_checkouts
+          /app/src/apps
+          /root/.cache/erls/otps/OTP-22.0.2/dist/lib/erlang/lib
+===> Resolved service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
+===> Including Erts from /root/.cache/erls/otps/OTP-22.0.2/dist/lib/erlang
 ===> release successfully created!
 #+END_SRC
 
@@ -1880,49 +1897,59 @@ Viewing the tree of the new =prod= profile's release directory we see:
 
 #+NAME: prod_rel_structure
 #+BEGIN_SRC sh
-_build/prod/rel/service_discovery/
-├─ bin/
-│   ├─ install_upgrade.escript
-│   ├─ nodetool
-│   ├─ no_dot_erlang.boot
-│   ├─ service_discovery
-│   ├─ service_discovery-0.1.0
-│   └─ start_clean.boot
-├─ erts-10.3.3/
-│   ├─ bin
-│   ├─ doc
-│   ├─ include
-│   ├─ lib
-│   ├─ man
-│   └─ src
-├─ lib/
-│   ├─ asn1-5.0.8
-│   ├─ base32-0.1
-│   ├─ bear-0.8.7
-│   ├─ crypto-4.4.2
-│   ├─ dns-0.1.0
-│   ├─ erldns-1.0.0
-│   ├─ folsom-0.8.7
-│   ├─ inets-7.0.6
-│   ├─ iso8601-1.3.1
-│   ├─ jsx-2.9.0
-│   ├─ kernel-6.3.1
-│   ├─ mnesia-4.15.6
-│   ├─ public_key-1.6.5
-│   ├─ service_discovery-0.1.0
-│   ├─ ssl-9.2.1
-│   └─ stdlib-3.8.1
-└─ releases/
-    ├─ 0.1.0/
-    │   ├─ no_dot_erlang.boot
-    │   ├─ service_discovery.boot
-    │   ├─ service_discovery.rel
-    │   ├─ service_discovery.script
-    │   ├─ start_clean.boot
-    │   ├─ sys.config.src
-    │   └─ vm.args.src
-    ├─ RELEASES
-    └─ start_erl.data
+_build/prod/rel/service_discovery
+├── bin
+│   ├── install_upgrade.escript
+│   ├── nodetool
+│   ├── no_dot_erlang.boot
+│   ├── service_discovery
+│   ├── service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
+│   └── start_clean.boot
+├── erts-10.4.1
+│   ├── bin
+│   ├── doc
+│   ├── include
+│   ├── lib
+│   └── man
+├── lib
+│   ├── acceptor_pool-1.0.0
+│   ├── asn1-5.0.9
+│   ├── base32-0.1.0
+│   ├── chatterbox-0.9.1
+│   ├── crypto-4.5.1
+│   ├── dns-0.1.0
+│   ├── elli-3.2.0
+│   ├── erldns-1.0.0
+│   ├── gproc-0.8.0
+│   ├── grpcbox-0.11.0
+│   ├── hpack-0.2.3
+│   ├── inets-7.0.8
+│   ├── iso8601-1.3.1
+│   ├── jsx-2.10.0
+│   ├── kernel-6.4
+│   ├── mnesia-4.16
+│   ├── public_key-1.6.7
+│   ├── recon-2.4.0
+│   ├── service_discovery-c9e1c80
+│   ├── service_discovery_grpc-c9e1c80
+│   ├── service_discovery_http-c9e1c80
+│   ├── service_discovery_storage-c9e1c80
+│   ├── ssl-9.3.1
+│   └── stdlib-3.9.1
+├── releases
+│   ├── c9e1c805d57a78d9eb18af1124962960abe38e70
+│   │   ├── no_dot_erlang.boot
+│   │   ├── service_discovery.boot
+│   │   ├── service_discovery.rel
+│   │   ├── service_discovery.script
+│   │   ├── start_clean.boot
+│   │   ├── sys.config.src
+│   │   └── vm.args.src
+│   ├── RELEASES
+│   └── start_erl.data
+└── sql
+    ├── V1__Create_services_endpoints_table.sql
+    └── V2__Add_updated_at_trigger.sql
 #+END_SRC
 
 There are no symlinks under =lib= and OTP applications like =stdlib-3.8.1= are included. And at the top of the tree is =erts-10.3.3= which contains the Erlang runtime.
@@ -1933,7 +1960,7 @@ To build the target system of the release we run the =tar= command in the =prod=
 $ rebar3 as prod tar
 #+END_SRC
 
-Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= that can be copied to a target and run.
+Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz= that can be copied to a target and run.
 
 *** Runtime Configuration
 
@@ -1975,13 +2002,13 @@ Erlang/OTP 21 [erts-10.3.3] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threa
 
 *** Coming Up
 
-To get a feel for what we will be doing in the next chapters copy =_build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz= to =/tmp/service_discovery=, unpack it and start the node. Here I am assuming that the necessary environment variables are already exported and not repeating them on the line running the bin script's commands.
+To get a feel for what we will be doing in the next chapters copy =_build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz= to =/tmp/service_discovery=, unpack it and start the node. Here I am assuming that the necessary environment variables are already exported and not repeating them on the line running the bin script's commands.
 
 #+BEGIN_SRC shell
 $ mkdir /tmp/service_discovery
-$ cp _build/prod/rel/service_discovery/service_discovery-0.1.0.tar.gz /tmp/service_discovery
+$ cp _build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz /tmp/service_discovery
 $ cd /tmp/service_discovery
-$ tar -xvf service_discovery-0.1.0.tar.gz && rm service_discovery-0.1.0.tar.gz
+$ tar -xvf service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz && rm service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz
 ...
 $ ls
 bin  erts-10.3.3  lib  releases
@@ -2106,7 +2133,7 @@ This issue is resolved as of Docker 18.09 -- when environment variable =DOCKER_B
 # syntax = docker/dockerfile:experimental
 
 COPY rebar.config rebar.lock .
-RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
+RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
 
 Now when =compile= is run there is a cache of =/root/.cache/rebar3= created separately from the image layer. So future runs of =docker build=, even if the config or lock file has changed, will mount this cache and only new packages will be fetched from Hex.
@@ -2131,11 +2158,11 @@ FROM erlang:22-alpine as builder
 # add any other Alpine libraries needed to compile the project here
 RUN apk add --no-cache git
 
-WORKDIR /src
+WORKDIR /app/src
 
 # build and cache dependencies as their own layer
 COPY rebar.config rebar.lock .
-RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 compile
+RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 rebar3 compile
 #+END_SRC
 
 The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a target to =docker build=:
@@ -2157,7 +2184,7 @@ FROM builder as releaser
 # tar for unpacking the target system
 RUN apk add --no-cache tar
 
-WORKDIR /src
+WORKDIR /app/src
 
 # create the directory to unpack the release to
 RUN mkdir -p /opt/rel
@@ -2165,7 +2192,7 @@ RUN mkdir -p /opt/rel
 # build the release tarball and then unpack
 # to be copied into the image built in the next stage
 RUN rebar3 as prod tar && \
-    tar -zxvf /src/_build/prod/rel/*/*.tar.gz -C /opt/rel
+    tar -zxvf /app/src/_build/prod/rel/*/*.tar.gz -C /opt/rel
 #+END_SRC
 
 This stage copies in all of the project and builds a tarball of the release using the =prod= profile:
@@ -2198,7 +2225,7 @@ The second image using =builder= as a base is a cache of the project's PLT:
 #+BEGIN_SRC dockerfile
 FROM builder as plt
 
-RUN --mount=type=cache,target=/root/.cache/rebar3 rebar3 dialyzer \
+RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 rebar3 dialyzer \
     --plt-location /root/.cache/rebar3 --plt-prefix deps --base-plt-prefix otp
 
 ENTRYPOINT ["rebar3"]
@@ -2609,6 +2636,19 @@ $ kubectl apply -k deployment/overlays/dev
 #+END_SRC
 
 This command will generate the resources based on the =dev= overlay and apply them to the Kubernetes cluster.
+
+*** Tilt for Local Development
+
+#+BEGIN_SRC shell
+$ microk8s.enable registry
+$ microk8s.enable dns
+#+END_SRC
+
+=/etc/docker/daemon.json=
+
+#+BEGIN_SRC json
+"insecure-registries" : ["localhost:32000"]
+#+END_SRC
 
 *** Database Migrations
 **** Jobs
