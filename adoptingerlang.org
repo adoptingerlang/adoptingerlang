@@ -1331,12 +1331,6 @@ Repeat this exercise from time to time, and eventually do some [[https://princip
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-** TODO External Dependencies
-:PROPERTIES:
-:EXPORT_FILE_NAME: external_dependencies
-:EXPORT_HUGO_MENU: :menu main :parent development
-:END:
-
 ** TODO Multi-App Projects
 :PROPERTIES:
 :EXPORT_FILE_NAME: umbrella_projects
