@@ -1399,10 +1399,16 @@ apps/service_discovery_http/src/sdh_handler.erl
 **** Docker Compose
 **** CircleCI
 
+CircleCI has a very flexible CI offering that integrates well with services like Github. One of this author's favorite features of CircleCI when working with Erlang is the built in support for serving up test artifacts after a test run. This is especially useful because Common Test will output details about test runs as HTML. Plus CircleCI supports displaying information about a test run based on JUnit structured XML which CT can output using the =surefire= hook.
+
+The =surefire= hook can be enabled in =rebar.config= with the following =ct_opts=:
+
 #+BEGIN_SRC erlang
 %% generate junit xml report from test results
 {ct_opts, [{ct_hooks, [cth_surefire]}]}.
 #+END_SRC
+
+CircleCI has no official support for rebar3 projects, but they do host Erlang docker images which contain rebar3 and tools necessary for interacting with CircleCI's cache and artifact store. But thanks to [[https://circleci.com/orbs/][CircleCI Orbs]] it is easy to get started with rebar3 on CircleCI and take advantage of its unique features. CircleCI Orbs are reusable commands, executors and jobs that make writing workflows simpler. The [[https://circleci.com/orbs/registry/orb/tsloughter/rebar3][rebar3 Orb]] takes care of caching built dependencies and moving artifacts, like CT's HTML output, with CircleCI's artifacts commands.
 
 #+BEGIN_SRC yaml
 version: 2.1
@@ -1410,21 +1416,43 @@ version: 2.1
 orbs:
   rebar3: tsloughter/rebar3@0.7.0
 
-executors:
-  erlang_postgres:
-    docker:
-      - image: circleci/erlang:22
-        entrypoint: ["/bin/sh"]
-      - image: circleci/postgres:11-alpine-ram
-        environment:
-          POSTGRES_USER: discovery
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: discovery
+workflows:
+  version: 2.1
+  build_and_test:
+    jobs:
+    - rebar3/compile
+
+    - rebar3/xref:
+        requires:
+        - rebar3/compile
+    - rebar3/dialyzer:
+        requires:
+        - rebar3/compile
+    - rebar3/ct:
+        requires:
+        - rebar3/compile
 #+END_SRC
 
-Common Test HTML output is stored with Circle's artifacts feature which then serves them up over HTTP to view in your browser:
+The following screenshot show's CircleCI's workflow page for a project that runs Common Test, Dialyzer and xref in parallel followed by cover which is reported to [[https://codecov.io][codecov.io]]:
 
-<screenshots of circleci->CT output flow>
+[[./static/img/circleci_ct_success_workflow.png]]
+
+Clicking on the =rebar3/ct= job in the workflow graph goes to the job page which has the output from the steps in the job, a test summary based on the JUnit XML and a tab with artifacts kept after the job completed:
+
+[[./static/img/circleci_ct_junit_success.png]]
+
+Going to the artifacts tab we see the contents from =_build/test/logs=:
+
+[[./static/img/circleci_ct_artifacts.png]]
+
+Following the link for =index.html= will open a new browser tab for a url like https://498-59958463-gh.circle-artifacts.com/0/common_test/index.html where you can browse all Common Test test result pages:
+
+[[./static/img/circleci_ct_html.png]]
+
+Lastly, this image shows an example of the test summary, from the =cth_surefire= output, for a failed test case in a suite:
+
+[[./static/img/circleci_ct_junit_failure.png]]
+
 
 **** Microsoft's visual studio output
  https://github.com/ferd/trx
