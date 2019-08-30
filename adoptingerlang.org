@@ -2675,7 +2675,11 @@ $ microk8s.enable dns
 =/etc/docker/daemon.json=
 
 #+BEGIN_SRC json
-"insecure-registries" : ["localhost:32000"]
+{
+  ...
+  "insecure-registries" : ["localhost:32000"]
+  ...
+}
 #+END_SRC
 
 *** Database Migrations
