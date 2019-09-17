@@ -2287,6 +2287,8 @@ The profile having =include_erts= set to =true= means the tarball contains the E
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
 Why tar the release at all?
+
+You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the =_build/prod/rel= directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like =release_handler=, for example the boot script is renamed from =RelName.boot= to =start.boot=. For more details see the [[http://erlang.org/doc/man/systools.html#make_tar-1][systools]] documentation.
 #+end_notice
 
 Now to build and tag the =release= target using the builder image and, if it exists, a previous build of the image that has the same tag (because it was built for the same git commit) as a cache:
