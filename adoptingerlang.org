@@ -2092,7 +2092,7 @@ $ bin/service_discovery console
 (service_discovery@localhost)1>
 #+END_SRC
 
-Running with =console= gives an interactive Erlang shell. To run the release without an interactive shell use =foreground=, which is how we will be running the release in a Docker container in the next chapter. With the release running with =foreground= or =console= open a separate terminal and try the same script with the argument =remote_console=:
+Running with =console= gives an interactive Erlang shell. To run the release without an interactive shell use =foreground=, which is how we will be running the release in a Docker container in the next chapter. With the release running with =foreground= or =console=, open a separate terminal and try the same script with the argument =remote_console=:
 
 #+BEGIN_SRC shell
 $ bin/service_discovery remote_console
