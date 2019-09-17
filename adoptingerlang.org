@@ -1798,7 +1798,7 @@ included in the release. The version here is ={git, long}= which tells =relx= to
 
 The order the applications are listed is important here. When constructing the boot script a stable sort on all applications based on their dependencies is done to decide the order to start them. This means that while the order is based on sorting the applications based on their runtime dependencies, when no dependency requires moving an application in the list (both the list given in the =relx= config and the lists of applications in each =.app= file) the defined order is kept. Each of =service_discovery_postgres=, =service_discovery_http= and =service_discovery_grpc= depend on =service_discovery= resulting in it being the first of those four to start and the next will be =service_discovery_postgres= because it is listed before the other two. This is important because we need the storage backend available before the HTTP and grpc services are usable.
 
-=rebar3 release= runs =relx= with configuration based on the =relx= section of =rebar.config= and the rebar3 project structure so =relx= can find the necessary applications for building the release.
+=rebar3 release= runs =relx= with a configuration based on the =relx= section of =rebar.config= and the rebar3 project structure, allowing =relx= to find the necessary applications for building the release.
 
 #+BEGIN_SRC shell
 $ rebar3 release
