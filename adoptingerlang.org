@@ -1898,7 +1898,7 @@ $ docker-compose up
 To boot the development release to an interactive Erlang shell run the extended start script with command =console=:
 
 #+BEGIN_SRC shell
-$ DB_HOST=127.0.0.1 LOGGER_LEVEL=debug SCHEDULERS=1 \
+$ DB_HOST=localhost LOGGER_LEVEL=debug SCHEDULERS=1 \
   _build/default/rel/service_discovery/bin/service_discovery console
 (service_discovery@localhost)1>
 #+END_SRC
@@ -2077,9 +2077,12 @@ Erlang/OTP 21 [erts-10.4.4] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threa
 
 *** Coming Up
 
-To get a feel for what we will be doing in the next chapters, copy =_build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz= to =/tmp/service_discovery=, unpack it and start the node. Here I am assuming that the necessary environment variables are already exported and not repeating them on the line running the bin script's commands.
+To get a feel for what we will be doing in the next chapters, copy =_build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz= to =/tmp/service_discovery=, unpack it and start the node.
 
 #+BEGIN_SRC shell
+$ export LOGGER_LEVEL=debug
+$ export SCHEDULERS=1
+$ export DB_HOST=localhost
 $ mkdir /tmp/service_discovery
 $ cp _build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz /tmp/service_discovery
 $ cd /tmp/service_discovery
@@ -2095,6 +2098,9 @@ $ bin/service_discovery console
 Running with =console= gives an interactive Erlang shell. To run the release without an interactive shell use =foreground=, which is how we will be running the release in a Docker container in the next chapter. With the release running with =foreground= or =console=, open a separate terminal and try the same script with the argument =remote_console=:
 
 #+BEGIN_SRC shell
+$ export LOGGER_LEVEL=debug
+$ export SCHEDULERS=1
+$ export DB_HOST=localhost
 $ bin/service_discovery remote_console
 ...
 (service_discovery@localhost)1>
