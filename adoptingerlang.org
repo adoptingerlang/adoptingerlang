@@ -1759,15 +1759,19 @@ In [[/docs/development/otp_high_level/][OTP at a High Level]] we took a bird's-e
 
 *** The Nitty Gritty
 
-An Erlang system starts by running instructions found in a [[http://erlang.org/doc/system_principles/system_principles.html#boot-scripts][boot script]]. The instructions load modules and start applications. Erlang provides functions for generating a boot script from a list of all required applications, defined in a release resource file with extension ".rel", and the corresponding application resource file, the ".app" file each application has. The application resource file defines the modules the boot script must load and the dependencies of each application so that the boot script will start applications in the correct order. When only the applications used in a release are bundled together with the boot script, to be copied and installed on a target, it is called a *target system*.
+An Erlang system starts by running instructions found in a [[http://erlang.org/doc/man/script.html][boot script]]. The instructions load modules and start applications. Erlang provides functions for generating a boot script from a list of all required applications, defined in a release resource file with extension ".rel", and the corresponding application resource file, the ".app" file each application has. The application resource file defines the modules the boot script must load and the dependencies of each application so that the boot script will start applications in the correct order. When only the applications used in a release are bundled together with the boot script, to be copied and installed on a target, it is called a *target system*.
 
 In the earlier days of Erlang/OTP, there was only =systools= and its functions for generating boot scripts from release resource files. Back then, release handling was a manual process around which users built their own tooling. Then came =reltool=, a release management tool that ships with Erlang/OTP and was meant to ease the creation of releases—it even has a GUI. While creating and installing target systems has never been provided outside of an example module found in the =sasl= application, =sasl/examples/src/target_system.erl=.
 
 Releases continued to be mysterious and difficult to build to many users. relx was created with the goal of making release creation and management so simple that users no longer felt it was a burden best not undertaken -- this is done in part through requiring minimal configuration to get started and by including tools for runtime management in the generated release. When rebar3 was started, it bundled relx to provide its release building functionality.
 
+Along with building and packaging =relx= comes with a shell script for starting a release and interacting with the running release. While running a release can be as simple as =erl= (which itself runs a boot script built from =start.script= you can find in the =bin/= directory of your Erlang install) the provided script handles setting appropriate arguments to point to configuration files, attaching a remote console to a running node, running functions on a running node and more.
+
+In the following sections we will dissect release building for the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project. The focus is on real world usage of the tools and not the low level details of constructing and running a release.
+
 *** Building a Development Release
 
-The first thing we need is a =relx= section in =rebar.config=:
+The first thing to look at in [[https://github.com/adoptingerlang/service_discovery][service_discovery]] is the =relx= section in =rebar.config=:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
@@ -1790,9 +1794,11 @@ The first thing we need is a =relx= section in =rebar.config=:
 #+END_SRC
 
 The =release= tuple in the =relx= configuration list defines a release's name, version and the applications
-included in the release. The version here is ={git, long}= which tells =relx= to use the full git sha reference of the current commit as the version of the release.
+included in the release. The version here is ={git, long}= which tells =relx= to use the full git sha reference of the current commit as the version of the release. The applications the release will boot includes the Postgres storage backend, the application that is the main interface to the services and the DNS setup, HTTP and grpc frontends and a tool useful for inspecting production nodes, =recon=.
 
-=rebar3 release= runs relx with configuration based on the =relx= section of =rebar.config= and the rebar3 project structure so relx can find the necessary applications for building the release.
+The order the applications are listed is important here. When constructing the boot script a stable sort on all applications based on their dependencies is done to decide the order to start them. This means that while the order is based on sorting the applications based on their runtime dependencies, when no dependency requires moving an application in the list (both the list given in the =relx= config and the lists of applications in each =.app= file) the defined order is kept. Each of =service_discovery_postgres=, =service_discovery_http= and =service_discovery_grpc= depend on =service_discovery= resulting in it being the first of those four to start and the next will be =service_discovery_postgres= because it is listed before the other two. This is important because we need the storage backend available before the HTTP and grpc services are usable.
+
+=rebar3 release= runs =relx= with configuration based on the =relx= section of =rebar.config= and the rebar3 project structure so =relx= can find the necessary applications for building the release.
 
 #+BEGIN_SRC shell
 $ rebar3 release
@@ -3227,3 +3233,8 @@ As of OTP 19.3 a =SIGTERM= signal causes the OTP VM to gracefully shutdown.
 #+BEGIN_src shell
 journalctl service_discovery
 #+END_src
+* TODO Appendix 3: The Boot Script
+
+The boot file has variables that must be set properly in order to find libraries and the runtime, the bundled script takes care of making sure these are set properly and passed to =erl=.
+
+=-boot_var ERTS_LIB_DIR "$ERTS_LIB_DIR"=
