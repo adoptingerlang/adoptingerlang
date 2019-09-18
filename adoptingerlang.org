@@ -978,7 +978,8 @@ You now understand most of the weird stuff about Erlang/OTP's project structure 
 </div>
 #+END_EXPORT
 
-** TODO Supervision Trees
+** DONE Supervision Trees
+CLOSED: [2019-09-18 Wed 09:02]
 :PROPERTIES:
 :EXPORT_FILE_NAME: supervision_trees
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1750,6 +1751,7 @@ However, containers and Kubernetes are not appropriate in all cases. Kubernetes 
 #+END_EXPORT
 
 ** DONE Releases
+CLOSED: [2019-09-18 Wed 09:02]
 :PROPERTIES:
 :EXPORT_FILE_NAME: releases
 :EXPORT_HUGO_MENU: :menu main :parent production
