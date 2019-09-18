@@ -1749,7 +1749,7 @@ However, containers and Kubernetes are not appropriate in all cases. Kubernetes 
 </div>
 #+END_EXPORT
 
-** TODO Releases
+** DONE Releases
 :PROPERTIES:
 :EXPORT_FILE_NAME: releases
 :EXPORT_HUGO_MENU: :menu main :parent production
@@ -1850,6 +1850,8 @@ This allows for a faster feedback loop when running our release for local testin
 On Windows the =dev_mode= of relx won't necessary work but it will fallback to copying.
 #+end_alert
 
+The full filesystem tree of the development release now looks like:
+
 #+BEGIN_SRC shell
 _build/default/rel/service_discovery/
 ├── bin/
@@ -1876,24 +1878,41 @@ _build/default/rel/service_discovery/
 │   ├── service_discovery_grpc-c9e1c80 -> /app/src/_build/default/lib/service_discovery_grpc
 │   ├── service_discovery_http-c9e1c80 -> /app/src/_build/default/lib/service_discovery_http
 │   └── service_discovery_storage-c9e1c80 -> /app/src/_build/default/lib/service_discovery_storage
-└── releases/
-    ├── c9e1c805d57a78d9eb18af1124962960abe38e70
-    │   ├── no_dot_erlang.boot
-    │   ├── service_discovery.boot
-    │   ├── service_discovery.rel
-    │   ├── service_discovery.script
-    │   ├── start_clean.boot
-    │   ├── sys.config.src -> /app/src/config/sys.config.src
-    │   └── vm.args.src -> /app/src/config/vm.args.src
-    ├── RELEASES
-    └── start_erl.data
+├── releases/
+│   ├── c9e1c805d57a78d9eb18af1124962960abe38e70
+│   │   ├── no_dot_erlang.boot
+│   │   ├── service_discovery.boot
+│   │   ├── service_discovery.rel
+│   │   ├── service_discovery.script
+│   │   ├── start_clean.boot
+│   │   ├── sys.config.src -> /app/src/config/sys.config.src
+│   │   └── vm.args.src -> /app/src/config/vm.args.src
+│   ├── RELEASES
+│   └── start_erl.data
+└── sql
+    ├── V1__Create_services_endpoints_table.sql
+    └── V2__Add_updated_at_trigger.sql
 #+END_SRC
 
-The release uses the Postgres storage backend so a database needs to be running and accessible before starting the release. Running =docker-compose up= at the top level of the project will bring up a database and run the migrations:
+The last directory, =sql=, is created by an =overlay=, ={copy, "apps/service_discovery_postgres/priv/migrations/*", "sql/"}=. An =overlay= tells =relx= about files to include that are outside of the regular release structure of applications and boot files. It supports making directories, basic templating with =mustache= and copying files. In this case we only need to copy the =service_discovery_postgres= application's migrations to a top level directory of the release =sql=. The migrations would be included anyway because they are in the =priv= of an application that is part of the release, but since we intend to only have one release available at a time (see notice box for more information) it simplifies the migration scripts we will see later to keep them in a known top level directory.
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+The OTP release structure supports having multiple versions of the same release. They share the same =lib= directory but could have different versions of each application and even different =erts=. This is why there is a =releases= directory with a version number directory under it and the file =RELEASES=. Having the SQL files in a directory shared by all versions of the release could be problematic in such an environment. But since we are focused on building self contained releases that will run separately from any other in a container we can assume there is only ever one version.
+#+end_notice
+
+Since the release uses the Postgres storage backend a database needs to be running and accessible before starting the release. Running =docker-compose up= at the top level of the project will bring up a database and run the migrations:
 
 #+BEGIN_SRC shell
 $ docker-compose up
 #+END_SRC
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+You don't have to start everything to get an Erlang shell from your release. Every release built with =rebar3= comes with a boot script called =start_clean= which only starts the =kernel= and =stdlib= applications. This can be run with the command =console_clean= and can be useful for debugging purposes.
+#+end_notice
 
 To boot the development release to an interactive Erlang shell run the extended start script with command =console=:
 
@@ -1950,9 +1969,6 @@ Building with the production profile enabled results in artifacts being written 
 #+BEGIN_SRC shell
 $ rebar3 as prod release
 ===> Verifying dependencies...
-===> Linking _build/default/lib/uuid to _build/prod/lib/uuid
-===> Linking _build/default/lib/pg_types to _build/prod/lib/pg_types
-===> Linking _build/default/lib/quickrand to _build/prod/lib/quickrand
 ===> Compiling service_discovery_storage
 ===> Compiling service_discovery
 ===> Compiling service_discovery_http
@@ -2118,7 +2134,7 @@ $ bin/service_discovery remote_console
 
 Docker images contain multiple layers that are merged at runtime to make up the filesystem of the container. Docker creates the layers by running commands found in a =Dockerfile=, each command creates a new layer. Layers are shared between images, saving space, and can be used as a cache for speeding up the building of images. Additional space is saved, compared to other options like a virtual machine (VM), by not including the Linux kernel in the image. The size of the image is little larger than the size of the packaged Erlang release we are deploying.
 
-The small size and ability to run like a regular Linux process makes for quicker start times (a new kernel isn't booted) and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
+The small size and ability to run like a regular Linux process (a new kernel isn't booted) makes for quicker start times and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
 
 Advantages of containers running with filesystem and network isolation are not having to perform operations that are common when programs are not isolated:
 
@@ -2133,13 +2149,17 @@ Advantages of containers running with filesystem and network isolation are not h
 You might notice we will not be using the =latest= tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should not be used, unless you really don't care what version of an image will be used.
 #+end_notice
 
+In this chapter we will cover efficiently building images for running the =service_discovery= project as well as images for running tests and dialyzer. Then, we will update the continuous integration pipeline to build and publish new images.
+
 *** Building Images
 
-[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of rebar3 and Alpine/Debian as well.
+[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for your base to your own registry, even if it is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability.
 
 **** Private Dependencies
 
-If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with rebar3 before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
+The first stumbling block many in a work environment encounter is access to private dependencies during a docker image build. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with rebar3 before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
+
+Since =service_discovery= has no private dependencies we will look at how to support them separately, before getting started with building the images for =service_discovery=.
 
 ***** Hex Dependencies
 
@@ -2385,7 +2405,26 @@ Since it would be tedious to manually build and publish images images to the reg
 
 **** Google Cloud Build
 
+In 2018 Google released a image build tool [[https://github.com/GoogleContainerTools/kaniko][Kaniko]] that runs in userspace and does not depend on a daemon. Kaniko itself actually runs as an image, =gcr.io/kaniko-project/executor=, which can be used as a =step= in Google Cloud Build.
 
+Using Kaniko in Cloud Build offers layer caching based on the contents of the Dockerfile line and those preceding it. Then, future builds check the layer cache in the image registry for matches before building any layer.
+
+#+BEGIN_SRC yaml
+steps:
+- name: 'gcr.io/kaniko-project/executor:latest'
+  args:
+  - --target=runner
+  - --dockerfile=./ci/Dockerfile.cb
+  - --build-arg=BASE_IMAGE=$_BASE_IMAGE
+  - --build-arg=RUNNER_IMAGE=$_RUNNER_IMAGE
+  - --destination=gcr.io/$PROJECT_ID/service_discovery:$COMMIT_SHA
+  - --cache=true
+  - --cache-ttl=8h
+
+substitutions:
+  _BASE_IMAGE: gcr.io/$PROJECT_ID/erlang:22
+  _RUNNER_IMAGE: gcr.io/$PROJECT_ID/alpine:3.10
+#+END_SRC
 
 *** Next Steps
 
