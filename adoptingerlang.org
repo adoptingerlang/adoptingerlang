@@ -1480,7 +1480,8 @@ steps:
   args: ['run', '--network', 'workspace_sd_net', '-e', 'BUILD_ID=$BUILD_ID', '--entrypoint', 'rebar3', 'gcr.io/$PROJECT_ID/service_discovery:tester-$BUILD_ID', 'ct']
 #+END_SRC
 
-** TODO Hard Things to Get Right
+** DONE Hard Things to Get Right
+CLOSED: [2019-09-18 Wed 16:39]
 :PROPERTIES:
 :EXPORT_FILE_NAME: hard_to_get_right
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1572,7 +1573,7 @@ On top of that, binaries larger than 64 bytes can be shared across process heaps
 
 #+attr_shortcode: info
 #+begin_alert
-Binary sharing is often a great way to gain performance in a program. However, there exist some pathological usage patterns where binary sharing can lead to memory leaks. If you want to know more, take a look at [[https://www.erlang-in-anger.com/][Erlang In Anger]]'s chapter on memory leaks, particularly section 7.2
+Binary sharing is often a great way to gain performance in a program. However, there exist some pathological usage patterns where binary sharing can lead to memory leaks. If you want to know more, take a look at <a href="https://www.erlang-in-anger.com/">Erlang In Anger's</a> chapter on memory leaks, particularly section 7.2
 #+end_alert
 
 The real cool thing though comes from the IoData representation where you combine the list approach with binaries. It's how you get really cheap composition of immutable strings:
@@ -1681,7 +1682,7 @@ This means that in Erlang, you'll want to use the following functions for specif
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-The functions handling time in the =erlang= module almost all take a =Unit= argument, which can be one of =second=, =millisecond=, =microsecond=, =nanosecond=, or =native=. By default, the type of timestamp returned is in the native format. The unit is determined at run time, and =erlang:convert_time_unit(Time, FromUnit, ToUnit)= may be used to convert between time units. For example, =erlang:convert_time_unit(1, seconds, native)= returns =1000000000=.
+The functions handling time in the <code>erlang</code> module almost all take a <code>Unit</code> argument, which can be one of <code>second</code>, <code>millisecond</code>, <code>microsecond</code>, <code>nanosecond</code>, or <code>native</code>. By default, the type of timestamp returned is in the native format. The unit is determined at run time, and <code>erlang:convert_time_unit(Time, FromUnit, ToUnit)</code> may be used to convert between time units. For example, <code>erlang:convert_time_unit(1, seconds, native)</code> returns <code>1000000000</code>.
 #+end_notice
 
 The [[http://erlang.org/doc/man/calendar.html][=calendar=]] module also contains more utility functions, such as [[http://erlang.org/doc/man/calendar.html#valid_date-1][date validation]], conversion [[http://erlang.org/doc/man/calendar.html#system_time_to_rfc3339-1][to]] and [[http://erlang.org/doc/man/calendar.html#rfc3339_to_system_time-1][from]] RFC3339 datetime strings (=2018-02-01T16:17:58+01:00=), time differences, and conversions to days, weeks, or detecting leap years.
@@ -1710,7 +1711,12 @@ In short, if you can, pick =+C multi_time_warp +c true=. It's the best option fo
 
 *** SSL Configurations
 **** Background Information on TLS
+
+Coming Soon...
+
 **** Handling TLS in Erlang
+
+Coming Soon...
 
 * Production
 :PROPERTIES:
