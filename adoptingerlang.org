@@ -2169,7 +2169,7 @@ In this chapter we will cover efficiently building images for running the =servi
 
 **** Private Dependencies
 
-The first stumbling block many in a work environment encounter is access to private dependencies during a docker image build. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with rebar3 before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
+The first stumbling block many in a work environment encounter is access to private dependencies during a docker image build. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with =rebar3= before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
 
 Since =service_discovery= has no private dependencies we will look at how to support them separately, before getting started with building the images for =service_discovery=.
 
@@ -2218,7 +2218,7 @@ Additional information and options for the SSH mount type can be found [[https:/
 
 **** Efficient Caching
 
-The order of commands in a Dockerfile is very important to the build time and space required of the images it creates. Docker uses the layers each command in the Dockerfile creates to skip a command if nothing has changed. With rebar3 we take advantage of this by creating a layer containing the built dependencies of our project:
+The order of commands in a Dockerfile is very important to the build time and size of the images it creates. Each command in the Dockerfile creates a layer which is then reused in future builds to skip a command if nothing has changed. With =rebar3= we take advantage of this by creating a layer containing the built dependencies of our project:
 
 #+BEGIN_SRC dockerfile
 COPY rebar.config rebar.lock .
@@ -2238,18 +2238,36 @@ Because of the order of operations in the Dockerfile each run of =docker build .
 
 We will make use of the =--cache-from= argument. When Docker builds layers, =--cache-from= specifies an image to use as a cache to find the layer already built. If the image isn't found locally it will be pulled from the registry. If it isn't in the registry Docker will ignore it. The argument can be given multiple times, making multiple images potential sources of cached layers.
 
-Now this is all well and good but the layer with the built dependencies that will not be used if =rebar.config= or =rebar.lock= is changed also contains the Hex package cache rebar3 creates under =~/.cache/rebar3/hex=. Any change to those two files will result in all the packages having to be downloaded again.
+Now this is all well and good but the layer with the built dependencies also contains the Hex package cache =rebar3= creates under =~/.cache/rebar3/hex=. Any change to those =rebar.config= or =rebar.lock= will result in all the packages having to not only be rebuilt but also be downloaded again. The next layers that copy in the whole project and compile it are also larger than they need to be. We don't need to keep the whole project source in a layer, we are only interested in the build artifacts.
 
-This issue is resolved as of Docker 18.09 -- when environment variable =DOCKER_BUILDKIT= is set or ="features":{"buildkit": true}= added to =/etc/docker/daemon.json=, enabling the use of Buildkit as the Docker backend -- through a new mount type, =cache=, that can be passed directly to the =RUN= command:
+These issues are resolved as of Docker 19.03 through an experimental syntax for mounting files to the context of a =RUN= command. To enable the experimental syntax the environment variable =DOCKER_BUILDKIT= must be set or ="features":{"buildkit": true}= added to =/etc/docker/daemon.json=, and =# syntax = docker/dockerfile:experimental= added to the first line of the Dockerfile:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
 
+[...]
+
+WORKDIR /app/src
+
+ENV REBAR_BASE_DIR /app/_build
+
+# build and cache dependencies as their own layer
 COPY rebar.config rebar.lock .
-RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 rebar3 compile
+RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
+    rebar3 compile
+
+RUN --mount=target=. \
+    --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
+    rebar3 compile
 #+END_SRC
 
-Now when =compile= is run there is a cache of =/root/.cache/rebar3= created separately from the image layer. So future runs of =docker build=, even if the config or lock file has changed, will mount this cache and only new packages will be fetched from Hex.
+In this new set of instructions the build sets the =WORKDIR= to =/app/src=, this is then the current working directory of the commands that follow. And an environment variable =REBAR_BASE_DIR= is set to =/app/_build=. The base directory is where =rebar3= will output all build artifacts and by default is a directory =_build/= at the root of the project, in this case without the environment variable it would have been =/app/src/_build=.
+
+The =COPY= of the =rebar3= configuration and lock file remains the same but the following =RUN= has changed to include a =--mount= option with type =cache=. This tells Docker to create a cache directory separate from the Docker layers and stored locally on the host. This cache will remain between runs of =docker build=, so future local runs of =docker build=, even if the config or lock file has changed, will mount this cache and only newly needed packages will be fetched from Hex.
+
+Next, unlike the previous instructions for building the rest of the project the instruction =COPY . .= has been removed. Instead, a mount of type =bind= (the default) is used with a =target= of =.=. Since it is a bind mount, as opposed to the =cache= mount, Docker will mount from the host into the container, giving us the same result as =COPY . .= but without actually copying in the files into the layer. This mount is read-only, meaning the build will error out if anything is written to =/app/src=, and that is why the =rebar3= base directory has been configured to =/app/_build=.
+
+The end result is a layer containing =/app/_build= with the compiled dependencies (along with =/app/src/rebar.*=, but they add very little to the size of the layer) followed by a layer containing =/app/_build= with the compiled project but nothing in =/app/src=. Separately there is a cache of all the hex packages that were downloaded.
 
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
@@ -2273,19 +2291,26 @@ RUN apk add --no-cache git
 
 WORKDIR /app/src
 
+ENV REBAR_BASE_DIR /app/_build
+
 # build and cache dependencies as their own layer
 COPY rebar.config rebar.lock .
-RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 rebar3 compile
+RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
+    rebar3 compile
+
+RUN --mount=target=. \
+    --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
+    rebar3 compile
 #+END_SRC
 
-The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a target to =docker build=:
+The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a base image to =FROM= in later stages and as a target to =docker build=:
 
 #+BEGIN_SRC shell
 $ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
-$ docker build --target builder -t ${PROJECT}_builder:${CHKSUM} .
+$ docker build --target builder -t ${PROJECT}:builder-${CHKSUM} .
 #+END_SRC
 
-Running =docker build= with =--target build= and =-t service_discovery_builder:$CHKSUM= builds the stage and tags with the given name. This stage only fetches and compiles the dependencies of the project, mounting the rebar3 hex cache as discussed in the previous section.
+Running =docker build= with =--target build= and =-t service_discovery:builder-$CHKSUM= builds the stage and tags with the given name. This stage only fetches and compiles the dependencies of the project, mounting the rebar3 hex cache as discussed in the previous section.
 
 The image with the compiled dependencies is now able to be used as a base for images that run rebar3 commands which would otherwise fetch and compile dependencies.
 
@@ -2411,6 +2436,18 @@ $ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
 (service_discovery@960409ea0bc0)1>
 #+END_SRC
 
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+Beware Zombies!
+
+As of Erlang/OTP 19.3 an Erlang node will gracefully shutdown with <code>init:stop()</code> when a <code>TERM</code> signal is received, as is used by Docker and Kubernetes for shutting down containers.
+
+But there are still potential issues you will encounter with zombies in a container. When using <code>docker exec</code> to run <code>remote_console</code>, or any other release script command like <code>ping</code>, will leave zombie processes behind unless the container is started with the argument `--init` that Docker offers for starting a small init before your entrypoint.
+
+This is usually not an issue, but like with atoms, it certainly can be if the uses aren't limited. An example of something to avoid for this reason, unless running with <code>--init</code> or some other tiny init as pid 0, would be using <code>ping</code> as a health check which is run periodically during the life of a container by the container runtime. A long running container like this will eventually have the kernel process table run out of slots and it will not be possible to create new processes.
+#+end_alert
+
 *** Building and Publishing Images in CI
 
 Since it would be tedious to manually build and publish images images to the registry each release, it is common to include image building as part of the Continuous Integration process.  Usually this is restricted to only occur on a merge to master or a new tag being created, but it can sometimes be useful to also build branch images for testing purposes. In this section we will cover a couple options for automating this process, but whatever CI tool you're already using should be capable of something similar.
@@ -2469,6 +2506,8 @@ All the big cloud providers offer managed Kubernetes clusters: [[https://cloud.g
 There are [[https://kubernetes.io/docs/setup/pick-right-solution/#table-of-solutions][many more options]] for deploying to the cloud or on-premise. Many factors go into play when choosing a solution, like in the case of an existing company, where are your services currently being hosted. Luckily with Kubernetes your deployment will not be locked in to any one provider.
 
 *** Deployment
+
+[NOTE: add another note about zombies]
 
 In Kubernetes, containers are part of a =Pod=. Each =Pod= has 1 or more containers, optionally including =init-containers= which run once before the other containers are started. For an application a higher level abstraction, called a =Deployment=, is used so individual =Pods= don't have to be manually created for deploying or scaling. A =Deployment= is a declarative way to create and update how many =Pods= of our application are to be run and how they are to be deployed.
 
@@ -3297,3 +3336,4 @@ journalctl service_discovery
 The boot file has variables that must be set properly in order to find libraries and the runtime, the bundled script takes care of making sure these are set properly and passed to =erl=.
 
 =-boot_var ERTS_LIB_DIR "$ERTS_LIB_DIR"=
+* TODO Appendix 4: Release Start Script Commands
