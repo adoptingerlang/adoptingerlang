@@ -2310,9 +2310,9 @@ $ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
 $ docker build --target builder -t ${PROJECT}:builder-${CHKSUM} .
 #+END_SRC
 
-Running =docker build= with =--target build= and =-t service_discovery:builder-$CHKSUM= builds the stage and tags with the given name. This stage only fetches and compiles the dependencies of the project, mounting the rebar3 hex cache as discussed in the previous section.
+Running =docker build= with =--target builder= and =-t service_discovery:builder-$CHKSUM= builds the stage and tags with the given name.
 
-The image with the compiled dependencies is now able to be used as a base for images that run rebar3 commands which would otherwise fetch and compile dependencies.
+The image with the compiled dependencies and project is now able to be used as a base for images that run rebar3 commands which would otherwise fetch and compile dependencies.
 
 The next stage, named =releaser=, uses the =builder= image as its base:
 
@@ -2329,11 +2329,13 @@ RUN mkdir -p /opt/rel
 
 # build the release tarball and then unpack
 # to be copied into the image built in the next stage
-RUN rebar3 as prod tar && \
-    tar -zxvf /app/src/_build/prod/rel/*/*.tar.gz -C /opt/rel
+RUN --mount=target=. \
+    --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
+    rebar3 as prod tar && \
+    tar -zxvf $REBAR_BASE_DIR/prod/rel/*/*.tar.gz -C /opt/rel
 #+END_SRC
 
-This stage copies in all of the project and builds a tarball of the release using the =prod= profile:
+This stage builds a tarball of the release using the =prod= profile:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
@@ -2344,7 +2346,7 @@ This stage copies in all of the project and builds a tarball of the release usin
             }]}.
 #+END_SRC
 
-The profile having =include_erts= set to =true= means the tarball contains the Erlang runtime and can be run on a target that doesn't have Erlang installed. At the end the tarball is unpacked to =/opt/rel= so the image that will copy the release out of the =releaser= stage does not need to have =tar= installed.
+The profile having =include_erts= set to =true= means the tarball contains the Erlang runtime and can be run on a target that doesn't have Erlang installed. At the end the tarball is unpacked to =/opt/rel= so the stage that will copy the release out of the =releaser= stage does not need to have =tar= installed.
 
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
@@ -2354,45 +2356,60 @@ Why tar the release at all?
 You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the =_build/prod/rel= directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like =release_handler=, for example the boot script is renamed from =RelName.boot= to =start.boot=. For more details see the [[http://erlang.org/doc/man/systools.html#make_tar-1][systools]] documentation.
 #+end_notice
 
-Now to build and tag the =release= target using the builder image and, if it exists, a previous build of the image that has the same tag (because it was built for the same git commit) as a cache:
+Now to build and tag the =release= target using the builder image and, if it exists, a previous build of the image that has the same tag (because have been an image built for the same git commit previously) as a cache:
 
 #+BEGIN_SRC shell
-$ docker build --cache-from=${PROJECT}_builder:${CHKSUM} --cache-from=${PROJECT}_releaser:${CHKSUM} --target releaser -t ${PROJECT}_releaser:${CHKSUM} .
+$ docker build --cache-from=${PROJECT}:builder-${CHKSUM} --cache-from=${PROJECT}:releaser-${CHKSUM} --target releaser -t ${PROJECT}:releaser-${CHKSUM} .
 #+END_SRC
 
-The second image using =builder= as a base is a cache of the project's PLT:
+The second image using =builder= as a base is a cache of the Dialyzer's Persistent Lookup Table (PLT):
 
 #+BEGIN_SRC dockerfile
 FROM builder as plt
 
-RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 rebar3 dialyzer \
-    --plt-location /root/.cache/rebar3 --plt-prefix deps --base-plt-prefix otp
+RUN --mount=target=. \
+    --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
+    rebar3 dialyzer --succ-typings=false
 
 ENTRYPOINT ["rebar3"]
 
-CMD ["dialyzer", "--plt-location", "/root/.cache/rebar3", "--plt-prefix",
-    "deps", "--base-plt-prefix", "otp"]
+CMD ["dialyzer"]
 #+END_SRC
 
-Like with the =compile= command the rebar3 cache is mounted and is where all PLT output is stored. Usually rebar3 will store only the PLT of the OTP libraries in the global cache directory and use the profile directory under =_build/= for the PLT which also contains the dependencies. So the argument =--plt-location= is used to set where the PLT will be stored. This is done because when running the container the project must be mounted as a volume to the same directory. Mounting a volume overrides any existing files on the path it is mounted to. Storing the PLT in a separate location ensure it is not lost when the volume is mounted and isn't rebuilt on each run.
+=rebar3= will store only the PLT of the OTP libraries in the global cache directory that is part of the =hex-cache=. A PLT that contains both the OTP libraries and the dependencies of the project is output to the build directory, in this case =/app/_build/=. This means we have a cached layer with the full PLT as well as the separate local cache of the OTP PLT. It is important to note that the base directory is still set to =/app/_build= in this image because when it is used to run =dialyzer= on the project's current code with =docker run= the mounting of the project's source would have replaced =/app/src/_build=, resulting in the PLT needing to be rebuilt from scratch. This is done because when running the container the project must be mounted as a volume to the same directory. Mounting a volume overrides any existing files on the path it is mounted to. Storing the PLT in a separate location ensure it is not lost when the volume is mounted and isn't rebuilt on each run.
 
 Now to build the PLT image using the builder image as a cache (note that the stages =releaser= and =runner= will be skipped since they are not needed by the =plt= stage):
 
 #+BEGIN_SRC shell
-$ docker build --cache-from=${PROJECT}_builder:$CHKSUM --target plt -t ${PROJECT}:$CHKSUM .
+$ docker build --cache-from=${PROJECT}:builder-$CHKSUM --target plt -t ${PROJECT}:plt-${CHKSUM} .
 #+END_SRC
 
 To run dialyzer on the current code use a volume to mount the current directory to =/src=:
 
 #+BEGIN_SRC dockerfile
-$ docker run -v $(pwd):/src <image>
+$ docker run -v $(pwd):/app/src ${PROJECT}:plt-${CHKSUM}
+===> Verifying dependencies...
+===> Compiling service_discovery_storage
+===> Compiling service_discovery
+===> Compiling service_discovery_http
+===> Compiling service_discovery_grpc
+===> Compiling service_discovery_postgres
+===> Dialyzer starting, this may take a while...
+===> Updating plt...
+===> Resolving files...
+===> Checking 296 files in "/app/_build/default/rebar3_22.0.7_plt"...
+===> Doing success typing analysis...
+===> Resolving files...
+===> Analyzing 19 files with "/app/_build/default/rebar3_22.0.7_plt"...
 #+END_SRC
 
-Finally, the deployable image uses a regular OS image (=alpine:3.9=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the build stage we named =releaser= is copied to =/opt/service_discovery=:
+If there is a change to the dependencies the run will take a little longer while it updates the PLT. It is important to note that it will not update the saved layer when this happens. To update the cached PLT a new image must be built with =docker build= and the new checksum.
+
+Finally, the deployable image uses a regular OS image (=alpine:3.10=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
 
 #+attr_latex: :options label=Dockerfile
 #+BEGIN_SRC dockerfile
-FROM alpine:3.9 as runner
+FROM alpine:3.10 as runner
 
 # install openssl, needed by the crypto app
 RUN apk add --no-cache openssl ncurses
@@ -2413,7 +2430,7 @@ CMD ["foreground"]
 =/opt/service_discovery= is owned by root and it is recommended to not run the container as root. When the release is run =sys.config= and =vm.args= need to be generated from their respective =.src= files. By default these are placed in the same directory as the original =.src= files. If =RELX_OUT_FILE_PATH= is set, its location will be used instead. Here, the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
 
 #+BEGIN_SRC shell
-$ docker build --cache-from=${PROJECT}_releaser:${CHKSUM} --cache-from=${PROJECT}_builder:${CHKSUM} --target runner -t ${PROJECT}:${CHKSUM} .
+$ docker build --cache-from=${PROJECT}:releaser-${CHKSUM} --cache-from=${PROJECT}:builder-${CHKSUM} --target runner -t ${PROJECT}:${GIT_REF} .
 #+END_SRC
 
 *** Running a Container
@@ -2452,11 +2469,50 @@ This is usually not an issue, but like with atoms, it certainly can be if the us
 
 Since it would be tedious to manually build and publish images images to the registry each release, it is common to include image building as part of the Continuous Integration process.  Usually this is restricted to only occur on a merge to master or a new tag being created, but it can sometimes be useful to also build branch images for testing purposes. In this section we will cover a couple options for automating this process, but whatever CI tool you're already using should be capable of something similar.
 
+**** CircleCI
+
+#+BEGIN_SRC yaml
+jobs:
+  docker-build-and-push:
+    executor: docker/machine
+    steps:
+      - run:
+          name: Install latest Docker
+          command: |
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            sudo apt-get update
+            sudo apt-get install docker-ce
+            docker version
+      - checkout
+      - gcp-gcr/gcr-auth
+      - run:
+          name: Build and push images
+          command: |
+            ci/build_image.sh -p -t runner -r gcr.io/adoptingerlang
+
+#+END_SRC
+
+#+BEGIN_SRC yaml
+workflows:
+  build-test-maybe-publish:
+    jobs:
+
+      [...]
+
+    - docker-build-and-push:
+        requires:
+        - rebar3/ct
+        filters:
+          branches:
+            only:
+            - master
+#+END_SRC
+
 **** Google Cloud Build
 
 In 2018 Google released a image build tool [[https://github.com/GoogleContainerTools/kaniko][Kaniko]] that runs in userspace and does not depend on a daemon. Kaniko itself actually runs as an image, =gcr.io/kaniko-project/executor=, which can be used as a =step= in Google Cloud Build.
 
-Using Kaniko in Cloud Build offers layer caching based on the contents of the Dockerfile line and those preceding it. Then, future builds check the layer cache in the image registry for matches before building any layer.
+Using Kaniko in Cloud Build offers layer caching based on the contents of the Dockerfile line and those preceding it. Then, future builds check the layer cache in the image registry for matches before building any layer. However, the Buildkit features we used in the Dockerfile are not available in Kaniko, so a separate Dockerfile, =ci/Dockerfile.cb=, is used:
 
 #+BEGIN_SRC yaml
 steps:
@@ -2474,6 +2530,8 @@ substitutions:
   _BASE_IMAGE: gcr.io/$PROJECT_ID/erlang:22
   _RUNNER_IMAGE: gcr.io/$PROJECT_ID/alpine:3.10
 #+END_SRC
+
+For more details on using Kaniko in Google Cloud Build see their [[https://cloud.google.com/cloud-build/docs/kaniko-cache][Using Kaniko cache]] documentation.
 
 *** Next Steps
 
