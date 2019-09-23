@@ -1824,7 +1824,7 @@ $ rebar3 release
 ===> Resolving OTP Applications from directories:
           /app/src/_build/default/lib
           /app/src/apps
-          /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang/lib
+          /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang/lib
           /app/src/_build/default/rel
 ===> Resolved service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
 ===> Dev mode enabled, release will be symlinked
@@ -1990,9 +1990,9 @@ $ rebar3 as prod release
 ===> Resolving OTP Applications from directories:
           /app/src/_build/prod/lib
           /app/src/apps
-          /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang/lib
+          /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang/lib
 ===> Resolved service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
-===> Including Erts from /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang
+===> Including Erts from /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang
 ===> release successfully created!
 #+END_SRC
 
@@ -2218,6 +2218,8 @@ Additional information and options for the SSH mount type can be found [[https:/
 
 **** Efficient Caching
 
+***** Basic Instruction Ordering
+
 The order of commands in a Dockerfile is very important to the build time and size of the images it creates. Each command in the Dockerfile creates a layer which is then reused in future builds to skip a command if nothing has changed. With =rebar3= we take advantage of this by creating a layer containing the built dependencies of our project:
 
 #+BEGIN_SRC dockerfile
@@ -2234,11 +2236,13 @@ COPY . .
 RUN rebar3 compile
 #+END_SRC
 
-Because of the order of operations in the Dockerfile each run of =docker build .= only compiles the project's source, assuming there is a change, otherwise an existing layer is used here as well. Any command that doesn't need to be rerun if there are changes to the project need to come before either of the =COPY= commands. For example, installing Alpine packages needed by later steps =RUN apk add --no-cache git=.
+Because of the order of operations in the Dockerfile each run of =docker build .= only compiles the project's source, assuming there is a change, otherwise an existing layer is used here as well. Any command that does not need to be rerun when there are changes to the project need to come before either of the =COPY= commands. For example, installing Alpine packages, =RUN apk add git= and =WORKDIR /app/src= for setting the working directory.
 
-We will make use of the =--cache-from= argument. When Docker builds layers, =--cache-from= specifies an image to use as a cache to find the layer already built. If the image isn't found locally it will be pulled from the registry. If it isn't in the registry Docker will ignore it. The argument can be given multiple times, making multiple images potential sources of cached layers.
+Use of =COPY . .= is discouraged because it makes it more likely to invalidate the cache. If possible it is better to copy only the files and directories needed for the build or having a =.dockerignore= file filter out files that are not needed. The =.git= directory is one that because of its size and the fact changes to the contents in it do not effect the build artifacts is good to ignore. However, in =service_discovery= we rely on git commands for setting the version of the release and the applications that make up the release. In projects that do not rely on this feature of =rebar3= it is recommended to add =.git= to =.dockerignore=.
 
-Now this is all well and good but the layer with the built dependencies also contains the Hex package cache =rebar3= creates under =~/.cache/rebar3/hex=. Any change to those =rebar.config= or =rebar.lock= will result in all the packages having to not only be rebuilt but also be downloaded again. The next layers that copy in the whole project and compile it are also larger than they need to be. We don't need to keep the whole project source in a layer, we are only interested in the build artifacts.
+***** Experimental Mount Syntax
+
+Copying files into an image and caching layers are no longer the only options for efficiency when building a Docker image. Caching the built dependencies in a layer is all well and good but that layer also contains the Hex package cache =rebar3= creates under =~/.cache/rebar3/hex=. Any change to =rebar.config= or =rebar.lock= will result in all the packages having to not only be rebuilt but also be re-fetched from Hex. Additionally, the instruction to copy in the whole project, creating an additional layer with all the source is wasteful since we only care about the build artifacts.
 
 These issues are resolved as of Docker 19.03 through an experimental syntax for mounting files to the context of a =RUN= command. To enable the experimental syntax the environment variable =DOCKER_BUILDKIT= must be set or ="features":{"buildkit": true}= added to =/etc/docker/daemon.json=, and =# syntax = docker/dockerfile:experimental= added to the first line of the Dockerfile:
 
@@ -2265,9 +2269,23 @@ In this new set of instructions the build sets the =WORKDIR= to =/app/src=, this
 
 The =COPY= of the =rebar3= configuration and lock file remains the same but the following =RUN= has changed to include a =--mount= option with type =cache=. This tells Docker to create a cache directory separate from the Docker layers and stored locally on the host. This cache will remain between runs of =docker build=, so future local runs of =docker build=, even if the config or lock file has changed, will mount this cache and only newly needed packages will be fetched from Hex.
 
-Next, unlike the previous instructions for building the rest of the project the instruction =COPY . .= has been removed. Instead, a mount of type =bind= (the default) is used with a =target= of =.=. Since it is a bind mount, as opposed to the =cache= mount, Docker will mount from the host into the container, giving us the same result as =COPY . .= but without actually copying in the files into the layer. This mount is read-only, meaning the build will error out if anything is written to =/app/src=, and that is why the =rebar3= base directory has been configured to =/app/_build=.
+Next, unlike the previous instructions for building the rest of the project the instruction =COPY . .= has been removed. Instead, a mount of type =bind= (the default) is used with a =target= of =.=. A bind mount, as opposed to the =cache= mount, means Docker will mount from the host into the container, giving us the same result as =COPY . .= but without creating a layer from copying in the files. This mount is read-only, meaning the build will error out if anything is written to =/app/src=, and that is why the =rebar3= base directory has been configured to =/app/_build=.
 
 The end result is a layer containing =/app/_build= with the compiled dependencies (along with =/app/src/rebar.*=, but they add very little to the size of the layer) followed by a layer containing =/app/_build= with the compiled project but nothing in =/app/src=. Separately there is a cache of all the hex packages that were downloaded.
+
+***** Local vs Remote Cache
+
+There are a couple types of caches we have used in this section and both have relied the builds being done on the same host to have access to the cache. In the case of the =hex-cache= that is mounted during =RUN= this is solely a feature for local caching and can not be exported or imported from a registry. However, the layers built from each instruction in the Dockerfile can be imported from a registry.
+
+Having a build be setup to use a remote cache is particularly useful when working with continuous integration or any sort of build server. Unless there is only a single node running builds, it will end up wasting time rebuilding every step of a Dockerfile. To resolve this issue =docker build= can be told where to look for layers, including images in a remote registry, with =--cache-from=.
+
+There are two versions of =--cache-from=, and because the newer one is still technically part of an experimental "tech preview" called [[https://github.com/docker/buildx][buildx]], we will cover both. However, since =buildx= is so much more efficient, easier to use and appears stable within the bounds of the features we require, it will be the default used by the =service_discovery= project.
+
+[define "build cache" vs images loaded into docker]
+
+The old =--cache-from= requires the user building and pushing each stage of a multi-stage Dockerfile individually. Then, when building stages which build on the earlier stage its image can be referenced through =--cache-from= and it will be pulled from the registry.
+
+With =buildx= a cache manifest is built that will include information about previous stages in a multi-stage build. The argument =--cache-to= allows for this cache to be exported in various ways. We will focus on and use the =inline= option which writes the cache metadata directly into the image. The image can be pushed to the registry and then referenced in a later build with =--cache-from=. The unique part about the new cache manifest is that only layers that are cache hits will be downloaded.
 
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
@@ -2277,9 +2295,9 @@ There is a security concern to keep in mind when using layer caching. For exampl
 
 **** Multi-Stage Build
 
-For an Erlang project we are going to need an image with the built release for deploying, but we also need images for running tests and other code analysis. With Docker's multi-stage feature we are able to define how to build individual images for containing the compiled dependencies, the final release and the Dialyzer Persistent Lookup Table (PLT) all in a single =Dockerfile=.
+For an Erlang project we are going to need an image with the built release and this image should not contain anything not required for running the release. Rebar3, the Erlang/OTP version used to build the project, git that was used for fetching dependencies from github, etc all must go. Instead of removing items after the build is complete, a multi-stage Dockerfile can be used to copy the final release, which bundles the Erlang runtime, from the stage it was built to a stage with an Alpine base and only the shared libraries necessary to run the release, such as OpenSSL.
 
-We will step through each stage individually based on the =service_discovery= project's [[https://github.com/adoptingerlang/service_discovery/blob/docker-chapter/Dockerfile][Dockerfile]]. The first stage is named =builder=:
+We will step through the stages in the =service_discovery= project's [[https://github.com/adoptingerlang/service_discovery/blob/docker-chapter/Dockerfile][Dockerfile]]. The first stage is named =builder=:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
@@ -2287,7 +2305,9 @@ FROM erlang:22-alpine as builder
 
 # git for fetching non-hex depenencies
 # add any other Alpine libraries needed to compile the project here
-RUN apk add --no-cache git
+RUN --mount=type=cache,id=apk,sharing=locked,target=/var/cache/apk \
+    ln -vs /var/cache/apk /etc/apk/cache && \
+    apk add --update git
 
 WORKDIR /app/src
 
@@ -2298,34 +2318,45 @@ COPY rebar.config rebar.lock .
 RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
     rebar3 compile
 
+FROM builder as prod_compiled
+
 RUN --mount=target=. \
     --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
-    rebar3 compile
+    rebar3 as prod compile
 #+END_SRC
 
-The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a base image to =FROM= in later stages and as a target to =docker build=:
+The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a base image to =FROM= in later stages.
 
-#+BEGIN_SRC shell
+#+attr_shortcode: note
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+For remote caching using the old <code>--cache-from</code>, as described in the previous section,  the <code>builder</code> stage would be built and tagged with an identifier that lets us reference the image based on the rebar3 dependencies it containers. To do this we can use the command <code>cksum</code> on <code>rebar.config</code> and <code>rebar.lock</code>. This acts similarly to what Docker does before choosing to invalidate its cache or not.
+
+<code><pre>
 $ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
-$ docker build --target builder -t ${PROJECT}:builder-${CHKSUM} .
-#+END_SRC
+$ docker build --target builder -t service_discovery:builder-${CHKSUM} .
+$ docker push service_discovery:builder-${CHKSUM}
+</pre></code>
 
-Running =docker build= with =--target builder= and =-t service_discovery:builder-$CHKSUM= builds the stage and tags with the given name.
+When building any stage that uses <code>FROM builder</code> we would include <code>--cache-from=service_discovery:builder-${CHKSUM}</code> to pull the previously built dependencies.
 
-The image with the compiled dependencies and project is now able to be used as a base for images that run rebar3 commands which would otherwise fetch and compile dependencies.
+It is common for developers to be working on concurrent branches of the same project, potentially with varying dependencies, using a checksum of the current rebar3 config and lock files when defining the image to use as a cache allows for multiple sets of dependencies for a project to be cached and the correct set to be used when building.
+#+end_notice
 
-The next stage, named =releaser=, uses the =builder= image as its base:
+The next stage, named =releaser=, uses the =prod_compiled= image as its base:
 
 #+BEGIN_SRC dockerfile
-FROM builder as releaser
-
-# tar for unpacking the target system
-RUN apk add --no-cache tar
+FROM prod_compiled as releaser
 
 WORKDIR /app/src
 
 # create the directory to unpack the release to
 RUN mkdir -p /opt/rel
+
+# tar for unpacking the target system
+RUN --mount=type=cache,id=apk,sharing=locked,target=/var/cache/apk \
+    ln -vs /var/cache/apk /etc/apk/cache && \
+    apk add --update tar
 
 # build the release tarball and then unpack
 # to be copied into the image built in the next stage
@@ -2356,11 +2387,83 @@ Why tar the release at all?
 You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the =_build/prod/rel= directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like =release_handler=, for example the boot script is renamed from =RelName.boot= to =start.boot=. For more details see the [[http://erlang.org/doc/man/systools.html#make_tar-1][systools]] documentation.
 #+end_notice
 
-Now to build and tag the =release= target using the builder image and, if it exists, a previous build of the image that has the same tag (because have been an image built for the same git commit previously) as a cache:
+Finally, the deployable image uses a regular OS image (=alpine:3.10=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
+
+#+attr_latex: :options label=Dockerfile
+#+BEGIN_SRC dockerfile
+FROM alpine:3.10 as runner
+
+WORKDIR /opt/service_discovery
+
+ENV COOKIE=service_discovery \
+    # write files generated during startup to /tmp
+    RELX_OUT_FILE_PATH=/tmp \
+    # service_discovery specific env variables to act as defaults
+    DB_HOST=127.0.0.1 \
+    LOGGER_LEVEL=debug \
+    SCHEDULERS=1
+
+# install openssl, needed by the crypto app
+RUN --mount=type=cache,id=apk,sharing=locked,target=/var/cache/apk \
+    ln -vs /var/cache/apk /etc/apk/cache && \
+    apk add --update openssl ncurses
+
+COPY --from=releaser /opt/rel .
+
+ENTRYPOINT ["/opt/service_discovery/bin/service_discovery"]
+
+CMD ["foreground"]
+#+END_SRC
+
+=/opt/service_discovery= is owned by root and it is recommended to not run the container as root. When the release is run =sys.config= and =vm.args= need to be generated from their respective =.src= files. By default these are placed in the same directory as the original =.src= files. If =RELX_OUT_FILE_PATH= is set, its location will be used instead. Here, the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
 
 #+BEGIN_SRC shell
-$ docker build --cache-from=${PROJECT}:builder-${CHKSUM} --cache-from=${PROJECT}:releaser-${CHKSUM} --target releaser -t ${PROJECT}:releaser-${CHKSUM} .
+$ docker buildx build --target runner --tag service_discovery:${GIT_REF} .
 #+END_SRC
+
+#+BEGIN_SRC shell
+$ docker build --cache-from=service_discovery:builder-${CHKSUM} --cache-from=service_discovery:releaser-${CHKSUM} --target releaser -t service_discovery:releaser-${CHKSUM} .
+#+END_SRC
+
+#+BEGIN_SRC shell
+$ docker build --cache-from=service_discovery:releaser-${CHKSUM} --cache-from=service_discovery:builder-${CHKSUM} --target runner -t service_discovery:${GIT_REF} .
+#+END_SRC
+
+*** Running a Container
+
+Now that we have the image =docker run= can be used to run the release for local verification and testing. The =CMD= passed to the entrypoint, =foreground=, can be overridden with the =console= command to get an interactive shell when the container is run:
+
+#+BEGIN_SRC shell
+$ docker run -ti service_discovery console
+[...]
+(service_discovery@localhost)1>
+#+END_SRC
+
+The =-ti= options tell =docker= we want an interactive shell, while `console` tells the same to the Erlang release.
+
+A running node can also be attached to with =docker exec=, the container id (use =docker ps= to find this container id) and =remote_console=:
+
+#+BEGIN_SRC shell
+$ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
+[...]
+(service_discovery@localhost)1>
+#+END_SRC
+
+To exit the remote console do not run =q().= as this will shutdown the Erlang node and the Docker container. Use =Ctrl-g= and enter =q=. =Ctrl-g= enters the shell into what is called the Job Control Mode. To read more about how this shell mode can be used see the [[http://erlang.org/doc/man/shell.html#jcl-mode][Job Control Mode (JCL Mode) documentation]].
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_alert
+Beware Zombies!
+
+As of Erlang/OTP 19.3 an Erlang node will gracefully shutdown with <code>init:stop()</code> when a <code>TERM</code> signal is received, as is used by Docker and Kubernetes for shutting down containers.
+
+But there are still potential issues you will encounter with zombies in a container. When using <code>docker exec</code> to run <code>remote_console</code>, or any other release script command like <code>ping</code>, will leave zombie processes behind unless the container is started with the argument `--init` that Docker offers for starting a small init before your entrypoint.
+
+This is usually not an issue, but like with atoms, it certainly can be if the uses aren't limited. An example of something to avoid for this reason, unless running with <code>--init</code> or some other tiny init as pid 0, would be using <code>ping</code> as a health check which is run periodically during the life of a container by the container runtime. A long running container like this will eventually have the kernel process table run out of slots and it will not be possible to create new processes.
+#+end_alert
+
+*** Using Images for Continuous Integration Testing
 
 The second image using =builder= as a base is a cache of the Dialyzer's Persistent Lookup Table (PLT):
 
@@ -2381,13 +2484,13 @@ CMD ["dialyzer"]
 Now to build the PLT image using the builder image as a cache (note that the stages =releaser= and =runner= will be skipped since they are not needed by the =plt= stage):
 
 #+BEGIN_SRC shell
-$ docker build --cache-from=${PROJECT}:builder-$CHKSUM --target plt -t ${PROJECT}:plt-${CHKSUM} .
+$ docker build --cache-from=service_discovery:builder-$CHKSUM --target plt -t service_discovery:plt-${CHKSUM} .
 #+END_SRC
 
 To run dialyzer on the current code use a volume to mount the current directory to =/src=:
 
 #+BEGIN_SRC dockerfile
-$ docker run -v $(pwd):/app/src ${PROJECT}:plt-${CHKSUM}
+$ docker run -v $(pwd):/app/src service_discovery:plt-${CHKSUM}
 ===> Verifying dependencies...
 ===> Compiling service_discovery_storage
 ===> Compiling service_discovery
@@ -2397,79 +2500,21 @@ $ docker run -v $(pwd):/app/src ${PROJECT}:plt-${CHKSUM}
 ===> Dialyzer starting, this may take a while...
 ===> Updating plt...
 ===> Resolving files...
-===> Checking 296 files in "/app/_build/default/rebar3_22.0.7_plt"...
+===> Checking 296 files in "/app/_build/default/rebar3_22.1_plt"...
 ===> Doing success typing analysis...
 ===> Resolving files...
-===> Analyzing 19 files with "/app/_build/default/rebar3_22.0.7_plt"...
+===> Analyzing 19 files with "/app/_build/default/rebar3_22.1_plt"...
 #+END_SRC
 
 If there is a change to the dependencies the run will take a little longer while it updates the PLT. It is important to note that it will not update the saved layer when this happens. To update the cached PLT a new image must be built with =docker build= and the new checksum.
 
-Finally, the deployable image uses a regular OS image (=alpine:3.10=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
-
-#+attr_latex: :options label=Dockerfile
-#+BEGIN_SRC dockerfile
-FROM alpine:3.10 as runner
-
-# install openssl, needed by the crypto app
-RUN apk add --no-cache openssl ncurses
-
-WORKDIR /opt/service_discovery
-
-COPY --from=releaser /opt/rel .
-
-ENV COOKIE service_discovery
-# write files generated during startup to /tmp
-ENV RELX_OUT_FILE_PATH /tmp
-
-ENTRYPOINT ["/opt/service_discovery/bin/service_discovery"]
-
-CMD ["foreground"]
-#+END_SRC
-
-=/opt/service_discovery= is owned by root and it is recommended to not run the container as root. When the release is run =sys.config= and =vm.args= need to be generated from their respective =.src= files. By default these are placed in the same directory as the original =.src= files. If =RELX_OUT_FILE_PATH= is set, its location will be used instead. Here, the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
-
-#+BEGIN_SRC shell
-$ docker build --cache-from=${PROJECT}:releaser-${CHKSUM} --cache-from=${PROJECT}:builder-${CHKSUM} --target runner -t ${PROJECT}:${GIT_REF} .
-#+END_SRC
-
-*** Running a Container
-
-Now that we have the image =docker run= can be used to run the release for local verification and testing. The =CMD= passed to the entrypoint, =foreground=, can be overridden with the =console= command to get an interactive shell when the container is run:
-
-#+BEGIN_SRC shell
-$ docker run -ti adoptingerlang.org/service_discovery console
-[...]
-(service_discovery@960409ea0bc0)1>
-#+END_SRC
-
-The =-ti= options tell =docker= we want an interactive shell, while `console` tells the same to the Erlang release.
-
-A running node can also be attached to with =docker exec=, the container id (use =docker ps= to find this id) and =remote_console=:
-
-#+BEGIN_SRC shell
-$ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
-[...]
-(service_discovery@960409ea0bc0)1>
-#+END_SRC
-
-#+attr_shortcode: info
-#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
-#+begin_alert
-Beware Zombies!
-
-As of Erlang/OTP 19.3 an Erlang node will gracefully shutdown with <code>init:stop()</code> when a <code>TERM</code> signal is received, as is used by Docker and Kubernetes for shutting down containers.
-
-But there are still potential issues you will encounter with zombies in a container. When using <code>docker exec</code> to run <code>remote_console</code>, or any other release script command like <code>ping</code>, will leave zombie processes behind unless the container is started with the argument `--init` that Docker offers for starting a small init before your entrypoint.
-
-This is usually not an issue, but like with atoms, it certainly can be if the uses aren't limited. An example of something to avoid for this reason, unless running with <code>--init</code> or some other tiny init as pid 0, would be using <code>ping</code> as a health check which is run periodically during the life of a container by the container runtime. A long running container like this will eventually have the kernel process table run out of slots and it will not be possible to create new processes.
-#+end_alert
-
 *** Building and Publishing Images in CI
 
-Since it would be tedious to manually build and publish images images to the registry each release, it is common to include image building as part of the Continuous Integration process.  Usually this is restricted to only occur on a merge to master or a new tag being created, but it can sometimes be useful to also build branch images for testing purposes. In this section we will cover a couple options for automating this process, but whatever CI tool you're already using should be capable of something similar.
+Since it would be tedious to manually build and publish images to the registry for each release, it is common to include image building as part of the Continuous Integration process. Usually this is restricted to only occur on a merge to master or a new tag being created, but it can sometimes be useful to also build branch images for testing purposes. In this section we will cover a couple options for automating this process, but whatever CI tool you are already using will be capable of something similar.
 
 **** CircleCI
+
+In the [[Testing]] chapter (coming soon...) we covered [[https://circleci.com][CircleCI]] for running tests. To build and publish Docker images for =service_discovery= a new job is added named =docker-build-push=. It uses a VM instead of a Docker image as the executor and first installs the latest Docker version, at the time of writing this the version available by default does not support features used in the =service_discovery= =Dockerfile=.
 
 #+BEGIN_SRC yaml
 jobs:
@@ -2489,8 +2534,11 @@ jobs:
           name: Build and push images
           command: |
             ci/build_image.sh -p -t runner -r gcr.io/adoptingerlang
-
 #+END_SRC
+
+After installing the latest docker the code =service_discovery= repository is checked out and since this is using Google Cloud for the registry and Kubernetes it authenticates with the registry. Lastly, a script found in the =ci/= directory of =service_discovery= is called to build and publish the images. The script uses the =docker build= commands discussed earlier in the chapter to build the individual stages and use =--cache-from= to reference the stages as caches during each build.
+
+To run this job only after tests pass it can be added to the CircleCI workflow with a =requires= constraint on =rebar3/ct=. Here we also filter on the branch to only build and push for the =master= branch:
 
 #+BEGIN_SRC yaml
 workflows:
@@ -2512,7 +2560,7 @@ workflows:
 
 In 2018 Google released a image build tool [[https://github.com/GoogleContainerTools/kaniko][Kaniko]] that runs in userspace and does not depend on a daemon. Kaniko itself actually runs as an image, =gcr.io/kaniko-project/executor=, which can be used as a =step= in Google Cloud Build.
 
-Using Kaniko in Cloud Build offers layer caching based on the contents of the Dockerfile line and those preceding it. Then, future builds check the layer cache in the image registry for matches before building any layer. However, the Buildkit features we used in the Dockerfile are not available in Kaniko, so a separate Dockerfile, =ci/Dockerfile.cb=, is used:
+Using Kaniko in Cloud Build offers layer caching based on the contents of the Dockerfile line and those preceding it. Future builds check the layer cache in the image registry for matches before building any layer. However, the Buildkit features we used in the Dockerfile are not available in Kaniko, so a separate Dockerfile, =ci/Dockerfile.cb=, is used in =cloudbuild.yaml=:
 
 #+BEGIN_SRC yaml
 steps:
@@ -2530,6 +2578,8 @@ substitutions:
   _BASE_IMAGE: gcr.io/$PROJECT_ID/erlang:22
   _RUNNER_IMAGE: gcr.io/$PROJECT_ID/alpine:3.10
 #+END_SRC
+
+Because Kaniko works by each layer it creates in a cache directory of the registry there is no need for instructing it to use a specific image as a cache like we did with Docker's =--cache-from=.
 
 For more details on using Kaniko in Google Cloud Build see their [[https://cloud.google.com/cloud-build/docs/kaniko-cache][Using Kaniko cache]] documentation.
 
@@ -2644,6 +2694,8 @@ In the next section we will see how using an environment variable =${SCHEDULERS}
 
 As we've seen in the Releases chapter, runtime configuration is done through environment variable substitution in =vm.args.src= and =sys.config.src=. We therefore have to insert those variable to the environment of the container. Each container in a Kubernetes Pod can have a field =env= declaring a set of environment variables:
 
+[TODO: figure out using dowardAPI for setting schedulers]
+
 #+BEGIN_SRC yaml
 env:
 - name: LOGGER_LEVEL
@@ -2709,6 +2761,8 @@ Now all the variables defined in the ConfigMap will be added to the container wi
 
 Rolling updates: Do not modify existing ConfigMap. Instead, create a new ConfigMap with the necessary changes and modify the ConfigMap referenced by the deployment. The old ConfigMaps will eventually be garbage collected by kubernetes since they are not referenced anywhere.
 #+end_notice
+
+[TODO: show how to have a crashdump saved to a persistent volume]
 
 *** Service
 
