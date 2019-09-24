@@ -1759,15 +1759,15 @@ However, containers and Kubernetes are not appropriate in all cases. Kubernetes 
 #+END_EXPORT
 
 ** DONE Releases
-CLOSED: [2019-09-18 Wed 09:02]
+CLOSED: [2019-09-24 Tue 07:43]
 :PROPERTIES:
 :EXPORT_FILE_NAME: releases
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
-In [[/docs/development/otp_high_level/][OTP at a High Level]] we took a bird's-eye view of how applications are combined into a release and in the following chapters of [[/docs/development/][Development]] we built and tested OTP applications. We have discussed how an Erlang system is setup differently from many other languages which have a single entry point in your code, like a =main()= function that is called when starting the program. Ultimately starting an Erlang node that runs your code is similar enough to other languages and runtimes, and can be packaged up in a Docker container to run like any other container, and does not appear so different. But getting to the point that you have a bundled up release with an easy to use shell script, or a Docker image ready to run, can be confusing at first and give the impression Erlang is too different or too difficult to be running in your environment.
+In [[/docs/development/otp_high_level/][OTP at a High Level]] we took a bird's-eye view of how applications are combined into a release and in the following chapters of [[/docs/development/][Development]] we built and tested OTP applications. We have discussed how an Erlang system is setup differently from many other languages which have a single entry point the project's code, like a =main()= function that is called when starting the program. Ultimately starting an Erlang node that runs your code is similar enough to other languages and runtimes, and can be packaged up in a Docker container to run like any other container, and does not appear so different once it is being run by booting a container. But getting to the point that you have a bundled up release with an easy to use shell script, or a Docker image ready to run, can be confusing at first and give the impression Erlang is too different or too difficult to be running in your environment.
 
-This chapter will give some low level details about how a release is constructed, but the main purpose is to use the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project to show how to use =rebar3= for building releases suited for local development, then a production ready release, and finally how to use the tools a release built with =rebar3= comes with to configure and operate a release. We will show that the advantages from the flexibility of booting concurrently running applications do not have to come with the cost of esoteric operations.
+This chapter will give some low level details about how a release is constructed, but the main purpose is to use the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project to show how to use =rebar3= for building releases suited for local development, then a production ready release, and finally how to use the tools provided by =rebar3= to configure and operate a release. We will show that the advantages from the flexibility of a system based on booting applications which run concurrently does not have to come with the cost of esoteric operations.
 
 *** The Nitty Gritty
 
@@ -1783,7 +1783,7 @@ In the following sections we will dissect release building for the [[https://git
 
 *** Building a Development Release
 
-The first thing to look at in [[https://github.com/adoptingerlang/service_discovery][service_discovery]] is the =relx= section in =rebar.config=:
+The first thing to look at in [[https://github.com/adoptingerlang/service_discovery][service_discovery]] is the =relx= section of =rebar.config=:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
@@ -1794,8 +1794,8 @@ The first thing to look at in [[https://github.com/adoptingerlang/service_discov
           service_discovery_grpc,
           recon]},
 
-        {sys_config_src, "./config/sys.config.src"},
-        {vm_args_src, "./config/vm.args.src"},
+        {sys_config, "./config/dev_sys.config"},
+        {vm_args, "./config/dev_vm.args"},
 
         {dev_mode, true},
         {include_erts, false},
@@ -1824,7 +1824,7 @@ $ rebar3 release
 ===> Resolving OTP Applications from directories:
           /app/src/_build/default/lib
           /app/src/apps
-          /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang/lib
+          /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang/lib
           /app/src/_build/default/rel
 ===> Resolved service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
 ===> Dev mode enabled, release will be symlinked
@@ -1836,7 +1836,7 @@ The first =relx= step seen in the output is "Resolving OTP Applications" followe
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-Note that the application <code>sasl</code> is not included in the <code>relx</code> config's list of applications. By default in the rebar3 template it is in the list. This is because <code>sasl</code> is required for certain release operations. The <code>sasl</code> application includes <code>release_handler</code> which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded <code>sasl</code> does not need to be included.
+Note that the application <code>sasl</code> is not included in the <code>relx</code> config's list of applications. By default in the rebar3 template it is in the list. This is because <code>sasl</code> is required for certain release operations. The <code>sasl</code> application includes <code>release&#95;handler</code> which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded <code>sasl</code> does not need to be included.
 #+end_notice
 
 Because this release is built with ={dev_mode, true}=, symlinks are created in the release's lib directory that point to each application instead of being copied:
@@ -1846,20 +1846,20 @@ $ ls -l _build/default/rel/service_discovery/lib
 lrwxrwxrwx ... service_discovery-c9e1c80 -> .../_build/default/lib/service_discovery
 #+END_SRC
 
-The same is also done for the runtime configuration files =sys.config.src= and =vm.args.src=:
+The same is also done for the runtime configuration files =dev_sys.config= and =dev_vm.args=:
 
 #+BEGIN_SRC shell
 $ ls -l _build/default/rel/service_discovery/releases/c9e1c805d57a78d9eb18af1124962960abe38e70
-lrwxrwxrwx [...] sys.config.src -> [...]/config/sys.config.src
-lrwxrwxrwx [...] vm.args.src -> [...]/config/vm.args.src
+lrwxrwxrwx [...] sys.config -> [...]/config/dev_sys.config
+lrwxrwxrwx [...] vm.args -> [...]/config/dev_vm.args
 #+END_SRC
 
-This allows for a faster feedback loop when running our release for local testing. Simply stopping and starting the release again will pick up any changes to beam files or configuration.
+This allows for a faster feedback loop when running our release for local testing. Simply stopping and starting the release again will pick up any changes to beam files or configuration, no need to run =rebar3 release=.
 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_alert
-On Windows the =dev_mode= of relx won't necessary work but it will fallback to copying.
+On Windows the <code>dev&#95;mode</code> of relx won't necessary work but it will fallback to copying.
 #+end_alert
 
 The full filesystem tree of the development release now looks like:
@@ -1911,10 +1911,10 @@ The last directory, =sql=, is created by an =overlay=, ={copy, "apps/service_dis
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-The OTP release structure supports having multiple versions of the same release. They share the same =lib= directory but could have different versions of each application and even different =erts=. This is why there is a =releases= directory with a version number directory under it and the file =RELEASES=. Having the SQL files in a directory shared by all versions of the release could be problematic in such an environment. But since we are focused on building self contained releases that will run separately from any other in a container we can assume there is only ever one version.
+The OTP release structure supports having multiple versions of the same release. They share the same <code>lib</code> directory but could have different versions of each application and even different <code>erts</code>. This is why there is a <code>releases</code> directory with a version number directory under it and the file <code>RELEASES</code>. Having the SQL files in a directory shared by all versions of the release could be problematic in such an environment. But since we are focused on building self contained releases that will run separately from any other in a container we can assume there is only ever one version.
 #+end_notice
 
-Since the release uses the Postgres storage backend a database needs to be running and accessible before starting the release. Running =docker-compose up= at the top level of the project will bring up a database and run the migrations:
+Since the release uses the Postgres storage backend,a database needs to be running and accessible before starting the release. Running Docker Compose at the top level of the project will bring up a database and run the migrations:
 
 #+BEGIN_SRC shell
 $ docker-compose up
@@ -1923,18 +1923,19 @@ $ docker-compose up
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-You don't have to start everything to get an Erlang shell from your release. Every release built with <code>rebar3</code> comes with a boot script called <code>start_clean</code> which only starts the <code>kernel</code> and <code>stdlib</code> applications. This can be run with the command <code>console_clean</code> and can be useful for debugging purposes.
+You don't have to start everything to get an Erlang shell from your release. Every release built with <code>rebar3</code> comes with a boot script called <code>start&#95;clean</code> which only starts the <code>kernel</code> and <code>stdlib</code> applications. This can be run with the command <code>console&#95;clean</code> and can be useful for debugging purposes.
 #+end_notice
 
 To boot the development release to an interactive Erlang shell run the extended start script with command =console=:
 
 #+BEGIN_SRC shell
-$ DB_HOST=localhost LOGGER_LEVEL=debug SCHEDULERS=1 \
-  _build/default/rel/service_discovery/bin/service_discovery console
+$ _build/default/rel/service_discovery/bin/service_discovery console
+Erlang/OTP 21 [erts-10.4.4] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+
 (service_discovery@localhost)1>
 #+END_SRC
 
-With =service_discovery= running =curl= can be used to access the HTTP interface. The following commands create a service =service1=, verify it was created by listing all services, registers an endpoint with the service at IP =127.0.0.3= and  adds a named port =http= on port 8000.
+With =service_discovery= running, =curl= can be used to access the HTTP interface. The following commands create a service =service1=, verify it was created by listing all services, registers an endpoint with the service at IP =127.0.0.3= and  adds a named port =http= on port 8000.
 
 #+BEGIN_SRC shell
 $ curl -v -XPUT http://localhost:3000/service \
@@ -1958,14 +1959,15 @@ $ dig -p8053 @127.0.0.1 SRV _http._tcp.service1.svc.cluster.local
 _http._tcp.service1.svc.cluster.local. 3600 IN SRV 1 1 8000 service1.svc.cluster.local.
 #+END_SRC
 
-
 *** Building a Production Release
 
 Preparing a release to be deployed to production requires different options than what is best used during local development. Rebar3 profiles allow us to override and add to the =relx= configuration. This profile is commonly named =prod=:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
-{profiles, [{prod, [{relx, [{dev_mode, false},
+{profiles, [{prod, [{relx, [{sys_config_src, "./config/sys.config.src"},
+                            {vm_args_src, "./config/vm.args.src"},
+                            {dev_mode, false},
                             {include_erts, true},
                             {include_src, false},
                             {debug_info, strip}]}]
@@ -1974,7 +1976,9 @@ Preparing a release to be deployed to production requires different options than
 
 We have two overridden configuration values in the =prod= profile. =dev_mode= is set to =false= so all content is copied into the release directory, we can't utilize symlinks to the =_build= directory from another machine and a production release should be an immutable snapshot of the project. =include_erts= copies the Erlang runtime and the Erlang/OTP applications depended on by the release into the release directory and configures the boot script to point to this copy of the runtime.
 
-The entries added to the configuration are setting =include_src= to =false= and =debug_info= to =strip=. Running the release in production doesn't require the source code, so we set =include_src= to false in order to drop it from the final release to save on space. Additional space is saved by stripping debug information from the beam files with =debug_info= set to =strip=. Debug information is used by tools like the debugger, =xref= and =cover= but in a release those tools won't be used and, unless explicitly included, won't even be available.
+The entries added to the configuration are setting =include_src= to =false=, =debug_info= to =strip= and =_src= versions of the configuration files. Running the release in production doesn't require the source code, so we set =include_src= to false in order to drop it from the final release to save on space. Additional space is saved by stripping debug information from the beam files with =debug_info= set to =strip=. Debug information is used by tools like the debugger, =xref= and =cover= but in a release those tools won't be used and, unless explicitly included, won't even be available.
+
+=sys_config_src= and =vm_args_src= take precedence over the entries =sys_config= and =vm_args= we had in the default profile, these two will be discussed more in the following section [[Runtime Configuration]]. There will be a warning printed when the production release is built in case the user did not intend for this, but we are doing it on purpose so the warning can be ignored.
 
 Building with the production profile enabled results in artifacts being written to the profile directory =_build/prod/=:
 
@@ -1990,9 +1994,11 @@ $ rebar3 as prod release
 ===> Resolving OTP Applications from directories:
           /app/src/_build/prod/lib
           /app/src/apps
-          /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang/lib
+          /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang/lib
 ===> Resolved service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
-===> Including Erts from /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang
+===> Both vm_args_src and vm_args are set, vm_args will be ignored
+===> Both sys_config_src and sys_config are set, sys_config will be ignored
+===> Including Erts from /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang
 ===> release successfully created!
 #+END_SRC
 
@@ -2055,7 +2061,7 @@ _build/prod/rel/service_discovery
     └── V2__Add_updated_at_trigger.sql
 #+END_SRC
 
-There are no symlinks under =lib= and OTP applications like =stdlib-3.8.1= are included. At the top of the tree is =erts-10.4.4= which contains the Erlang runtime.
+There are no symlinks under =lib= and OTP applications like =stdlib-3.8.1= are included. At the top of the tree is =erts-10.4.4= which contains the Erlang runtime, =bin/beam.smp=, along with executables like =erlexec=, =erl= and =escript= required for running and interacting with a release.
 
 To build the target system of the release we run the =tar= command in the =prod= profile:
 
@@ -2063,11 +2069,11 @@ To build the target system of the release we run the =tar= command in the =prod=
 $ rebar3 as prod tar
 #+END_SRC
 
-Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz= that can be copied to any compatible host, unpacked and run.
+Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz= that can be copied to any compatible host, unpacked and run. But before we do that we need to know how to configure =sys.config.src= and =vm.args.src= when the release is booted.
 
 *** Runtime Configuration
 
-In the =service_discovery= project we have two files for configuration under the =config/= directory that are included in the release: =vm.args.src= and =sys.config.src=. These files act as templates to be filled in at runtime based on environment variables. There are two separate files because running a release involves two levels of configuration. First, there is the underlying Erlang virtual machine's settings. These values have to be set before the VM has started, so they cannot be part of a term file like =sys.config= which requires a running VM to read and parse the Erlang term file. Instead, the VM arguments are passed directly to =erl= -- =erl= being the command used to boot a release. To simplify this, the =erl= command has an =-args_file= argument to allow command-line arguments to be read from a plain text file. This file is commonly named =vm.args=.
+In the =service_discovery= project we have two files for configuration under the =config/= directory that are included in the production release: =vm.args.src= and =sys.config.src=. These files act as templates to be filled in at runtime based on environment variables. There are two separate files because running a release involves two levels of configuration. First, there is the underlying Erlang virtual machine's settings. These values have to be set before the VM has started, so they cannot be part of a term file like =sys.config= which requires a running VM to read and parse the Erlang term file. Instead, the VM arguments are passed directly to =erl= -- =erl= being the command used to boot a release. To simplify this, the =erl= command has an =-args_file= argument to allow command-line arguments to be read from a plain text file. This file is commonly named =vm.args=.
 
 The second level is the configuration for the Erlang applications that make up the release. This is done with a file passed to =erl= through the =-config= argument. The file is a list of 2-tuples where the first element is the name of the application to set the environment of and the second element is a list of key-value pairs to set in the environment.
 
@@ -2083,7 +2089,7 @@ In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include
        ]}.
 #+END_SRC
 
-In the Docker and Kubernetes chapters we will discuss needing to set the number of Erlang schedulers manually, but for now we just care about how it would be done in =vm.args.src=:
+In the Docker and Kubernetes chapters we will discuss why we need to set the number of Erlang schedulers manually, but for now we just care about how it would be done in =vm.args.src=:
 
 #+BEGIN_SRC shell
 +S ${SCHEDULERS}
@@ -2098,10 +2104,36 @@ In =sys.config.src= we will make the =logger= level a variable as well, so we co
 Now when running the release we must set these variables or the release will fail to start.
 
 #+BEGIN_SRC shell
-$ LOGGER_LEVEL=debug SCHEDULERS=1 _build/default/rel/service_discovery/bin/service_discovery console
+$ DB_HOST=localhost LOGGER_LEVEL=debug SCHEDULERS=1 \
+  _build/prod/rel/service_discovery/bin/service_discovery console
 Erlang/OTP 21 [erts-10.4.4] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+
+(service_discovery@localhost)1>
+#+END_SRC
+
+The errors produced when running without the necessary environment variables set can be confusing. There is currently no validation done to check that all environment variables used in the configuration files are set and then print out which are missing. Instead the missing variables are replaced with empty strings. If the variable is used in a string, like ="${DB_HOST}"= the applications will start but be unable to connect to the database. When the missing variable creates a =sys.config= that is not able to be parsed, like in the case of =${LOGGER_LEVEL}=, there will be a syntax error:
+
+#+BEGIN_SRC shell
+$ DB_HOST=localhost SCHEDULERS=1 \
+  _build/prod/rel/service_discovery/bin/service_discovery console
+{"could not start kernel pid",application_controller,"error in config file \"/app/src/_build/prod/rel/service_discovery/releases/71e109d8f34ef5e5ccfcd666e0d9e544836044f1/sys.config\" (48): syntax error before: ','"}
+could not start kernel pid (application_controller) (error in config file "/home/tristan/Devel/service_discovery/_build/prod/rel/service_discovery/releases/71e109d8f34ef5e5ccfcd666e0d9e544836044f1/sys
+
+Crash dump is being written to: erl_crash.dump...done
+#+END_SRC
+
+When a value in =vm.args= is missing you will likely see an error about the argument given to a flag. For =+S ${SCHEDULERS}= it results in attempting to use the next line as the argument to =+S=, in this case it is =+C multi_time_warp= producing a boot error that =+C= is not a valid amount of schedulers:
+
+#+BEGIN_SRC shell
+$ DB_HOST=localhost LOGGER_LEVEL=debug \
+  _build/prod/rel/service_discovery/bin/service_discovery console
+bad amount of schedulers +C
+Usage: service_discovery [flags] [ -- [init_args] ]
+The flags are:
 ...
 #+END_SRC
+
+Not all failures from missing variables are so simple and they can result in very odd crashes, or no crash on boot but failures within the application that depends on the value. We hope to improve this in future =rebar3= versions to enable a check before startup that will fail with a list of missing environment variables. But for now if you are seeing odd behavior, or a crash that you can't understand, checking the environment variables is a good place to start.
 
 *** Coming Up
 
