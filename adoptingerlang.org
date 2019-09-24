@@ -1930,7 +1930,7 @@ To boot the development release to an interactive Erlang shell run the extended 
 
 #+BEGIN_SRC shell
 $ _build/default/rel/service_discovery/bin/service_discovery console
-Erlang/OTP 21 [erts-10.4.4] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+Erlang/OTP 22 [erts-10.5] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
 
 (service_discovery@localhost)1>
 #+END_SRC
@@ -2014,7 +2014,7 @@ _build/prod/rel/service_discovery
 │   ├── service_discovery
 │   ├── service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
 │   └── start_clean.boot
-├── erts-10.4.4
+├── erts-10.5
 │   ├── bin
 │   ├── doc
 │   ├── include
@@ -2025,7 +2025,7 @@ _build/prod/rel/service_discovery
 │   ├── asn1-5.0.9
 │   ├── base32-0.1.0
 │   ├── chatterbox-0.9.1
-│   ├── crypto-4.5.1
+│   ├── crypto-4.6
 │   ├── dns-0.1.0
 │   ├── elli-3.2.0
 │   ├── erldns-1.0.0
@@ -2035,7 +2035,7 @@ _build/prod/rel/service_discovery
 │   ├── inets-7.0.8
 │   ├── iso8601-1.3.1
 │   ├── jsx-2.10.0
-│   ├── kernel-6.4
+│   ├── kernel-6.5
 │   ├── mnesia-4.16
 │   ├── public_key-1.6.7
 │   ├── recon-2.4.0
@@ -2044,7 +2044,7 @@ _build/prod/rel/service_discovery
 │   ├── service_discovery_http-c9e1c80
 │   ├── service_discovery_storage-c9e1c80
 │   ├── ssl-9.3.1
-│   └── stdlib-3.9.1
+│   └── stdlib-3.10
 ├── releases
 │   ├── c9e1c805d57a78d9eb18af1124962960abe38e70
 │   │   ├── no_dot_erlang.boot
@@ -2061,7 +2061,7 @@ _build/prod/rel/service_discovery
     └── V2__Add_updated_at_trigger.sql
 #+END_SRC
 
-There are no symlinks under =lib= and OTP applications like =stdlib-3.8.1= are included. At the top of the tree is =erts-10.4.4= which contains the Erlang runtime, =bin/beam.smp=, along with executables like =erlexec=, =erl= and =escript= required for running and interacting with a release.
+There are no symlinks under =lib= and OTP applications like =stdlib-3.10= are included. At the top of the tree is =erts-10.5= which contains the Erlang runtime, =bin/beam.smp=, along with executables like =erlexec=, =erl= and =escript= required for running and interacting with a release.
 
 To build the target system of the release we run the =tar= command in the =prod= profile:
 
@@ -2106,7 +2106,7 @@ Now when running the release we must set these variables or the release will fai
 #+BEGIN_SRC shell
 $ DB_HOST=localhost LOGGER_LEVEL=debug SCHEDULERS=1 \
   _build/prod/rel/service_discovery/bin/service_discovery console
-Erlang/OTP 21 [erts-10.4.4] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+Erlang/OTP 22 [erts-10.5] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
 
 (service_discovery@localhost)1>
 #+END_SRC
@@ -2149,7 +2149,7 @@ $ cd /tmp/service_discovery
 $ tar -xvf service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz && rm service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz
 ...
 $ ls
-bin  erts-10.4.4  lib  releases
+bin  erts-10.5  lib  releases
 $ bin/service_discovery console
 ...
 (service_discovery@localhost)1>
