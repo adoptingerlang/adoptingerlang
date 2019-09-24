@@ -228,7 +228,7 @@ As you can see, the =Patch= version is not mentioned when no patch is required. 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_alert
-Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the [[http://erlang.org/doc/system_principles/misc.html][Support, Compatibility, Deprecations, and Removal]] document published by the OTP team at Ericsson.
+Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the <a href="http://erlang.org/doc/system_principles/misc.html">Support, Compatibility, Deprecations, and Removal</a> document published by the OTP team at Ericsson.
 #+end_alert
 
 In some rare scenarios, hard-and-fast deprecations do happen (mostly by accident), and it may take a few weeks for the community to come up with workarounds.
@@ -978,7 +978,8 @@ You now understand most of the weird stuff about Erlang/OTP's project structure 
 </div>
 #+END_EXPORT
 
-** TODO Supervision Trees
+** DONE Supervision Trees
+CLOSED: [2019-09-18 Wed 09:02]
 :PROPERTIES:
 :EXPORT_FILE_NAME: supervision_trees
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1307,8 +1308,10 @@ This is one of the few _design patterns_ in Erlang. Because smart systems make s
 #+begin_notice
 This pattern can be adapted however you want. The authors have, for example, used these two other variants for restart management:
 
-- multiple supervision trees are nested into each other, each representing a worker pool for a physical device. Each physical device is allowed to fail, go offline, or lose power. The managing process would routinely compare the running subtrees to a configuration service that was off-site. It would then start all the subtrees that were missing, and shut down all those that no longer existed. This let the manager handle run-time configuration synchonisation while also handling restarts for tricky hardware failure scenarios.
-- The manager does nothing. However, the Erlang release shipped with a script that could be called by an operator. The script sent a message to the manager, asking it to restart the missing subtree. This variant was used because the subtree died only in the rarest of occasions (a whole region's storage going down) without wanting to kill the rest of the system, but upon recovery, operators could re-enable traffic that way.
+<ul>
+<li> Multiple supervision trees are nested into each other, each representing a worker pool for a physical device. Each physical device is allowed to fail, go offline, or lose power. The managing process would routinely compare the running subtrees to a configuration service that was off-site. It would then start all the subtrees that were missing, and shut down all those that no longer existed. This let the manager handle run-time configuration synchonisation while also handling restarts for tricky hardware failure scenarios.</li
+<li>The manager does nothing. However, the Erlang release shipped with a script that could be called by an operator. The script sent a message to the manager, asking it to restart the missing subtree. This variant was used because the subtree died only in the rarest of occasions (a whole region's storage going down) without wanting to kill the rest of the system, but upon recovery, operators could re-enable traffic that way.</li>
+</ul>
 
 While it would be difficult to bake that kind of functionality in a generic supervisor, a manager can easily provide the flexibility required for tailor-made solutions of this kind.
 #+end_notice
@@ -1479,7 +1482,8 @@ steps:
   args: ['run', '--network', 'workspace_sd_net', '-e', 'BUILD_ID=$BUILD_ID', '--entrypoint', 'rebar3', 'gcr.io/$PROJECT_ID/service_discovery:tester-$BUILD_ID', 'ct']
 #+END_SRC
 
-** TODO Hard Things to Get Right
+** DONE Hard Things to Get Right
+CLOSED: [2019-09-18 Wed 16:39]
 :PROPERTIES:
 :EXPORT_FILE_NAME: hard_to_get_right
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1571,7 +1575,7 @@ On top of that, binaries larger than 64 bytes can be shared across process heaps
 
 #+attr_shortcode: info
 #+begin_alert
-Binary sharing is often a great way to gain performance in a program. However, there exist some pathological usage patterns where binary sharing can lead to memory leaks. If you want to know more, take a look at [[https://www.erlang-in-anger.com/][Erlang In Anger]]'s chapter on memory leaks, particularly section 7.2
+Binary sharing is often a great way to gain performance in a program. However, there exist some pathological usage patterns where binary sharing can lead to memory leaks. If you want to know more, take a look at <a href="https://www.erlang-in-anger.com/">Erlang In Anger's</a> chapter on memory leaks, particularly section 7.2
 #+end_alert
 
 The real cool thing though comes from the IoData representation where you combine the list approach with binaries. It's how you get really cheap composition of immutable strings:
@@ -1680,7 +1684,7 @@ This means that in Erlang, you'll want to use the following functions for specif
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-The functions handling time in the =erlang= module almost all take a =Unit= argument, which can be one of =second=, =millisecond=, =microsecond=, =nanosecond=, or =native=. By default, the type of timestamp returned is in the native format. The unit is determined at run time, and =erlang:convert_time_unit(Time, FromUnit, ToUnit)= may be used to convert between time units. For example, =erlang:convert_time_unit(1, seconds, native)= returns =1000000000=.
+The functions handling time in the <code>erlang</code> module almost all take a <code>Unit</code> argument, which can be one of <code>second</code>, <code>millisecond</code>, <code>microsecond</code>, <code>nanosecond</code>, or <code>native</code>. By default, the type of timestamp returned is in the native format. The unit is determined at run time, and <code>erlang:convert_time_unit(Time, FromUnit, ToUnit)</code> may be used to convert between time units. For example, <code>erlang:convert_time_unit(1, seconds, native)</code> returns <code>1000000000</code>.
 #+end_notice
 
 The [[http://erlang.org/doc/man/calendar.html][=calendar=]] module also contains more utility functions, such as [[http://erlang.org/doc/man/calendar.html#valid_date-1][date validation]], conversion [[http://erlang.org/doc/man/calendar.html#system_time_to_rfc3339-1][to]] and [[http://erlang.org/doc/man/calendar.html#rfc3339_to_system_time-1][from]] RFC3339 datetime strings (=2018-02-01T16:17:58+01:00=), time differences, and conversions to days, weeks, or detecting leap years.
@@ -1709,7 +1713,12 @@ In short, if you can, pick =+C multi_time_warp +c true=. It's the best option fo
 
 *** SSL Configurations
 **** Background Information on TLS
+
+Coming Soon...
+
 **** Handling TLS in Erlang
+
+Coming Soon...
 
 * Production
 :PROPERTIES:
@@ -1749,17 +1758,20 @@ However, containers and Kubernetes are not appropriate in all cases. Kubernetes 
 </div>
 #+END_EXPORT
 
-** TODO Releases
+** DONE Releases
+CLOSED: [2019-09-24 Tue 07:43]
 :PROPERTIES:
 :EXPORT_FILE_NAME: releases
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
-In [[/docs/development/otp_high_level/][OTP at a High Level]] we took a bird's-eye view of how applications are combined into a release and in the follow chapters of [[/docs/development/][Development]] we built and tested OTP applications. Now we'll configure and build a release of the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project.
+In [[/docs/development/otp_high_level/][OTP at a High Level]] we took a bird's-eye view of how applications are combined into a release and in the following chapters of [[/docs/development/][Development]] we built and tested OTP applications. We have discussed how an Erlang system is setup differently from many other languages which have a single entry point the project's code, like a =main()= function that is called when starting the program. Ultimately starting an Erlang node that runs your code is similar enough to other languages and runtimes, and can be packaged up in a Docker container to run like any other container, and does not appear so different once it is being run by booting a container. But getting to the point that you have a bundled up release with an easy to use shell script, or a Docker image ready to run, can be confusing at first and give the impression Erlang is too different or too difficult to be running in your environment.
+
+This chapter will give some low level details about how a release is constructed, but the main purpose is to use the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project to show how to use =rebar3= for building releases suited for local development, then a production ready release, and finally how to use the tools provided by =rebar3= to configure and operate a release. We will show that the advantages from the flexibility of a system based on booting applications which run concurrently does not have to come with the cost of esoteric operations.
 
 *** The Nitty Gritty
 
-An Erlang system starts by running instructions found in a [[http://erlang.org/doc/man/script.html][boot script]]. The instructions load modules and start applications. Erlang provides functions for generating a boot script from a list of all required applications, defined in a release resource file with extension ".rel", and the corresponding application resource file, the ".app" file each application has. The application resource file defines the modules the boot script must load and the dependencies of each application so that the boot script will start applications in the correct order. When only the applications used in a release are bundled together with the boot script, to be copied and installed on a target, it is called a *target system*.
+Going back to the operating system comparison, starting an Erlang release is similar to an operating system boot sequence that is followed by an init system starting services. An Erlang node starts by running instructions found in a [[http://erlang.org/doc/man/script.html][boot file]]. The instructions load modules and start applications. Erlang provides functions for generating a boot script from a list of all required applications, defined in a release resource file with extension ".rel", and the corresponding application resource file, the ".app" file each application has. The application resource file defines the modules the boot script must load and the dependencies of each application so that the boot script will start applications in the correct order. When only the applications used in a release are bundled together with the boot script, to be copied and installed on a target, it is called a *target system*.
 
 In the earlier days of Erlang/OTP, there was only =systools= and its functions for generating boot scripts from release resource files. Back then, release handling was a manual process around which users built their own tooling. Then came =reltool=, a release management tool that ships with Erlang/OTP and was meant to ease the creation of releases—it even has a GUI. While creating and installing target systems has never been provided outside of an example module found in the =sasl= application, =sasl/examples/src/target_system.erl=.
 
@@ -1771,7 +1783,7 @@ In the following sections we will dissect release building for the [[https://git
 
 *** Building a Development Release
 
-The first thing to look at in [[https://github.com/adoptingerlang/service_discovery][service_discovery]] is the =relx= section in =rebar.config=:
+The first thing to look at in [[https://github.com/adoptingerlang/service_discovery][service_discovery]] is the =relx= section of =rebar.config=:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
@@ -1782,8 +1794,8 @@ The first thing to look at in [[https://github.com/adoptingerlang/service_discov
           service_discovery_grpc,
           recon]},
 
-        {sys_config_src, "./config/sys.config.src"},
-        {vm_args_src, "./config/vm.args.src"},
+        {sys_config, "./config/dev_sys.config"},
+        {vm_args, "./config/dev_vm.args"},
 
         {dev_mode, true},
         {include_erts, false},
@@ -1812,7 +1824,7 @@ $ rebar3 release
 ===> Resolving OTP Applications from directories:
           /app/src/_build/default/lib
           /app/src/apps
-          /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang/lib
+          /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang/lib
           /app/src/_build/default/rel
 ===> Resolved service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
 ===> Dev mode enabled, release will be symlinked
@@ -1824,7 +1836,7 @@ The first =relx= step seen in the output is "Resolving OTP Applications" followe
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-Note that the application =sasl= is not included in the =relx= config's list of applications. By default in the rebar3 template it is in the list. This is because =sasl= is required for certain release operations. The =sasl= application includes =release_handler= which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded =sasl= does not need to be included.
+Note that the application <code>sasl</code> is not included in the <code>relx</code> config's list of applications. By default in the rebar3 template it is in the list. This is because <code>sasl</code> is required for certain release operations. The <code>sasl</code> application includes <code>release&#95;handler</code> which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded <code>sasl</code> does not need to be included.
 #+end_notice
 
 Because this release is built with ={dev_mode, true}=, symlinks are created in the release's lib directory that point to each application instead of being copied:
@@ -1834,21 +1846,23 @@ $ ls -l _build/default/rel/service_discovery/lib
 lrwxrwxrwx ... service_discovery-c9e1c80 -> .../_build/default/lib/service_discovery
 #+END_SRC
 
-The same is also done for the runtime configuration files =sys.config.src= and =vm.args.src=:
+The same is also done for the runtime configuration files =dev_sys.config= and =dev_vm.args=:
 
 #+BEGIN_SRC shell
 $ ls -l _build/default/rel/service_discovery/releases/c9e1c805d57a78d9eb18af1124962960abe38e70
-lrwxrwxrwx [...] sys.config.src -> [...]/config/sys.config.src
-lrwxrwxrwx [...] vm.args.src -> [...]/config/vm.args.src
+lrwxrwxrwx [...] sys.config -> [...]/config/dev_sys.config
+lrwxrwxrwx [...] vm.args -> [...]/config/dev_vm.args
 #+END_SRC
 
-This allows for a faster feedback loop when running our release for local testing. Simply stopping and starting the release again will pick up any changes to beam files or configuration.
+This allows for a faster feedback loop when running our release for local testing. Simply stopping and starting the release again will pick up any changes to beam files or configuration, no need to run =rebar3 release=.
 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_alert
-On Windows the =dev_mode= of relx won't necessary work but it will fallback to copying.
+On Windows the <code>dev&#95;mode</code> of relx won't necessary work but it will fallback to copying.
 #+end_alert
+
+The full filesystem tree of the development release now looks like:
 
 #+BEGIN_SRC shell
 _build/default/rel/service_discovery/
@@ -1876,34 +1890,52 @@ _build/default/rel/service_discovery/
 │   ├── service_discovery_grpc-c9e1c80 -> /app/src/_build/default/lib/service_discovery_grpc
 │   ├── service_discovery_http-c9e1c80 -> /app/src/_build/default/lib/service_discovery_http
 │   └── service_discovery_storage-c9e1c80 -> /app/src/_build/default/lib/service_discovery_storage
-└── releases/
-    ├── c9e1c805d57a78d9eb18af1124962960abe38e70
-    │   ├── no_dot_erlang.boot
-    │   ├── service_discovery.boot
-    │   ├── service_discovery.rel
-    │   ├── service_discovery.script
-    │   ├── start_clean.boot
-    │   ├── sys.config.src -> /app/src/config/sys.config.src
-    │   └── vm.args.src -> /app/src/config/vm.args.src
-    ├── RELEASES
-    └── start_erl.data
+├── releases/
+│   ├── c9e1c805d57a78d9eb18af1124962960abe38e70
+│   │   ├── no_dot_erlang.boot
+│   │   ├── service_discovery.boot
+│   │   ├── service_discovery.rel
+│   │   ├── service_discovery.script
+│   │   ├── start_clean.boot
+│   │   ├── sys.config.src -> /app/src/config/sys.config.src
+│   │   └── vm.args.src -> /app/src/config/vm.args.src
+│   ├── RELEASES
+│   └── start_erl.data
+└── sql
+    ├── V1__Create_services_endpoints_table.sql
+    └── V2__Add_updated_at_trigger.sql
 #+END_SRC
 
-The release uses the Postgres storage backend so a database needs to be running and accessible before starting the release. Running =docker-compose up= at the top level of the project will bring up a database and run the migrations:
+The last directory, =sql=, is created by an =overlay=, ={copy, "apps/service_discovery_postgres/priv/migrations/*", "sql/"}=. An =overlay= tells =relx= about files to include that are outside of the regular release structure of applications and boot files. It supports making directories, basic templating with =mustache= and copying files. In this case we only need to copy the =service_discovery_postgres= application's migrations to a top level directory of the release =sql=. The migrations would be included anyway because they are in the =priv= of an application that is part of the release, but since we intend to only have one release available at a time (see notice box for more information) it simplifies the migration scripts we will see later to keep them in a known top level directory.
+
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+The OTP release structure supports having multiple versions of the same release. They share the same <code>lib</code> directory but could have different versions of each application and even different <code>erts</code>. This is why there is a <code>releases</code> directory with a version number directory under it and the file <code>RELEASES</code>. Having the SQL files in a directory shared by all versions of the release could be problematic in such an environment. But since we are focused on building self contained releases that will run separately from any other in a container we can assume there is only ever one version.
+#+end_notice
+
+Since the release uses the Postgres storage backend,a database needs to be running and accessible before starting the release. Running Docker Compose at the top level of the project will bring up a database and run the migrations:
 
 #+BEGIN_SRC shell
 $ docker-compose up
 #+END_SRC
 
+#+attr_shortcode: info
+#+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
+#+begin_notice
+You don't have to start everything to get an Erlang shell from your release. Every release built with <code>rebar3</code> comes with a boot script called <code>start&#95;clean</code> which only starts the <code>kernel</code> and <code>stdlib</code> applications. This can be run with the command <code>console&#95;clean</code> and can be useful for debugging purposes.
+#+end_notice
+
 To boot the development release to an interactive Erlang shell run the extended start script with command =console=:
 
 #+BEGIN_SRC shell
-$ DB_HOST=localhost LOGGER_LEVEL=debug SCHEDULERS=1 \
-  _build/default/rel/service_discovery/bin/service_discovery console
+$ _build/default/rel/service_discovery/bin/service_discovery console
+Erlang/OTP 22 [erts-10.5] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+
 (service_discovery@localhost)1>
 #+END_SRC
 
-With =service_discovery= running =curl= can be used to access the HTTP interface. The following commands create a service =service1=, verify it was created by listing all services, registers an endpoint with the service at IP =127.0.0.3= and  adds a named port =http= on port 8000.
+With =service_discovery= running, =curl= can be used to access the HTTP interface. The following commands create a service =service1=, verify it was created by listing all services, registers an endpoint with the service at IP =127.0.0.3= and  adds a named port =http= on port 8000.
 
 #+BEGIN_SRC shell
 $ curl -v -XPUT http://localhost:3000/service \
@@ -1927,14 +1959,15 @@ $ dig -p8053 @127.0.0.1 SRV _http._tcp.service1.svc.cluster.local
 _http._tcp.service1.svc.cluster.local. 3600 IN SRV 1 1 8000 service1.svc.cluster.local.
 #+END_SRC
 
-
 *** Building a Production Release
 
 Preparing a release to be deployed to production requires different options than what is best used during local development. Rebar3 profiles allow us to override and add to the =relx= configuration. This profile is commonly named =prod=:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
-{profiles, [{prod, [{relx, [{dev_mode, false},
+{profiles, [{prod, [{relx, [{sys_config_src, "./config/sys.config.src"},
+                            {vm_args_src, "./config/vm.args.src"},
+                            {dev_mode, false},
                             {include_erts, true},
                             {include_src, false},
                             {debug_info, strip}]}]
@@ -1943,16 +1976,15 @@ Preparing a release to be deployed to production requires different options than
 
 We have two overridden configuration values in the =prod= profile. =dev_mode= is set to =false= so all content is copied into the release directory, we can't utilize symlinks to the =_build= directory from another machine and a production release should be an immutable snapshot of the project. =include_erts= copies the Erlang runtime and the Erlang/OTP applications depended on by the release into the release directory and configures the boot script to point to this copy of the runtime.
 
-The entries added to the configuration are setting =include_src= to =false= and =debug_info= to =strip=. Running the release in production doesn't require the source code, so we set =include_src= to false in order to drop it from the final release to save on space. Additional space is saved by stripping debug information from the beam files with =debug_info= set to =strip=. Debug information is used by tools like the debugger, =xref= and =cover= but in a release those tools won't be used and, unless explicitly included, won't even be available.
+The entries added to the configuration are setting =include_src= to =false=, =debug_info= to =strip=, and =_src= versions of the configuration files. Running the release in production doesn't require the source code, so we set =include_src= to false in order to drop it from the final release to save on space. Additional space is saved by stripping debug information from the beam files with =debug_info= set to =strip=. Debug information is used by tools like the debugger, =xref= and =cover= but in a release those tools won't be used and, unless explicitly included, won't even be available.
+
+=sys_config_src= and =vm_args_src= take precedence over the entries =sys_config= and =vm_args= we had in the default profile, these two will be discussed more in the following section [[Runtime Configuration]]. There will be a warning printed when the production release is built in case the user did not intend for this, but we are doing it on purpose so the warning can be ignored.
 
 Building with the production profile enabled results in artifacts being written to the profile directory =_build/prod/=:
 
 #+BEGIN_SRC shell
 $ rebar3 as prod release
 ===> Verifying dependencies...
-===> Linking _build/default/lib/uuid to _build/prod/lib/uuid
-===> Linking _build/default/lib/pg_types to _build/prod/lib/pg_types
-===> Linking _build/default/lib/quickrand to _build/prod/lib/quickrand
 ===> Compiling service_discovery_storage
 ===> Compiling service_discovery
 ===> Compiling service_discovery_http
@@ -1962,9 +1994,11 @@ $ rebar3 as prod release
 ===> Resolving OTP Applications from directories:
           /app/src/_build/prod/lib
           /app/src/apps
-          /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang/lib
+          /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang/lib
 ===> Resolved service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
-===> Including Erts from /root/.cache/erls/otps/OTP-22.0.7/dist/lib/erlang
+===> Both vm_args_src and vm_args are set, vm_args will be ignored
+===> Both sys_config_src and sys_config are set, sys_config will be ignored
+===> Including Erts from /root/.cache/erls/otps/OTP-22.1/dist/lib/erlang
 ===> release successfully created!
 #+END_SRC
 
@@ -1980,7 +2014,7 @@ _build/prod/rel/service_discovery
 │   ├── service_discovery
 │   ├── service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70
 │   └── start_clean.boot
-├── erts-10.4.4
+├── erts-10.5
 │   ├── bin
 │   ├── doc
 │   ├── include
@@ -1991,7 +2025,7 @@ _build/prod/rel/service_discovery
 │   ├── asn1-5.0.9
 │   ├── base32-0.1.0
 │   ├── chatterbox-0.9.1
-│   ├── crypto-4.5.1
+│   ├── crypto-4.6
 │   ├── dns-0.1.0
 │   ├── elli-3.2.0
 │   ├── erldns-1.0.0
@@ -2001,7 +2035,7 @@ _build/prod/rel/service_discovery
 │   ├── inets-7.0.8
 │   ├── iso8601-1.3.1
 │   ├── jsx-2.10.0
-│   ├── kernel-6.4
+│   ├── kernel-6.5
 │   ├── mnesia-4.16
 │   ├── public_key-1.6.7
 │   ├── recon-2.4.0
@@ -2010,7 +2044,7 @@ _build/prod/rel/service_discovery
 │   ├── service_discovery_http-c9e1c80
 │   ├── service_discovery_storage-c9e1c80
 │   ├── ssl-9.3.1
-│   └── stdlib-3.9.1
+│   └── stdlib-3.10
 ├── releases
 │   ├── c9e1c805d57a78d9eb18af1124962960abe38e70
 │   │   ├── no_dot_erlang.boot
@@ -2027,7 +2061,7 @@ _build/prod/rel/service_discovery
     └── V2__Add_updated_at_trigger.sql
 #+END_SRC
 
-There are no symlinks under =lib= and OTP applications like =stdlib-3.8.1= are included. At the top of the tree is =erts-10.4.4= which contains the Erlang runtime.
+There are no symlinks under =lib= and OTP applications like =stdlib-3.10= are included. At the top of the tree is =erts-10.5= which contains the Erlang runtime, =bin/beam.smp=, along with executables like =erlexec=, =erl= and =escript= required for running and interacting with a release.
 
 To build the target system of the release we run the =tar= command in the =prod= profile:
 
@@ -2035,11 +2069,11 @@ To build the target system of the release we run the =tar= command in the =prod=
 $ rebar3 as prod tar
 #+END_SRC
 
-Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz= that can be copied to any compatible host, unpacked and run.
+Now we have a tarball =_build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz= that can be copied to any compatible host, unpacked and run. But before we do that we need to know how to configure =sys.config.src= and =vm.args.src= when the release is booted.
 
 *** Runtime Configuration
 
-In the =service_discovery= project we have two files for configuration under the =config/= directory that are included in the release: =vm.args.src= and =sys.config.src=. These files act as templates to be filled in at runtime based on environment variables. There are two separate files because running a release involves two levels of configuration. First, there is the underlying Erlang virtual machine's settings. These values have to be set before the VM has started, so they cannot be part of a term file like =sys.config= which requires a running VM to read and parse the Erlang term file. Instead, the VM arguments are passed directly to =erl= -- =erl= being the command used to boot a release. To simplify this, the =erl= command has an =-args_file= argument to allow command-line arguments to be read from a plain text file. This file is commonly named =vm.args=.
+In the =service_discovery= project we have two files for configuration under the =config/= directory that are included in the production release: =vm.args.src= and =sys.config.src=. These files act as templates to be filled in at runtime based on environment variables. There are two separate files because running a release involves two levels of configuration. First, there is the underlying Erlang virtual machine's settings. These values have to be set before the VM has started, so they cannot be part of a term file like =sys.config= which requires a running VM to read and parse the Erlang term file. Instead, the VM arguments are passed directly to =erl= -- =erl= being the command used to boot a release. To simplify this, the =erl= command has an =-args_file= argument to allow command-line arguments to be read from a plain text file. This file is commonly named =vm.args=.
 
 The second level is the configuration for the Erlang applications that make up the release. This is done with a file passed to =erl= through the =-config= argument. The file is a list of 2-tuples where the first element is the name of the application to set the environment of and the second element is a list of key-value pairs to set in the environment.
 
@@ -2055,7 +2089,7 @@ In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include
        ]}.
 #+END_SRC
 
-In the Docker and Kubernetes chapters we will discuss needing to set the number of Erlang schedulers manually, but for now we just care about how it would be done in =vm.args.src=:
+In the Docker and Kubernetes chapters we will discuss why we need to set the number of Erlang schedulers manually, but for now we just care about how it would be done in =vm.args.src=:
 
 #+BEGIN_SRC shell
 +S ${SCHEDULERS}
@@ -2070,10 +2104,36 @@ In =sys.config.src= we will make the =logger= level a variable as well, so we co
 Now when running the release we must set these variables or the release will fail to start.
 
 #+BEGIN_SRC shell
-$ LOGGER_LEVEL=debug SCHEDULERS=1 _build/default/rel/service_discovery/bin/service_discovery console
-Erlang/OTP 21 [erts-10.4.4] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+$ DB_HOST=localhost LOGGER_LEVEL=debug SCHEDULERS=1 \
+  _build/prod/rel/service_discovery/bin/service_discovery console
+Erlang/OTP 22 [erts-10.5] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
+
+(service_discovery@localhost)1>
+#+END_SRC
+
+The errors produced when running without the necessary environment variables set can be confusing. There is currently no validation done to check that all environment variables used in the configuration files are set and then print out which are missing. Instead the missing variables are replaced with empty strings. If the variable is used in a string, like ="${DB_HOST}"= the applications will start but be unable to connect to the database. When the missing variable creates a =sys.config= that is not able to be parsed, like in the case of =${LOGGER_LEVEL}=, there will be a syntax error:
+
+#+BEGIN_SRC shell
+$ DB_HOST=localhost SCHEDULERS=1 \
+  _build/prod/rel/service_discovery/bin/service_discovery console
+{"could not start kernel pid",application_controller,"error in config file \"/app/src/_build/prod/rel/service_discovery/releases/71e109d8f34ef5e5ccfcd666e0d9e544836044f1/sys.config\" (48): syntax error before: ','"}
+could not start kernel pid (application_controller) (error in config file "/home/tristan/Devel/service_discovery/_build/prod/rel/service_discovery/releases/71e109d8f34ef5e5ccfcd666e0d9e544836044f1/sys
+
+Crash dump is being written to: erl_crash.dump...done
+#+END_SRC
+
+When a value in =vm.args= is missing you will likely see an error about the argument given to a flag. For =+S ${SCHEDULERS}= it results in attempting to use the next line as the argument to =+S=, in this case it is =+C multi_time_warp= producing a boot error that =+C= is not a valid amount of schedulers:
+
+#+BEGIN_SRC shell
+$ DB_HOST=localhost LOGGER_LEVEL=debug \
+  _build/prod/rel/service_discovery/bin/service_discovery console
+bad amount of schedulers +C
+Usage: service_discovery [flags] [ -- [init_args] ]
+The flags are:
 ...
 #+END_SRC
+
+Not all failures from missing variables are so simple and they can result in very odd crashes, or no crash on boot but failures within the application that depends on the value. We hope to improve this in future =rebar3= versions to enable a check before startup that will fail with a list of missing environment variables. But for now if you are seeing odd behavior, or a crash that you can't understand, checking the environment variables is a good place to start.
 
 *** Coming Up
 
@@ -2089,7 +2149,7 @@ $ cd /tmp/service_discovery
 $ tar -xvf service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz && rm service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz
 ...
 $ ls
-bin  erts-10.4.4  lib  releases
+bin  erts-10.5  lib  releases
 $ bin/service_discovery console
 ...
 (service_discovery@localhost)1>
@@ -2118,7 +2178,7 @@ $ bin/service_discovery remote_console
 
 Docker images contain multiple layers that are merged at runtime to make up the filesystem of the container. Docker creates the layers by running commands found in a =Dockerfile=, each command creates a new layer. Layers are shared between images, saving space, and can be used as a cache for speeding up the building of images. Additional space is saved, compared to other options like a virtual machine (VM), by not including the Linux kernel in the image. The size of the image is little larger than the size of the packaged Erlang release we are deploying.
 
-The small size and ability to run like a regular Linux process makes for quicker start times (a new kernel isn't booted) and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
+The small size and ability to run like a regular Linux process (a new kernel isn't booted) makes for quicker start times and less resource consumption than using a traditional VM for isolation. Having little overhead means that the advantages of isolation when packaging and running a program can be standard practice instead of the burden it would be to have to run a VM per program.
 
 Advantages of containers running with filesystem and network isolation are not having to perform operations that are common when programs are not isolated:
 
@@ -2130,16 +2190,20 @@ Advantages of containers running with filesystem and network isolation are not h
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-You might notice we will not be using the =latest= tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should not be used, unless you really don't care what version of an image will be used.
+You might notice we will not be using the <code>latest</code> tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should not be used, unless you really don't care what version of an image will be used.
 #+end_notice
+
+In this chapter we will cover efficiently building images for running the =service_discovery= project as well as images for running tests and dialyzer. Then, we will update the continuous integration pipeline to build and publish new images.
 
 *** Building Images
 
-[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of rebar3 and Alpine/Debian as well.
+[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for your base to your own registry, even if it is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability.
 
 **** Private Dependencies
 
-If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with rebar3 before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
+The first stumbling block many in a work environment encounter is access to private dependencies during a docker image build. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with rebar3 before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
+
+Since =service_discovery= has no private dependencies we will look at how to support them separately, before getting started with building the images for =service_discovery=.
 
 ***** Hex Dependencies
 
@@ -2385,7 +2449,26 @@ Since it would be tedious to manually build and publish images images to the reg
 
 **** Google Cloud Build
 
+In 2018 Google released a image build tool [[https://github.com/GoogleContainerTools/kaniko][Kaniko]] that runs in userspace and does not depend on a daemon. Kaniko itself actually runs as an image, =gcr.io/kaniko-project/executor=, which can be used as a =step= in Google Cloud Build.
 
+Using Kaniko in Cloud Build offers layer caching based on the contents of the Dockerfile line and those preceding it. Then, future builds check the layer cache in the image registry for matches before building any layer.
+
+#+BEGIN_SRC yaml
+steps:
+- name: 'gcr.io/kaniko-project/executor:latest'
+  args:
+  - --target=runner
+  - --dockerfile=./ci/Dockerfile.cb
+  - --build-arg=BASE_IMAGE=$_BASE_IMAGE
+  - --build-arg=RUNNER_IMAGE=$_RUNNER_IMAGE
+  - --destination=gcr.io/$PROJECT_ID/service_discovery:$COMMIT_SHA
+  - --cache=true
+  - --cache-ttl=8h
+
+substitutions:
+  _BASE_IMAGE: gcr.io/$PROJECT_ID/erlang:22
+  _RUNNER_IMAGE: gcr.io/$PROJECT_ID/alpine:3.10
+#+END_SRC
 
 *** Next Steps
 

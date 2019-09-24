@@ -1,11 +1,5 @@
 # Adopting Erlang
 
-The Hugo theme is a submodule, so when cloning use the `--recursive` option:
-
-``` shell
-git clone --recursive https://github.com/tsloughter/adoptingerlang
-```
-
 ## Requirements
 
 Two emacs packages are required for converting `adoptingerlang.org` to pages for the Hugo website or LaTeX for conversion to pdf, mobi, etc. The following can be added to the beginning of your `~/.emacs.d/init.el` file if you have one or create that file with this content:
