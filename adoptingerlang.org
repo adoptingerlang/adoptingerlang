@@ -2168,7 +2168,7 @@ $ bin/service_discovery remote_console
 
 =remote_console= uses =-remsh= [[http://erlang.org/doc/man/erl.html#flags][erl]] flag for connecting an interactive shell to the running release. The command knows which running Erlang node to connect to based on the same configuration, from =vm.args=, that sets the name and cookie for the node that was run originally. This means any environment variables used to populate =vm.args= when the node is started must be set the same when connecting the remote console.
 
-** TODO Docker
+** DONE Docker
 :PROPERTIES:
 :EXPORT_FILE_NAME: docker
 :EXPORT_HUGO_MENU: :menu main :parent production
@@ -2197,17 +2197,17 @@ In this chapter we will cover efficiently building images for running the =servi
 
 *** Building Images
 
-[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for your base to your own registry, even if it is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability.
+[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for the base to your own repository, even if your repository is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability.
 
 **** Private Dependencies
 
-The first stumbling block many in a work environment encounter is access to private dependencies during a docker image build. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with =rebar3= before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
+The first stumbling block many in a work environment encounter when building Docker images is access to private dependencies. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with =rebar3= before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
 
 Since =service_discovery= has no private dependencies we will look at how to support them separately, before getting started with building the images for =service_discovery=.
 
 ***** Hex Dependencies
 
-Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/rebar3/hex.config=. Using the experimental Dockerfile syntax =--mount=type=secret= the config can be mounted into the container for just the compile command. The file is mounted to a separate tmpfs filesystem and excluded from build cache calculations:
+Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/rebar3/hex.config=. Using the experimental Dockerfile syntax =--mount=type=secret= the config can be mounted into the container for just the compile command. The file is mounted to a separate tmpfs filesystem and excluded from the build cache:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
@@ -2215,7 +2215,7 @@ Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/r
 RUN --mount=type=secret,id=hex.config,target=/root/.config/rebar3/hex.config rebar3 compile
 #+END_SRC
 
-To mount the host's =hex.config= when running =docker build= simply pass a secret with a matching =id= and =src= path to the file:
+To mount the host's =hex.config= when running =docker build= simply pass a secret with a matching =id= and the =src= path to the file:
 
 #+BEGIN_SRC shell
 $ docker build --secret id=hex.config,src=~/.config/rebar3/hex.config .
@@ -2276,7 +2276,7 @@ Use of =COPY . .= is discouraged because it makes it more likely to invalidate t
 
 Copying files into an image and caching layers are no longer the only options for efficiency when building a Docker image. Caching the built dependencies in a layer is all well and good but that layer also contains the Hex package cache =rebar3= creates under =~/.cache/rebar3/hex=. Any change to =rebar.config= or =rebar.lock= will result in all the packages having to not only be rebuilt but also be re-fetched from Hex. Additionally, the instruction to copy in the whole project, creating an additional layer with all the source is wasteful since we only care about the build artifacts.
 
-These issues are resolved as of Docker 19.03 through an experimental syntax for mounting files to the context of a =RUN= command. To enable the experimental syntax the environment variable =DOCKER_BUILDKIT= must be set or ="features":{"buildkit": true}= added to =/etc/docker/daemon.json=, and =# syntax = docker/dockerfile:experimental= added to the first line of the Dockerfile:
+These issues are resolved as of Docker 19.03 through an experimental syntax for mounting files to the context of a =RUN= command. To enable the experimental syntax the environment variable =DOCKER_BUILDKIT= must be set or ={"features":{"buildkit": true}}= be set in =/etc/docker/daemon.json=, and =# syntax = docker/dockerfile:experimental= used as the first line of the Dockerfile:
 
 #+BEGIN_SRC dockerfile
 # syntax = docker/dockerfile:experimental
@@ -2289,11 +2289,11 @@ ENV REBAR_BASE_DIR /app/_build
 
 # build and cache dependencies as their own layer
 COPY rebar.config rebar.lock .
-RUN --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
+RUN --mount=id=hex-cache,type=cache,sharing=locked,target=/root/.cache/rebar3 \
     rebar3 compile
 
 RUN --mount=target=. \
-    --mount=id=hex-cache,type=cache,target=/root/.cache/rebar3 \
+    --mount=id=hex-cache,type=cache,sharing=locked,target=/root/.cache/rebar3 \
     rebar3 compile
 #+END_SRC
 
@@ -2313,16 +2313,14 @@ Having a build be setup to use a remote cache is particularly useful when workin
 
 There are two versions of =--cache-from=, and because the newer one is still technically part of an experimental "tech preview" called [[https://github.com/docker/buildx][buildx]], we will cover both. However, since =buildx= is so much more efficient, easier to use and appears stable within the bounds of the features we require, it will be the default used by the =service_discovery= project.
 
-[define "build cache" vs images loaded into docker]
+The old =--cache-from= requires the user manually setting up the building and pushing of each stage in a multi-stage Dockerfile individually. When building stages which build on the earlier stage its image can be referenced through =--cache-from= and it will be pulled from the registry.
 
-The old =--cache-from= requires the user building and pushing each stage of a multi-stage Dockerfile individually. Then, when building stages which build on the earlier stage its image can be referenced through =--cache-from= and it will be pulled from the registry.
-
-With =buildx= a cache manifest is built that will include information about previous stages in a multi-stage build. The argument =--cache-to= allows for this cache to be exported in various ways. We will focus on and use the =inline= option which writes the cache metadata directly into the image. The image can be pushed to the registry and then referenced in a later build with =--cache-from=. The unique part about the new cache manifest is that only layers that are cache hits will be downloaded.
+With =buildx= a cache manifest is built that will include information about previous stages in a multi-stage build. The argument =--cache-to= allows for this cache to be exported in various ways. We will use the =inline= option which writes the cache metadata directly into the image. The image can be pushed to the registry and then referenced in a later build with =--cache-from=. The unique part about the new cache manifest is that only layers that are cache hits will be downloaded, in the old form the entire image of the previous stage was downloaded when referenced by =--cache-from=.
 
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-There is a security concern to keep in mind when using layer caching. For example, since the =RUN= command only reruns if the text of the command changes, or a previous layer invalidated the cache, any system package installed will remain the same version even if a security fix has been released. For this reason it is good to occasionally run with =--no-cache= which will not reuse any layers when building the image.
+There is a security concern to keep in mind when using layer caching. For example, since the <code>RUN</code> command only reruns if the text of the command changes, or a previous layer invalidated the cache, any system package installed will remain the same version even if a security fix has been released. For this reason it is good to occasionally run with <code>--no-cache</code> which will not reuse any layers when building the image.
 #+end_notice
 
 **** Multi-Stage Build
@@ -2414,9 +2412,9 @@ The profile having =include_erts= set to =true= means the tarball contains the E
 #+attr_shortcode: note
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-Why tar the release at all?
+<h3>Why tar the release at all?</h3>
 
-You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the =_build/prod/rel= directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like =release_handler=, for example the boot script is renamed from =RelName.boot= to =start.boot=. For more details see the [[http://erlang.org/doc/man/systools.html#make_tar-1][systools]] documentation.
+<p>You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the <code>_build/prod/rel</code> directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like <code>release_handler</code>, for example the boot script is renamed from <code>RelName.boot</code> to <code>start.boot</code>. For more details see the [[http://erlang.org/doc/man/systools.html#make_tar-1][systools]] documentation.</p>
 #+end_notice
 
 Finally, the deployable image uses a regular OS image (=alpine:3.10=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
@@ -2453,6 +2451,8 @@ CMD ["foreground"]
 $ docker buildx build --target runner --tag service_discovery:${GIT_REF} .
 #+END_SRC
 
+[Should the old --cache-from commands be included here?]
+
 #+BEGIN_SRC shell
 $ docker build --cache-from=service_discovery:builder-${CHKSUM} --cache-from=service_discovery:releaser-${CHKSUM} --target releaser -t service_discovery:releaser-${CHKSUM} .
 #+END_SRC
@@ -2463,7 +2463,7 @@ $ docker build --cache-from=service_discovery:releaser-${CHKSUM} --cache-from=se
 
 *** Running a Container
 
-Now that we have the image =docker run= can be used to run the release for local verification and testing. The =CMD= passed to the entrypoint, =foreground=, can be overridden with the =console= command to get an interactive shell when the container is run:
+Now that we have the image, =docker run= can be used to start the release for local verification and testing. By default, the =CMD=, =foreground=, is passed to the release start script, configured through =ENTRYPOINT= as =/opt/service_discovery/bin/service_discovery=. =CMD= can be overridden if with the last argument passed to =docker run=. Using the =console= command results in an interactive shell when the container is run:
 
 #+BEGIN_SRC shell
 $ docker run -ti service_discovery console
@@ -2471,28 +2471,66 @@ $ docker run -ti service_discovery console
 (service_discovery@localhost)1>
 #+END_SRC
 
-The =-ti= options tell =docker= we want an interactive shell, while `console` tells the same to the Erlang release.
-
-A running node can also be attached to with =docker exec=, the container id (use =docker ps= to find this container id) and =remote_console=:
+The =-ti= options tell =docker= we want an interactive shell. This is useful for local testing of the image where you want a shell for inspecting the running release. The default, set by =CMD= in the Dockerfile =runner= stage will use =foreground=. There is no use for =-ti= here so they can be dropped as well and the command is simply:
 
 #+BEGIN_SRC shell
-$ docker exec -ti 960409ea0bc0 bin/service_discovery remote_console
+$ docker run service_discovery
+Exec: /opt/service_discovery/erts-10.5/bin/erlexec -noshell -noinput +Bd -boot /opt/service_discovery/releases/8ec119fc36fa702a8c12a8c4ab0349b392d05515/start -mode embedded -boot_var ERTS_LIB_DIR /opt/service_discovery/lib -config /tmp/sys.config -args_file /tmp/vm.args -- foreground
+Root: /opt/service_discovery
+/opt/service_discovery
+#+END_SRC
+
+To prevent accidental shutdown you will not be able to stop this container with =Ctrl-c= so to stop the container use =docker kill <container id>=.
+
+Note that =foreground= is the default because this is how it should be run in production, though it would be in the background:
+
+#+BEGIN_SRC shell
+$ docker run -d service_discovery
+3c45b7043445164d713ab9ecc03e5dbfb18a8d801e1b46e291e1167ab91e67f4
+#+END_SRC
+
+Running with =-d= is short for =--detach= and the output is the container id. Logs that are written to =stdout= will be viewable with =docker log <container id>= and we will see in the [[/docs/production/kubernetes][next chapter]] how in Kubernetes the logs can be routed to your log store of choice. And even when
+
+The running node can also be attached to with =docker exec=, the container id (seen in the output of =docker run -d= or use =docker ps= to find this) and command =remote_console=. It doesn't matter if the container was started with =console= or =foreground=, but this is, of course, most useful when you need a shell for a node you didn't already start with =console=. Because =exec= does not use the =ENTRYPOINT= defined in the image the command to run must start with the release start script, =bin/service_discovery=:
+
+#+BEGIN_SRC shell
+$ docker exec -ti 3c45 bin/service_discovery remote_console
 [...]
 (service_discovery@localhost)1>
 #+END_SRC
 
-To exit the remote console do not run =q().= as this will shutdown the Erlang node and the Docker container. Use =Ctrl-g= and enter =q=. =Ctrl-g= enters the shell into what is called the Job Control Mode. To read more about how this shell mode can be used see the [[http://erlang.org/doc/man/shell.html#jcl-mode][Job Control Mode (JCL Mode) documentation]].
+Alternatively, a Linux shell could be run with =docker exec -ti 3c45 /bin/sh=, which will drop you into =/opt/service_discovery= where you could then connect with a =remote_console= or inspect other aspect of the running container.
+
+To exit the remote console do not run =q().=, this will shutdown the Erlang node and the Docker container. Use =Ctrl-g= and enter =q=. =Ctrl-g= enters the shell into what is called the Job Control Mode. To read more about how this shell mode can be used see the [[http://erlang.org/doc/man/shell.html#jcl-mode][Job Control Mode (JCL Mode) documentation]].
+
+In some cases, such as if the release will not boot, it can be useful to override the =ENTRYPOINT= and get a shell in a container that will attempt to boot the release:
+
+#+BEGIN_SRC shell
+$ docker run -ti --entrypoint /bin/sh service_discovery
+/opt/service_discovery #
+#+END_SRC
+
+Lastly, in the previous section we saw how =RELX_OUT_FILE_PATH= was set to =/tmp= so no files would attempt to write to the release directory, which should remain read-only. Docker has a =diff= command that can will show the difference between the image filesystem and the current running container's filesystem:
+
+#+BEGIN_SRC shell
+$ docker container diff 3c45
+C /tmp
+A /tmp/sys.config
+A /tmp/vm.args
+#+END_SRC
+
+This can be a useful command for easily inspecting what your release is writing to disk if you run into problems or want to verify you release is not doing something it shouldn't. And in cases where there are a lot of writes to disk from the release it is best to mount a [[https://docs.docker.com/storage/volumes/][volume]] and point all writes to it, but for the 2 small configuration files this is not necessary. Unless, when creating the config files from the templates there is sensitive data being used. In which case a [[https://docs.docker.com/storage/tmpfs/][tmpfs]] mount is recommended. On Linux simply add =--tmpfs /tmp= to the =docker run= command. Then =/tmp= will not be part of the writable layer of the container but a separate volume that only exists in memory and is destroyed when the container is stopped.
 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_alert
-Beware Zombies!
+<h3>Beware Zombies!</h3>
 
-As of Erlang/OTP 19.3 an Erlang node will gracefully shutdown with <code>init:stop()</code> when a <code>TERM</code> signal is received, as is used by Docker and Kubernetes for shutting down containers.
+<p>As of Erlang/OTP 19.3 an Erlang node will gracefully shutdown with <code>init:stop()</code> when a <code>TERM</code> signal is received, as is used by Docker and Kubernetes for shutting down containers.</p>
 
-But there are still potential issues you will encounter with zombies in a container. When using <code>docker exec</code> to run <code>remote_console</code>, or any other release script command like <code>ping</code>, will leave zombie processes behind unless the container is started with the argument `--init` that Docker offers for starting a small init before your entrypoint.
+<p>But there are still potential issues you will encounter with zombies in a container. When using <code>docker exec</code> to run <code>remote&#95;console</code>, or any other release script command like <code>ping</code>, will leave zombie processes behind unless the container is started with the argument <code>--init</code> that Docker offers for starting a small init before your entrypoint.</p>
 
-This is usually not an issue, but like with atoms, it certainly can be if the uses aren't limited. An example of something to avoid for this reason, unless running with <code>--init</code> or some other tiny init as pid 0, would be using <code>ping</code> as a health check which is run periodically during the life of a container by the container runtime. A long running container like this will eventually have the kernel process table run out of slots and it will not be possible to create new processes.
+<p>This is usually not an issue, but like with atoms, it certainly can be if the uses aren't limited. An example of something to avoid for this reason, unless running with <code>--init</code> or some other tiny init as pid 0, would be using <code>ping</code> as a health check which is run periodically during the life of a container by the container runtime. A long running container like this will eventually have the kernel process table run out of slots and it will not be possible to create new processes.</p>
 #+end_alert
 
 *** Using Images for Continuous Integration Testing
@@ -3055,6 +3093,7 @@ No business works only with code; it is way more frequent to hear about projects
 *** It is Easier to Train than Hire
 
 * DONE Appendix 1: Erlang/OTP Cheat Sheets
+
 CLOSED: [2019-08-08 Thu 08:06]
 :PROPERTIES:
 :EXPORT_FILE_NAME: cheat_sheets
@@ -3444,7 +3483,21 @@ The =Actions= value is any combination of the following list (non-inclusive): =p
 | ={state_timeout, T, Msg}= | =Action= return value | =state_timeout= | =Msg= | A specific timeout that can be set and received internally when the state machine has not transitioned to a new different state in =T= milliseconds |
 | ={next_event, internal, Msg}= | =Action= return value | =internal= | =Msg= | Internal messages that can be generated by a state machine wanting to trigger itself without looking like external calls |
 
-* TODO Appendix 2: Systemd
+* TODO Appendix 2: Releases
+
+** The Boot Script
+
+The boot file has variables that must be set properly in order to find libraries and the runtime, the bundled script takes care of making sure these are set properly and passed to =erl=.
+
+=-boot_var ERTS_LIB_DIR "$ERTS_LIB_DIR"=
+
+** Relx Configuration
+
+** Release Start Script Commands
+
+=ping=, =rpc=, =rpcterm=, =eval=, ...
+
+* TODO Appendix 4: Systemd
 :PROPERTIES:
 :EXPORT_FILE_NAME: systemd
 :EXPORT_FILE_NAME: cheat_sheets
@@ -3475,9 +3528,3 @@ As of OTP 19.3 a =SIGTERM= signal causes the OTP VM to gracefully shutdown.
 #+BEGIN_src shell
 journalctl service_discovery
 #+END_src
-* TODO Appendix 3: The Boot Script
-
-The boot file has variables that must be set properly in order to find libraries and the runtime, the bundled script takes care of making sure these are set properly and passed to =erl=.
-
-=-boot_var ERTS_LIB_DIR "$ERTS_LIB_DIR"=
-* TODO Appendix 4: Release Start Script Commands
