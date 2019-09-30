@@ -1413,6 +1413,8 @@ The =surefire= hook can be enabled in =rebar.config= with the following =ct_opts
 
 CircleCI has no official support for rebar3 projects, but they do host Erlang docker images which contain rebar3 and tools necessary for interacting with CircleCI's cache and artifact store. But thanks to [[https://circleci.com/orbs/][CircleCI Orbs]] it is easy to get started with rebar3 on CircleCI and take advantage of its unique features. CircleCI Orbs are reusable commands, executors and jobs that make writing workflows simpler. The [[https://circleci.com/orbs/registry/orb/tsloughter/rebar3][rebar3 Orb]] takes care of caching built dependencies and moving artifacts, like CT's HTML output, with CircleCI's artifacts commands.
 
+CircleCI runs Docker images on machines with many more CPU's than are allocated for your job. Because Erlang can not limit the number of schedulers it starts to the number of CPU's allocated to the container, Erlang will start as many schedulers as CPU's it sees on the host. This results in wasted resources because the VM is busy scheduling something like 32 schedulers when it only has access to 1 or 2 processors. To configure the number of schedulers that Erlang will start when running =rebar3= use the environment variable =ERL_FLAGS= which takes the arguments that need to be passed to =erl= in this case ="+S 2"=.
+
 #+BEGIN_SRC yaml
 version: 2.1
 
@@ -2931,6 +2933,8 @@ The content of =default.env= is:
 
 #+BEGIN_SRC shell
 LOGGER_LEVEL=debug
+SCHEDULERS=1
+DB_HOST=127.0.0.1
 #+END_SRC
 
 The resulting ConfigMap seen in the output for =kubectl kustomize deployment/base= is:
