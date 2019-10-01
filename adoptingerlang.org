@@ -2312,7 +2312,9 @@ In this new set of instructions the build sets the =WORKDIR= to =/app/src=, this
 
 The =COPY= of the =rebar3= configuration and lock file remains the same but the following =RUN= has changed to include a =--mount= option with type =cache=. This tells Docker to create a cache directory separate from the Docker layers and stored locally on the host. This cache will remain between runs of =docker build=, so future local runs of =docker build=, even if the config or lock file has changed, will mount this cache and only newly needed packages will be fetched from Hex.
 
-Next, unlike the previous instructions for building the rest of the project the instruction =COPY . .= has been removed. Instead, a mount of type =bind= (the default) is used with a =target= of =.=. A bind mount, as opposed to the =cache= mount, means Docker will mount from the build context into the container, giving us the same result as =COPY . .=, but without creating a layer from copying in the files. And subsequent builds will only have to update what changed in the build context and the immutable build context is mounted into the build. With the =COPY= command there are actually two copies, the build context and the copy in the build container. Each =build= with =COPY= requires copying the whole project from the build context into the build container again. The mount is read-only, meaning the build will error out if anything is written to =/app/src=, and that is why the =rebar3= base directory has been configured to =/app/_build=. There is an option to mount in =read-write= mode but the writes are not persisted and it removes optimizations around not having to make copies of the data from the build context for the build container. More can be read about the mount options in the Buildkit docs for [[https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md][Dockerfile frontend experimental syntax]].
+Next, unlike the previous instructions for building the rest of the project the instruction =COPY . .= has been removed. Instead, a mount of type =bind= (the default) is used with a =target= of =.=. A bind mount, as opposed to the =cache= mount, means Docker will mount from the build context into the container, giving us the same result as =COPY . .=, but without creating a layer from copying in the files, making the build faster and smaller. With the =COPY= command there are two copies made from the host: the build context and the copy in the build container. Each run of =build= with =COPY= requires copying the whole project from the build context into the build container again.
+
+By default the mount is immutable, meaning the build will error out if anything is written to =/app/src=, and that is why the =rebar3= base directory has been configured to =/app/_build=. There is an option to mount in =read-write= mode but the writes are not persisted and it removes optimizations around not having to make copies of the data from the build context for the build container. More can be read about the mount options in the Buildkit docs for [[https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md][Dockerfile frontend experimental syntax]].
 
 The end result is a layer containing =/app/_build= with the compiled dependencies (along with =/app/src/rebar.*=, but they add very little to the size of the layer) followed by a layer containing =/app/_build= with the compiled project but nothing in =/app/src=. Separately there is a cache of all the hex packages that were downloaded.
 
@@ -2447,6 +2449,10 @@ ENV COOKIE=service_discovery \
     LOGGER_LEVEL=debug \
     SCHEDULERS=1
 
+EXPOSE 8053
+EXPOSE 3000
+EXPOSE 8081
+
 # install openssl, needed by the crypto app
 RUN --mount=type=cache,id=apk,sharing=locked,target=/var/cache/apk \
     ln -vs /var/cache/apk /etc/apk/cache && \
@@ -2458,7 +2464,9 @@ ENTRYPOINT ["/opt/service_discovery/bin/service_discovery"]
 CMD ["foreground"]
 #+END_SRC
 
-=/opt/service_discovery= is owned by root and it is recommended to not run the container as root. When the release is run =sys.config= and =vm.args= need to be generated from their respective =.src= files. By default these are placed in the same directory as the original =.src= files. If =RELX_OUT_FILE_PATH= is set, its location will be used instead. Here, the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
+In the =ENV= command we set some useful defaults for environment variables used when the release is run. =RELX_OUT_FILE_PATH=/tmp= is used by the release start script as the directory to output any files created by the script. This is done because when the release is run =sys.config= and =vm.args= need to be generated from their respective =.src= files and by default these are placed in the same directory as the original =.src= files. We do not want these files written to the release directory, where the =.src= files are, because it is a best practice for the container filesystem to not be written to. This image can be run as any user if it writes to =/tmp=, but it would have to run as =root= if it needed to write anywhere under =/opt/service_discovery=. So writing to =/tmp= allows another best practice to be followed, not running the container as =root=. We can go even further and make the runtime filesystem read-only, we will see that in [[Running a Container]].
+
+=/opt/service_discovery= is owned by root and it is recommended to not run the container as root.   If =RELX_OUT_FILE_PATH= is set, its location will be used instead. Here, the =ENV= command is used to ensure the environment variable =RELX_OUT_FILE_PATH= is set to =/tmp= when the container is run.
 
 #+BEGIN_SRC shell
 $ docker buildx build -o type=docker --target runner --tag service_discovery:$(git rev-parse HEAD) .
@@ -2534,7 +2542,7 @@ A /tmp/sys.config
 A /tmp/vm.args
 #+END_SRC
 
-This can be a useful command for easily inspecting what your release is writing to disk if you run into problems or want to verify you release is not doing something it shouldn't. And in cases where there are a lot of writes to disk from the release it is best to mount a [[https://docs.docker.com/storage/volumes/][volume]] and point all writes to it, but for the 2 small configuration files this is not necessary. Unless, when creating the config files from the templates there is sensitive data being used. In which case a [[https://docs.docker.com/storage/tmpfs/][tmpfs]] mount is recommended. On Linux simply add =--tmpfs /tmp= to the =docker run= command. Then =/tmp= will not be part of the writable layer of the container but a separate volume that only exists in memory and is destroyed when the container is stopped.
+This can be a useful command for easily inspecting what your release is writing to disk if you run into problems or want to verify you release is not doing something it shouldn't. And in cases where there are a lot of writes to disk from the release it is best to mount a [[https://docs.docker.com/storage/volumes/][volume]] and point all writes to it, but for the 2 small configuration files this is not necessary. Unless, when creating the config files from the templates there is sensitive data being used or you want to run the container with =--read-only=. In those cases a [[https://docs.docker.com/storage/tmpfs/][tmpfs]] mount is recommended. On Linux simply add =--tmpfs /tmp= to the =docker run= command. Then =/tmp= will not be part of the writable layer of the container but a separate volume that only exists in memory and is destroyed when the container is stopped.
 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
