@@ -2190,9 +2190,9 @@ Advantages of containers running with filesystem and network isolation are not h
 - Finding an open port
 - Finding a unique name for node name
 
-#+attr_shortcode: note
+#+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
-#+begin_notice
+#+begin_alert
 You might notice we will not be using the <code>latest</code> tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should not be used, unless you really don't care what version of an image will be used.
 #+end_notice
 
@@ -2330,7 +2330,7 @@ The old =--cache-from= is not "multi-stage aware", meaning it requires the user 
 
 With =buildx= a cache manifest is built that will include information about previous stages in a multi-stage build. The argument =--cache-to= allows for this cache to be exported in various ways. We will use the =inline= option which writes the cache manifest directly to the image's metadata. The image can be pushed to the registry and then referenced in a later build with =--cache-from=. The unique part about the new cache manifest is that only layers that are cache hits will be downloaded, in the old form the entire image of the previous stage was downloaded when referenced by =--cache-from=.
 
-#+attr_shortcode: note
+#+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_alert
 <h3>Caching and Security Updates</h3>
@@ -2372,23 +2372,23 @@ RUN --mount=target=. \
 
 The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a base image to =FROM= in later stages.
 
-#+attr_shortcode: note
+#+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
-#+begin_notice
+#+begin_alert
 <h3>Old Docker Caching</h3>
 
 <p>For remote caching using the old <code>--cache-from</code>, as described in the previous section,  the <code>builder</code> stage would be built and tagged with an identifier that lets us reference the image based on the rebar3 dependencies it containers. To do this we can use the command <code>cksum</code> on <code>rebar.config</code> and <code>rebar.lock</code>. This acts similarly to what Docker does before choosing to invalidate its cache or not.</p>
 
 <code><pre>
 $ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
-$ docker build --target builder -t service_discovery:builder-${CHKSUM} .
+$ docker build --target builder -t service&#95;discovery:builder-${CHKSUM} .
 $ docker push service_discovery:builder-${CHKSUM}
 </pre></code>
 
-<p>When building any stage that uses <code>FROM builder</code> we would include <code>--cache-from=service_discovery:builder-${CHKSUM}</code> to pull the previously built dependencies.</p>
+<p>When building any stage that uses <code>FROM builder</code> we would include <code>--cache-from=service&#95;discovery:builder-${CHKSUM}</code> to pull the previously built dependencies.</p>
 
 <p>It is common for developers to be working on concurrent branches of the same project, potentially with varying dependencies, using a checksum of the current rebar3 config and lock files when defining the image to use as a cache allows for multiple sets of dependencies for a project to be cached and the correct set to be used when building.</p>
-#+end_notice
+#+end_alert
 
 The next stage, named =releaser=, uses the =prod_compiled= image as its base:
 
@@ -2425,13 +2425,13 @@ This stage builds a tarball of the release using the =prod= profile:
 
 The profile having =include_erts= set to =true= means the tarball contains the Erlang runtime and can be run on a target that doesn't have Erlang installed. At the end the tarball is unpacked to =/opt/rel= so the stage that will copy the release out of the =releaser= stage does not need to have =tar= installed.
 
-#+attr_shortcode: note
+#+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
-#+begin_notice
+#+begin_alert
 <h3>Why tar the release at all?</h3>
 
-<p>You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the <code>_build/prod/rel</code> directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like <code>release_handler</code>, for example the boot script is renamed from <code>RelName.boot</code> to <code>start.boot</code>. For more details see the [[http://erlang.org/doc/man/systools.html#make_tar-1][systools]] documentation.</p>
-#+end_notice
+<p>You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the <code>&#95;build/prod/rel</code> directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like <code>release&#95;handler</code>, for example the boot script is renamed from <code>RelName.boot</code> to <code>start.boot</code>. For more details see the <a href="http://erlang.org/doc/man/systools.html#make_tar-1">systools</a> documentation.</p>
+#+end_alert
 
 Finally, the deployable image uses a regular OS image (=alpine:3.10=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
 
