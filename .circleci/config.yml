@@ -31,7 +31,7 @@ jobs:
         type: string
         default: ""
     docker:
-      - image: tsloughter/hugo_netlify
+      - image: tristan/hugo_netlify:latest
     steps:
       - checkout
       - attach_workspace:
