@@ -3,8 +3,6 @@ languageCode = "en-us"
 title = "Adopting Erlang"
 theme = "custom"
 
-pygmentsUseClassic=true
-pygmentsUseClasses=true
 pygmentsCodeFences=true
 
 [params]
