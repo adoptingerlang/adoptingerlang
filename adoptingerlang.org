@@ -2193,7 +2193,7 @@ Advantages of containers running with filesystem and network isolation are not h
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_alert
-You might notice we will not be using the <code>latest</code> tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should rarely, if ever, relied on, unless you really don't care what version of an image will be used.
+You might notice we will not be using the <code>latest</code> tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should rarely, if ever, be relied on, unless you really don't care what version of an image will be used.
 #+end_alert
 
 In this chapter we will cover efficiently building images for running the =service_discovery= project as well as images for running tests and dialyzer. Then, we will update the continuous integration pipeline to build and publish new images.
