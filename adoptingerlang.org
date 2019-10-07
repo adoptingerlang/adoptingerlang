@@ -2196,7 +2196,7 @@ Advantages of containers running with filesystem and network isolation are not h
 You might notice we will not be using the <code>latest</code> tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should rarely, if ever, be relied on, unless you really don't care what version of an image will be used.
 #+end_alert
 
-In this chapter we will cover efficiently building images for running the =service_discovery= project as well as images for running tests and dialyzer. Then, we will update the continuous integration pipeline to build and publish new images.
+In this chapter we will cover efficiently building images for running the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project as well as images for running tests and dialyzer. Then, we will update the continuous integration pipeline to build and publish new images.
 
 The minimum Docker version required for this chapter is 19.03 with [[https://github.com/docker/buildx][buildx]] installed. Installing =buildx= can be done with the following commands:
 
