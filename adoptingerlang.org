@@ -228,7 +228,7 @@ As you can see, the =Patch= version is not mentioned when no patch is required. 
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_alert
-Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the <a href="http://erlang.org/doc/system_principles/misc.html">Support, Compatibility, Deprecations, and Removal</a> document published by the OTP team at Ericsson.
+Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the <a href='http://erlang.org/doc/system_principles/misc.html'>Support, Compatibility, Deprecations, and Removal</a> document published by the OTP team at Ericsson.
 #+end_alert
 
 In some rare scenarios, hard-and-fast deprecations do happen (mostly by accident), and it may take a few weeks for the community to come up with workarounds.
@@ -966,7 +966,7 @@ If you do not want to care for a supervision tree and are only interested in get
 
 escript is a special C program that wraps the Erlang virtual machine. In wrapping it, it also introduces a small shim that retrofits the idea of a main() function to the release structure, by calling your code into the root Erlang process of the virtual machine.
 
-The net result is that you can run interpreted code without having to bother about releases, OTP Applications, or supervision tree. You can read more about escripts in <a href="http://erlang.org/doc/man/escript.html">the official Erlang documentation</a>. Rebar3 also <a href="https://www.rebar3.org/docs/commands#escriptize">has a command to create complex escript bundles</a>.
+The net result is that you can run interpreted code without having to bother about releases, OTP Applications, or supervision tree. You can read more about escripts in <a href='http://erlang.org/doc/man/escript.html'>the official Erlang documentation</a>. Rebar3 also <a href='https://www.rebar3.org/docs/commands#escriptize'>has a command to create complex escript bundles</a>.
 #+end_notice
 
 You now understand most of the weird stuff about Erlang/OTP's project structure and everything that has to do with these mysterious "OTP Applications". Starting with next chapter, we'll start digging a bit in supervision trees, so that you know how to set things up in a stateful runnable application.
@@ -1577,7 +1577,7 @@ On top of that, binaries larger than 64 bytes can be shared across process heaps
 
 #+attr_shortcode: info
 #+begin_alert
-Binary sharing is often a great way to gain performance in a program. However, there exist some pathological usage patterns where binary sharing can lead to memory leaks. If you want to know more, take a look at <a href="https://www.erlang-in-anger.com/">Erlang In Anger's</a> chapter on memory leaks, particularly section 7.2
+Binary sharing is often a great way to gain performance in a program. However, there exist some pathological usage patterns where binary sharing can lead to memory leaks. If you want to know more, take a look at <a href='https://www.erlang-in-anger.com/'>Erlang In Anger's</a> chapter on memory leaks, particularly section 7.2
 #+end_alert
 
 The real cool thing though comes from the IoData representation where you combine the list approach with binaries. It's how you get really cheap composition of immutable strings:
@@ -2430,7 +2430,7 @@ The profile having =include_erts= set to =true= means the tarball contains the E
 #+begin_alert
 <h3>Why tar the release at all?</h3>
 
-<p>You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the <code>&#95;build/prod/rel</code> directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like <code>release&#95;handler</code>, for example the boot script is renamed from <code>RelName.boot</code> to <code>start.boot</code>. For more details see the <a href="http://erlang.org/doc/man/systools.html#make_tar-1">systools</a> documentation.</p>
+<p>You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the <code>&#95;build/prod/rel</code> directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like <code>release&#95;handler</code>, for example the boot script is renamed from <code>RelName.boot</code> to <code>start.boot</code>. For more details see the <a href='http://erlang.org/doc/man/systools.html#make&#95;tar-1'>systools</a> documentation.</p>
 #+end_alert
 
 Finally, the deployable image uses a regular OS image (=alpine:3.10=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
