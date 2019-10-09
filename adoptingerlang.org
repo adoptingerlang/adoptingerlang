@@ -2382,7 +2382,7 @@ The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= 
 <code><pre>
 $ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
 $ docker build --target builder -t service&#95;discovery:builder-${CHKSUM} .
-$ docker push service_discovery:builder-${CHKSUM}
+$ docker push service&#95;discovery:builder-${CHKSUM}
 </pre></code>
 
 <p>When building any stage that uses <code>FROM builder</code> we would include <code>--cache-from=service&#95;discovery:builder-${CHKSUM}</code> to pull the previously built dependencies.</p>
