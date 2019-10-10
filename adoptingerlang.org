@@ -1282,7 +1282,7 @@ If a worker in the =DB= subtree dies, and =DB= is a supervisor with a =one_for_o
 
 Implicitly, there is also a statement that the event handling subtree is not directly impacted by the database, as long as it has managed to successfully boot at some point.
 
-This supervision tree can be read like a schedule and a map to the system faults. The HTTP server won't start unless the domain-specific workers are available, and the HTTP handler failing will not do anything that might compromise the database cache. Of course, if the HTTP handler relies on the domain worker, which relies on the cache's ETS table and that table vanishes, then all these processes will may together.
+This supervision tree can be read like a schedule and a map to the system faults. The HTTP server won't start unless the domain-specific workers are available, and the HTTP handler failing will not do anything that might compromise the database cache. Of course, if the HTTP handler relies on the domain worker, which relies on the cache's ETS table and that table vanishes, then all these processes may die together.
 
 What's truly interesting here is that we can at a glance know how even unknown failures may impact our system. I don't need to know _why_ a database worker may fail, whether it's due to a disconnection, a dying database, or a bug in the protocol implementation; I know that no matter what, this should leave the cache in place, and possibly let me do stale reads until the database sub-tree becomes available again.
 
