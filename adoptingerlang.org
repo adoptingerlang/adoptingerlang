@@ -1663,7 +1663,7 @@ Do note that mixed rebar3 projects using both Erlang and Elixir within the same 
 
 Corporate environments tend to have all kinds of weird restrictions regarding what can or cannot be done, and development tools can be very idiosyncratic. Rebar3 was mostly developed to fit an open-sourced world and focuses mostly on enforcing project structure, fetching dependencies, and using both together as a great pretext to wrap a bunch of standard tools.
 
-As such, it is perhaps unsurprising that fitting a corporate environment with the tool can prove to be a bit challenging. In this section, we'll cover some standard tools that are common to corporate environments, and risk making your life easier when adopting Erlang.
+As such, it is perhaps unsurprising that fitting a corporate environment with the tool can prove to be a bit challenging. In this section, we'll cover some standard tools that are common to corporate environments and may make your life easier when adopting Erlang.
 
 **** Proxy Support
 
