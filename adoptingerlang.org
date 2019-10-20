@@ -1372,13 +1372,13 @@ As such, Rebar3 has the following properties:
 - Circular dependencies are forbidden
 - Rebar3 supports composable per-project [[https://www.rebar3.org/docs/profiles][_profiles_] that let you segment or combine configuration settings, such as dependencies that are to only be used for tests or only in a specific environment (say on a specific target OS). There are no restrictions on the number or names of profiles, but there are four profiles, =default=, =test=, =docs=, and =global=, which are used by rebar3 automatically for specific tasks.
 - Builds are meant to be repeatable. Dependencies are locked, and only upgraded when specifically asked to. The version in =rebar3.lock= takes precedence of whatever version is declared in =rebar.config= until =rebar3 upgrade= is called to update the lock file. If the lock file changes but dependencies have already been fetched, for example if the current branch checked out from git is changed, =rebar3 compile= will verify the fetched dependencies are those that the lock file specifies and fetch the locked version if needed.
-- Dependencies are always built with the =prod= profile applied, and once built will not be recompiled unless they are upgraded, even though the tool will always make sure they are there, match the lock file, and are compiled. Here "compiled" means that there is a =.app= file and for each module listed in the app file a corresponding beam file is found, but it does _not_ check if there are changes to the source file for that beam module.
+- Dependencies are always built with the =prod= profile applied. Rebar3 will always check that they match the lock file and that build artifacts are present, but will not detect code changes done within a dependency.
 - Rebar3 assumes that you'll sometimes need to tweak the configuration of libraries you do not control and supports [[https://www.rebar3.org/docs/configuration#section-overrides][overrides]] for this purpose
 - The tool assumes you're developing with a source control mechanism such as =git= or =hg= (mercurial), which means that switching branches may switch dependency versions in the lock file. Since rebar3 verifies dependencies before each build, it will automatically re-fetch libraries to get the locked version for the current branch if there is a change when switching branches.
 - To ease contribution and publishing, rebar3 does not natively support ways to use relative paths to declare libraries, since this could make builds brittle, non-repeatable, and non-portable when publishing code
 - Knowing relative paths are very common when making changes within the dependencies of a project, [[https://www.rebar3.org/docs/dependencies#section-checkout-dependencies][=_checkouts=]] allow for an automatic way to temporary override of a dependency with a local copy. For other use cases [[https://www.rebar3.org/docs/using-available-plugins#section-vendoring-dependencies][plugins]] allow the creation of [[https://www.rebar3.org/docs/custom-dep-resources][custom resource types]].
 - Rebar3 is not an installer or runner of end-user applications and does not support anything related to that; it aims to generate build artifacts that you can then install through the correct dedicated channels. Rebar3 does not expect or need to ever be on a production device or server.
-- Rebar3 is not a sandbox. While it will make sure all dependencies you download match the right signatures and provides repeatable builds, it cannot guarantee that script files invoked during builds or [[https://stackoverflow.com/questions/2416192/is-there-a-good-complete-tutorial-on-erlang-parse-transforms-available][parse transforms]] run during compilation are ever going to be safe, and has no intention of taking on that responsibility.
+- Rebar3 is not a sandbox. While it will make sure all dependencies you download match the right signatures and provides repeatable builds, it cannot guarantee that script files invoked during builds or [[https://stackoverflow.com/questions/2416192/is-there-a-good-complete-tutorial-on-erlang-parse-transforms-available][parse transforms]] run during compilation are ever going to be safe, and has no intention of taking on that responsibility. Plugins are also not locked automatically, and it is up to library authors to pin versions in cases where they impact compilation.
 
 That's a lot of information, but we find that it's useful to know about it before getting in too deep with dependencies. If you operate under assumptions that Rebar3 works like Javascript's =npm=, Elixir's =mix=, Go's toolchain, or even the original =rebar=, you might find some behaviours confusing. With that being said, let's use dependencies.
 
@@ -1437,9 +1437,58 @@ Let's see how this would work with a project we've created specifically for this
 
 Both git and hex dependencies can work together for most projects. The only exception is hex packages, which can only depend on other hex packages. Let's compile the whole project and step through what is going on:
 
-TODO: FILL IN THE STEPS: show providers, build steps
+#+NAME: service_discovery.compile
+#+BEGIN_SRC sh
+$ rebar3 compile
+===> Fetching covertool v2.0.1
+===> Downloaded package, caching at /Users/ferd/.cache/rebar3/hex/hexpm/packages/covertool-2.0.1.tar
+===> Compiling covertool
+...
+===> Verifying dependencies...
+===> Fetching dns (from {git,"https://github.com/tsloughter/dns_erlang.git",
+               {ref,"abc562548e8a232289eec06cf96ce7066261cc9d"}})
+===> Fetching provider_asn1 v0.2.3
+===> Downloaded package, caching at /Users/ferd/.cache/rebar3/hex/hexpm/packages/provider_asn1-0.2.3.tar
+===> Compiling provider_asn1
+===> Fetching elli v3.2.0
+...
+===> Fetching rfc3339 v0.9.0
+===> Version cached at /Users/ferd/.cache/rebar3/hex/hexpm/packages/rfc3339-0.9.0.tar is up to date, reusing it
+===> Compiling quickrand
+===> Compiling uuid
+===> Compiling recon
+...
+===> Compiling service_discovery_storage
+===> Compiling service_discovery
+===> Compiling service_discovery_http
+===> Compiling service_discovery_grpc
+===> Compiling service_discovery_postgres
+#+END_SRC
 
-You can see the total dependency resolving by calling =rebar3 tree=:
+Running this build, you can see multiple things going on:
+
+1. Plugins (such as =covertool=) are fetched and compiled before anything else goes on
+2. Actual dependencies of the project (such as =dns= and =elli=) are fetched
+3. Dependencies are compiled (=quickrand= and others)
+4. The main applications are compiled.
+
+If you were to try again and run things from scratch while deleting the =rebar.lock= file, things would be a bit different. You might see something looking like this as part of the output:
+
+#+NAME: service_discovery.resolve
+#+BEGIN_SRC
+...
+===> Fetching dns (from {git,"https://github.com/tsloughter/dns_erlang.git",
+               {branch,"hex-deps"}})
+...
+===> Skipping dns (from {git,"git://github.com/dnsimple/dns_erlang.git",
+               {ref,"b9ee5b306acca34b3d866d183c475d5f12b313a5"}}) as an app of the same name has already been fetched
+...
+===> Skipping jsx v2.9.0 as an app of the same name has already been fetched
+===> Skipping recon v2.4.0 as an app of the same name has already been fetched
+...
+#+END_SRC
+
+Those are little notices and warnings that happen during dependency resolution, which is not necessary when a =rebar.lock= file is available. They inform the library maintainer that a conflict was detected, and a certain version of a library was skipped. To finish an audit of your build, you can inspect the final dependency resolving by calling =rebar3 tree=:
 
 #+NAME: service_discovery.deps-tree
 #+BEGIN_SRC sh
@@ -1476,7 +1525,7 @@ $ rebar3 tree
       └─ quickrand─1.7.5 (hex package)
 #+END_SRC
 
-In this listing, all top-level applications (those we write in the repository) are at the top, and the dependencies we just fetched are all below them. You can see the entire resolution tree that way, find which versions have been fetched and which application brought them in. This can prove useful to understand why a version was selected when a transitive dependency is included by two or more applications.
+This listing starts with the =Verifying dependencies ...= line, which is Rebar3 validating that all dependencies are resolved before printing the tree. Following it are all the top-level applications (those we write in the repository), and the dependencies we just fetched are all below them. You can see the entire resolution tree that way, find which versions have been fetched and which application brought them in. This can prove useful to understand why a version was selected when a transitive dependency is included by two or more applications.
 
 If you take a look within =_build/default/lib=, you will see all these applications within their own directory:
 
@@ -1499,7 +1548,7 @@ Each of these is an OTP application with similar directory structures. This layo
 
 **** Building a Project with Dependencies
 
-Building actual projects requires more than just fetching its dependencies and compiling them. As mentioned in [[What Makes a Lib an App]], the Erlang run-time system expects to find run-time definitions of dependencies within the =.app= file. Not putting them there means that while your libraries are available on disk, they won't necessarily be visible during some build phases, some tests, or in releases.
+Building the OTP applications in a project requires more than just fetching its dependencies and compiling them. As mentioned in [[What Makes a Lib an App]], the Erlang run-time system expects to find run-time definitions of dependencies within the =.app= file. Not putting them there tells Rebar3 they are build-time dependencies, not runtime ones. This means they will not be included in some tasks and environments: releases will ignore them, and =rebar3 dialyzer= will avoid including them in its analysis, for example.
 
 Open up =apps/service_discovery/src/service_discovery.app.src= and look at the values in the =applications= tuple:
 
@@ -1524,9 +1573,9 @@ Open up =apps/service_discovery/src/service_discovery.app.src= and look at the v
  ]}.
 #+END_SRC
 
-You can see =erldns= and =service_discovery_storage= have been added. Only when such dependencies are specified will everything both build and run fine.
+You can see =erldns= and =service_discovery_storage= have been added. Specifying these dependencies ensures they are available at runtime and in releases. Not putting them there can result in broken builds.
 
-If you have ever worked with other build tools in the Erlang ecosystem, you likely never had to do this. These tools (erlang.mk or Mix in elixir) end up copying dependencies in the project configuration into the =applications= tuple for you. It sounds like a huge hindrance to have to do this by hand instead, but it ends up giving one critical piece of control in letting you decide _when_ something is used. Let's see a few scenarios where that might be important.
+If you have ever worked with other build tools in the Erlang ecosystem, you likely never had to do this. These tools (erlang.mk or Mix in elixir) end up copying dependencies in the project configuration into the =applications= tuple for you. It sounds like a huge hindrance to have to do this by hand instead, but it ends up following OTP standards to support build-time dependencies. Other tools reach similar results through additional options within configuration files. Let's see a few scenarios where Rebar3's approach can give a critical bit of control.
 
 The first case where this is important is downloading a dependency that you want to include in a release to help you debug it, but on which none of your OTP applications depend. Examples of this include =recon=, =redbug= or custom [[https://ferd.ca/erlang-otp-21-s-new-logger.html][=logger=]] [[http://erlang.org/doc/apps/kernel/logger_chapter.html#handlers][handlers]]. You would want these applications to be available in a release, but since the =applications= tuple lets releases know in which order applications must be booted or started, you do not necessarily want these to be part of your dependency chain. Why should a debugging tool installed just in case be up and running for a website to work? It's not necessary at all. You wouldn't want a malfunctioning debug tool to prevent your actual application from booting.
 
@@ -1578,21 +1627,21 @@ Here, =service_discovery_http= depends on a web server (=elli=), but =service_di
 
 For a third scenario, you might also imagine a small app =service_discovery_mgmt= that is used only to generate an escript that lets you do system administration tasks to interact with the system and send commands around.
 
-One option would be to re-declare all its compile-time dependencies in an application-specific =rebar.config= file, but that would be cumbersome; =rebar3= allows to keep everything in the top-level config file. However, if the run-time dependencies were shared across all applications with that top-level declaration, then even if =service_discovery_mgmt= were to _not_ be included in the release (it'd just be a script on the side), its dependencies would still risk being pushed to production in it through other apps getting them automatically inserted in there. Possibly worse, all the dependencies of the =service_discovery= release would risk being bundled with the script as well! We could end up with a small admin tool that contains web servers and database drivers because the build tool tried to be nice.
+If the run-time dependencies were shared across all applications depending on the same =rebar.config= file, then even if =service_discovery_mgmt= were to _not_ be included in the release (it'd just be a script on the side), its dependencies would still risk being pushed to production in it through other apps getting them automatically inserted in there. Possibly worse, all the dependencies of the =service_discovery= release would risk being bundled with the script as well! We could end up with a small admin tool that contains web servers and database drivers because the build tool tried to be nice.
 
-The rebar3 maintainers therefore just decided to keep a clear distinction between the libraries that need fetching for the project (in =rebar.config=) and the run-time dependencies of OTP applications (in the =.app= file). Other build tools in the ecosystem let you achieve similar results, but they default to including everything at run-time whereas rebar3 asks of developers to always be specific in their intent.
+The rebar3 maintainers therefore just decided to keep a clear distinction between the applications that need fetching for the project to build or run (in =rebar.config=), and the run-time dependencies of each OTP application (in the =.app= file) which may be part of the default OTP install, and would therefore not be included in =rebar.config=. Other build tools in the ecosystem let you achieve similar results, but they default to including everything at run-time whereas rebar3 asks of developers to always be specific in their intent.
 
 With this all in place, all we have to do is groom and clean our sets of dependencies.
 
 *** Dependency Lifecycles
 
-When it comes to setting up a project, the dependency resolution and fetching is where the heaviest work is done. The result is stored in a lock file, and all the results after that are handled through shorter partial changes done through rebar3. This first phase is important to understand, even if you need to do it rather infrequently.
+When it comes to initianalizing a project, the dependency resolution and fetching is where the heaviest work is done. The result is stored in a lock file, and all the results after that are handled through shorter partial changes done through rebar3. This first phase is important to understand, even if you need to do it rather infrequently.
 
 The rebar3 lock file is created at the root of your project, the directory from which you called rebar3. It is saved as =rebar.lock= and you should track it in your source control of choice. You can open the file and look at its content, but there shouldn't be any need to ever edit it by hand. You'll find that it mostly contains version numbers, application names, and various hashes. It might be interesting to audit it from time to time, but you'll end up doing that indirectly as you maintain your dependency tree.
 
 The lock file represents the flattened tree of all dependencies as desired at the time of the build. It will not be modified unless you ask for it to be changed, or unless you delete it, forcing a new resolution to be done from scratch. This strictness is on purpose, and is part of how rebar3 can guarantee repeatable builds under all circumstances.
 
-The hashes in the file mean that even if the dependencies are fetched by multiple layered mirrors (TODO: add link to section), and some malevolent person alters the packages in one or more of the various hex indices or git sources you might use, rebar3 will be able to find that the information is not as expected, and warn you about it.
+The hashes in the file mean that even if the dependencies are fetched by multiple layered mirrors (TODO: add link to section), and some malevolent person alters the packages in one or more of the various hex indices or git sources you might use, rebar3 will be able to find that the information is not as expected, and error out because of it.
 
 You should, therefore, only update the lock file as required. You can do so by using the following operations:
 
@@ -1615,7 +1664,9 @@ And that's it, you're done.
 
 *** Checkout Dependencies
 
-If you're just adopting Erlang, whether for fun or at work, chances are you'll have one project to maintain, maybe a few more than that, and small ones at that. Working with a few repositories won't be too hard. But sooner or later, if you have to start patching dependencies or if you're working in a corporate environment with dozens and dozens of repositories, working with rebar3 might become frustrating.
+Rebar3 wants to make the developers life easier, while also staying safe and repeatable. =_checkouts= are a feature that goes _against_ repeatability and concept such as lock files, but that provides quick feedback and a better experience around local changes to dependencies.
+
+If you're just adopting Erlang, whether for fun or at work, chances are you'll have few projects with dependencies that live in separate repositories. Working with them won't be too hard. But sooner or later, if you have to start patching dependencies or if you're working in a corporate environment with dozens and dozens of repositories, working with rebar3 might become frustrating.
 
 The problem would be that every time you want to try a modification of a dependency you will have to commit and publish the change somewhere rebar3 can fetch it, because it will not build changes made to source files under `_build` if there is already a corresponding `.beam` file for the module. This can become annoying really fast when you have to work across repository boundaries and just want to test a change.
 
@@ -1697,12 +1748,8 @@ If you work in a corporate environment with a monorepo where all private librari
 
 Various commercial users who rely on rebar3 despite using monorepos have reported obtaining successful builds with a combination of using =_checkouts= dependencies, along with re-configuring the =_build= directory. However, we cannot recommend this approach at this time, and no official support is provided for monorepos.
 
+Another option is to vendor dependencies, which can be done through plugins such as [[https://www.rebar3.org/docs/using-available-plugins#section-vendoring-dependencies][=rebar3_path_deps=]].
 
-** External Services
-:PROPERTIES:
-:EXPORT_FILE_NAME: external_services
-:EXPORT_HUGO_MENU: :menu main :parent development
-:END:
 ** TODO Multi-App Projects
 :PROPERTIES:
 :EXPORT_FILE_NAME: umbrella_projects
