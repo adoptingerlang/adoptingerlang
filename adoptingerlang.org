@@ -1334,7 +1334,7 @@ Repeat this exercise from time to time, and eventually do some [[https://princip
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-There have been large shifts in how people approached programming over the last 20 years. Whereas material of yesterday focused a lot on writing reusable and extendable components within each project, the current trend is to make smaller, isolated projects that each individually ends up being easy to throw away and replace. Current microservice implementations and Javascript dependency trees may lead us to believe no project is too small to be discardable.
+There have been large shifts in how people approached programming over the last 20 years. Whereas material of yesterday focused a lot on writing reusable and extendable components within each project, the current trend is to make small, isolated projects that each individually ends up being easy to throw away and replace. Current microservice implementations and Javascript dependency trees may lead us to believe no project is too small to be discardable.
 
 Ironically, the shift towards strong isolation and clearly-defined boundaries—whether they be interfaces, network APIs, or protocols—that was necessary for small single-purpose components has given rise to what is possibly the greatest amount of code reuse we've ever seen. Reuse materialized from shared needs across various people and projects, not from the mythical ability of providing a perfectly extendable class hierarchy. There is so much reuse today that we have reached the point where folks are starting to ask if maybe, just maybe, we aren't reusing more code than we should: each library comes with risks and liabilities, and we're exposing ourselves to a lot of it for the sake of moving fast.
 
@@ -1641,7 +1641,7 @@ The Rebar3 lock file is created at the root of your project, the directory from 
 
 The lock file represents the flattened tree of all dependencies as desired at the time of the build. It will not be modified unless you ask for it to be changed, or unless you delete it, forcing a new resolution to be done from scratch. This strictness is on purpose, and is part of how Rebar3 can guarantee repeatable builds under all circumstances.
 
-The hashes in the file mean that even if the dependencies are fetched by multiple layered mirrors (TODO: add link to section), and some malevolent person alters the packages in one or more of the various hex indices or git sources you might use, Rebar3 will be able to find that the information is not as expected, and error out because of it.
+The hashes in the file mean that even if the dependencies are fetched by multiple layered [[https://www.rebar3.org/docs/configuration#section-hex-repos-and-indexes][mirrors]], and some malevolent person alters the packages in one or more of the various hex indices or git sources you might use, Rebar3 will be able to find that the information is not as expected, and error out because of it.
 
 You should, therefore, only update the lock file as required. You can do so by using the following operations:
 
