@@ -1415,7 +1415,7 @@ The following formats are valid:
 
 Additionally, plugins allow to define [[https://www.rebar3.org/docs/custom-dep-resources][custom resource definitions]] that let you add new types of dependencies to projects.
 
-Let's see how this would work with a project we've created specifically for this book, [[https://github.com/adoptingerlang/service_discovery][=service_discovery=]]. Open up the =rebar.config= file and you'll see:
+Let's see how this would work with a project we've created specifically for this book, [[https://adoptingerlang.org/gh/servicediscovery][service_discovery]]. Open up the =rebar.config= file and you'll see:
 
 #+NAME: service_discovery.deps
 #+BEGIN_SRC erlang
@@ -2208,7 +2208,7 @@ CLOSED: [2019-09-24 Tue 07:43]
 
 In [[/docs/development/otp_high_level/][OTP at a High Level]] we took a bird's-eye view of how applications are combined into a release and in the following chapters of [[/docs/development/][Development]] we built and tested OTP applications. We have discussed how an Erlang system is setup differently from many other languages which have a single entry point the project's code, like a =main()= function that is called when starting the program. Ultimately starting an Erlang node that runs your code is similar enough to other languages and runtimes, and can be packaged up in a Docker container to run like any other container, and does not appear so different once it is being run by booting a container. But getting to the point that you have a bundled up release with an easy to use shell script, or a Docker image ready to run, can be confusing at first and give the impression Erlang is too different or too difficult to be running in your environment.
 
-This chapter will give some low level details about how a release is constructed, but the main purpose is to use the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project to show how to use =rebar3= for building releases suited for local development, then a production ready release, and finally how to use the tools provided by =rebar3= to configure and operate a release. We will show that the advantages from the flexibility of a system based on booting applications which run concurrently does not have to come with the cost of esoteric operations.
+This chapter will give some low level details about how a release is constructed, but the main purpose is to use the [[https://adoptingerlang.org/gh/servicediscovery][service_discovery]] project to show how to use =rebar3= for building releases suited for local development, then a production ready release, and finally how to use the tools provided by =rebar3= to configure and operate a release. We will show that the advantages from the flexibility of a system based on booting applications which run concurrently does not have to come with the cost of esoteric operations.
 
 *** The Nitty Gritty
 
@@ -2220,11 +2220,11 @@ Releases continued to be mysterious and difficult to build to many users. relx w
 
 Along with building and packaging =relx= comes with a shell script for starting a release and interacting with the running release. While running a release can be as simple as =erl= (which itself runs a boot script built from =start.script= you can find in the =bin/= directory of your Erlang install) the provided script handles setting appropriate arguments to point to configuration files, attaching a remote console to a running node, running functions on a running node and more.
 
-In the following sections we will dissect release building for the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project. The focus is on real world usage of the tools and not the low level details of constructing and running a release.
+In the following sections we will dissect release building for the [[https://adoptingerlang.org/gh/servicediscovery][service_discovery]] project. The focus is on real world usage of the tools and not the low level details of constructing and running a release.
 
 *** Building a Development Release
 
-The first thing to look at in [[https://github.com/adoptingerlang/service_discovery][service_discovery]] is the =relx= section of =rebar.config=:
+The first thing to look at in [[https://adoptingerlang.org/gh/servicediscovery][service_discovery]] is the =relx= section of =rebar.config=:
 
 #+NAME: rebar.config
 #+BEGIN_SRC erlang
@@ -2642,7 +2642,7 @@ Advantages of containers running with filesystem and network isolation are not h
 You might notice we will not be using the <code>latest</code> tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should rarely, if ever, be relied on, unless you really don't care what version of an image will be used.
 #+end_alert
 
-In this chapter we will cover efficiently building images for running the [[https://github.com/adoptingerlang/service_discovery][service_discovery]] project as well as images for running tests and dialyzer. Then, we will update the continuous integration pipeline to build and publish new images.
+In this chapter we will cover efficiently building images for running the [[https://adoptingerlang.org/gh/servicediscovery][service_discovery]] project as well as images for running tests and dialyzer. Then, we will update the continuous integration pipeline to build and publish new images.
 
 The minimum Docker version required for this chapter is 19.03 with [[https://github.com/docker/buildx][buildx]] installed. Installing =buildx= can be done with the following commands:
 
