@@ -1378,7 +1378,7 @@ As such, Rebar3 has the following properties:
 - All dependencies can define their own dependencies, and Rebar3 will recognize this and fetch them to the root project's =_build= directory as well.
 - Since version numbers are unreliable (even with semantic versioning), we consider versions as information for humans, not build tools. In case of libraries that end up declared multiple times, the one closest to the project root is chosen, while [[https://www.rebar3.org/docs/dependencies][warnings]] are emitted during the first build (it knows it is the "first" because there is no lock for the dependency) to let the user know versions not being used, with the assumption that libraries declared closer to the root project are used more thoroughly.
 - Circular dependencies are forbidden.
-- Rebar3 supports composable per-project [[https://www.rebar3.org/docs/profiles][_profiles_] that let you segment or combine configuration settings, such as dependencies that are to only be used for tests or only in a specific environment (say on a specific target OS). There are no restrictions on the number or names of profiles, but there are four profiles, =default=, =test=, =docs=, and =global=, which are used by Rebar3 automatically for specific tasks.
+- Rebar3 supports composable per-project [[https://www.rebar3.org/docs/profiles][_profiles_]] that let you segment or combine configuration settings, such as dependencies that are to only be used for tests or only in a specific environment (say on a specific target OS). There are no restrictions on the number or names of profiles, but there are four profiles, =default=, =test=, =docs=, and =global=, which are used by Rebar3 automatically for specific tasks.
 - Builds are meant to be repeatable. Dependencies are locked, and only upgraded when specifically asked to. The version in =rebar3.lock= takes precedence of whatever version is declared in =rebar.config= until =rebar3 upgrade= is called to update the lock file. If the lock file changes but dependencies have already been fetched, for example if the current branch checked out from git is changed, =rebar3 compile= will verify the fetched dependencies are those that the lock file specifies and fetch the locked version if needed.
 - Dependencies are always built with the =prod= profile applied. Rebar3 will always check that they match the lock file and that build artifacts are present, but will not detect code changes done within a dependency.
 - Rebar3 assumes that you'll sometimes need to tweak the configuration of libraries you do not control and supports [[https://www.rebar3.org/docs/configuration#section-overrides][overrides]] for this purpose.
@@ -1415,7 +1415,7 @@ The following formats are valid:
 
 Additionally, plugins allow to define [[https://www.rebar3.org/docs/custom-dep-resources][custom resource definitions]] that let you add new types of dependencies to projects.
 
-Let's see how this would work with a project we've created specifically for this book, [[https://github.com/adoptingerlang/service_discovery][=service_discovery=]. Open up the =rebar.config= file and you'll see:
+Let's see how this would work with a project we've created specifically for this book, [[https://github.com/adoptingerlang/service_discovery][=service_discovery=]]. Open up the =rebar.config= file and you'll see:
 
 #+NAME: service_discovery.deps
 #+BEGIN_SRC erlang
