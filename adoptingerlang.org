@@ -1378,9 +1378,9 @@ As such, Rebar3 has the following properties:
 - All dependencies can define their own dependencies, and Rebar3 will recognize this and fetch them to the root project's =_build= directory as well.
 - Since version numbers are unreliable (even with semantic versioning), we consider versions as information for humans, not build tools. In case of libraries that end up declared multiple times, the one closest to the project root is chosen, while [[https://www.rebar3.org/docs/dependencies][warnings]] are emitted during the first build (it knows it is the "first" because there is no lock for the dependency) to let the user know versions not being used, with the assumption that libraries declared closer to the root project are used more thoroughly.
 - Circular dependencies are forbidden.
-- Rebar3 supports composable per-project [[https://www.rebar3.org/docs/profiles][_profiles_]] that let you segment or combine configuration settings, such as dependencies that are to only be used for tests or only in a specific environment (say on a specific target OS). There are no restrictions on the number or names of profiles, but there are four profiles, =default=, =test=, =docs=, and =global=, which are used by Rebar3 automatically for specific tasks.
-- Builds are meant to be repeatable. Dependencies are locked, and only upgraded when specifically asked to. The version in =rebar3.lock= takes precedence of whatever version is declared in =rebar.config= until =rebar3 upgrade= is called to update the lock file. If the lock file changes but dependencies have already been fetched, for example if the current branch checked out from git is changed, =rebar3 compile= will verify the fetched dependencies are those that the lock file specifies and fetch the locked version if needed.
-- Dependencies are always built with the =prod= profile applied. Rebar3 will always check that they match the lock file and that build artifacts are present, but will not detect code changes done within a dependency.
+- Rebar3 supports composable per-project [[https://www.rebar3.org/docs/profiles][_profiles_]] that let you segment or combine configuration settings, such as dependencies that are to only be used for tests or only in a specific environment (say on a specific target OS). There are no restrictions on the number or names of profiles, but there are four profiles, =default=, =test=, =docs=, and =prod=, which are used by Rebar3 automatically for specific tasks.
+- Builds are meant to be repeatable. Dependencies are locked, and only upgraded when specifically asked to. The version in =rebar3.lock= takes precedence of whatever version is declared in =rebar.config= until =rebar3 upgrade= is called to update the lock file.
+- Dependencies are always built with the =prod= profile applied. Rebar3 will always check that they match the lock file and that build artifacts are present, but will not detect code changes done by hand within a dependency.
 - Rebar3 assumes that you'll sometimes need to tweak the configuration of libraries you do not control and supports [[https://www.rebar3.org/docs/configuration#section-overrides][overrides]] for this purpose.
 - The tool assumes you're developing with a source control mechanism such as =git= or =hg= (mercurial), which means that switching branches may switch dependency versions in the lock file. Since Rebar3 verifies dependencies before each build, it will automatically re-fetch libraries to get the locked version for the current branch if there is a change when switching branches.
 - To ease contribution and publishing, Rebar3 does not natively support ways to use relative paths to declare libraries, since this could make builds brittle, non-repeatable, and non-portable when publishing code.
@@ -1676,7 +1676,7 @@ Rebar3 wants to make the developers life easier, while also staying safe and rep
 
 If you're just adopting Erlang, whether for fun or at work, chances are you'll have few projects with dependencies that live in separate repositories. Working with them won't be too hard. But sooner or later, if you have to start patching dependencies or if you're working in a corporate environment with dozens and dozens of repositories, working with Rebar3 might become frustrating.
 
-The problem would be that every time you want to try a modification of a dependency you will have to commit and publish the change somewhere Rebar3 can fetch it, because it will not build changes made to source files under `_build` if there is already a corresponding `.beam` file for the module. This can become annoying really fast when you have to work across repository boundaries and just want to test a change.
+The problem would be that every time you want to try a modification of a dependency you will have to commit and publish the change somewhere Rebar3 can fetch it, because it will not build changes made to source files under =_build= if there is already a corresponding =.beam= file for the module. This can become annoying really fast when you have to work across repository boundaries and just want to test a change.
 
 So there's a little trickshot of a feature called _checkout dependencies_. Checkout dependencies work as follows:
 
@@ -1696,7 +1696,7 @@ This lets you do a lot of small iterative changes locally on a dependency, withi
 
 For many years, the Elixir and Erlang road was a one way street. You could include Erlang dependencies in your Elixir project, but the opposite wasn't true. Since then, and thanks to the support of the Erlang Ecosystem Foundation, changes have been made to Rebar3 to give it a brand new compiler management structure. This structure has made it possible to write compiler plugins that can let Erlang users use Elixir code.
 
-The way to do it is to first install Elixir. For this you might want to follow the steps at LOCATION X. Most Elixir developers use =asdf= as a tool to manage versions. As described in TODO SECTION OF BUILD TOOLS, =kerl= options for Erlang can be used with the Erlang plugin for =asdf=, so that can give you a complete setup.
+The way to do it is to first install Elixir. For this you might want to follow the steps [[https://elixir-lang.org/install.html][on the official Elixir website]]. Most Elixir developers use =asdf= as a tool to manage versions. As described in [[Setup]], =kerl= options for Erlang can be used with the Erlang plugin for =asdf=, so that can give you a complete setup.
 
 With Elixir in place, add the [[https://www.rebar3.org/docs/using-available-plugins#section-elixir-dependencies][rebar_mix]] plugin to your library or project:
 
@@ -1758,6 +1758,7 @@ Various commercial users who rely on Rebar3 despite using monorepos have reporte
 
 Another option is to vendor dependencies, which can be done through plugins such as [[https://www.rebar3.org/docs/using-available-plugins#section-vendoring-dependencies][=rebar3_path_deps=]].
 
+With all this in place, you should be set to manage the lifecycle of your project's dependencies.
 
 #+BEGIN_EXPORT html
 <div class="pagination">
