@@ -493,7 +493,7 @@ This will create a =rebar3= script file (along with a =rebar3.cmd= file on Windo
 
 **** Local Install
 
-The local install form will let you take any of the previously built rebar3 versions, and unpack them to a local directory from which the tool will be able to self-update at a later time:
+The local install form will let you take any of the previously built Rebar3 versions, and unpack them to a local directory from which the tool will be able to self-update at a later time:
 
 #+NAME: rebar_local
 #+BEGIN_SRC sh
@@ -525,7 +525,7 @@ All you've got to do then is configure themes and more general extensions to you
 
 Erlang/OTP comes with an Emacs mode in the =tools= application, =lib/tools/emacs/=. The authors of this book who use Emacs stick to using this mode by having Emacs load directly from the latest Erlang version installed. There are a number of options for alternative modes and addons to use for fancier support in =erlang-mode=, here we will only discuss [[https://oremacs.com/swiper/][Ivy]] completions and [[https://www.flycheck.org/en/latest/][Flycheck]] syntax checking. But first we need [[https://jwiegley.github.io/use-package/][use-package]] which is a tool for isolating package configuration. Code for automatically installing =use-package= can be [[https://github.com/CachesToCaches/getting_started_with_use_package/blob/7d260ddf7b15160c027915340ff0c70ce05ea315/init-use-package.el][found here]]. Include that code in your =~/.emacs.d/init.el= so that on startup =use-package= is installed. Or use the [[https://jwiegley.github.io/use-package/installation/][installation instructions]] found on the =use-package= website.
 
-This following bit of =elisp= code can be used to setup just =erlang-mode=, no Ivy or Flycheck involved, and have it load for =rebar3=, =relx= and other Erlang configuration files:
+This following bit of =elisp= code can be used to setup just =erlang-mode=, no Ivy or Flycheck involved, and have it load for Rebar3, Relx and other Erlang configuration files:
 
 #+BEGIN_SRC elisp
 (use-package erlang
@@ -567,7 +567,7 @@ For using Ivy to get completion support add the =ivy-erlang-complete= package, s
          ("\\Emakefile" . erlang-mode)))
 #+END_SRC
 
-Flycheck comes with =rebar3= support and can automatically detect a rebar3 project, so all that is needed is the =flycheck= package:
+Flycheck comes with Rebar3 support and can automatically detect a Rebar3 project, so all that is needed is the =flycheck= package:
 
 #+BEGIN_SRC elisp
 (use-package delight
@@ -714,7 +714,7 @@ Essentially, building an Erlang system is re-bundling the VM, along with some st
 
 *** Living in Erlang/OTP
 
-Standard tools developed and used by the community such as rebar3 operate on the idea that what you write and publish are OTP applications, and as such contain all the functionality required to deal with them. That's a big shift from a lot of programming languages that only ask of you to have a function named =main()= somewhere in one of your files. This is why the programming language is often called =Erlang/OTP= rather than just 'Erlang': it's not just a programming language, it's a general development framework that mandates some basic structure for everything you do.
+Standard tools developed and used by the community such as Rebar3 operate on the idea that what you write and publish are OTP applications, and as such contain all the functionality required to deal with them. That's a big shift from a lot of programming languages that only ask of you to have a function named =main()= somewhere in one of your files. This is why the programming language is often called =Erlang/OTP= rather than just 'Erlang': it's not just a programming language, it's a general development framework that mandates some basic structure for everything you do.
 
 And everyone follows it, whether they are writing embedded software, blockchain systems, or distributed databases. It's OTP or nothing. Whereas other languages usually mandate nothing specific to get started, but then add some requirements later on (such as when integrating with a package manager), Erlang--and its entire community--expects you to just write OTP applications, which the rest of the tools can handle.
 
@@ -738,7 +738,7 @@ Since every component to be shipped in an Erlang/OTP release needs to be an OTP 
 
 *** Project Structure
 
-We'll start by using the rebar3 templates, since they will allow us to create brand new projects that properly respect the directory structures expected by Erlang/OTP. Let's see which templates are available:
+We'll start by using the Rebar3 templates, since they will allow us to create brand new projects that properly respect the directory structures expected by Erlang/OTP. Let's see which templates are available:
 
 #+NAME: rebar3_new
 #+BEGIN_SRC sh
@@ -762,7 +762,7 @@ Here's a table showing when they might be used:
 | a library (stateful processes)     | app             | Can be used as a dependency                                         |
 | full executable program            | umbrella or app | Can be turned into a full release, the recommended deploy mechanism |
 | a collection of multiple libraries | umbrella        | Cannot be used as a git dependency but each individual app could be published to hex |
-| rebar3 extension                   | plugin          |                                                                     |
+| Rebar3 extension                   | plugin          |                                                                     |
 | compiling C code                   | cmake           | Also see the "pc" plugin for a portable way to compile C/C++        |
 
 You can see the details of a given template by calling =rebar3 new help <template>=. See for example:
@@ -833,9 +833,9 @@ mylib/
    └─ mylib.erl
 #+END_SRC
 
-The =_build/= directory is the build tool's playground, where it can stash all the artifacts it needs. You should never have to touch what is in there by hand, but should feel free to blow it away when you want. This directory is nonetheless interesting because it shows how rebar3 structures things.
+The =_build/= directory is the build tool's playground, where it can stash all the artifacts it needs. You should never have to touch what is in there by hand, but should feel free to blow it away when you want. This directory is nonetheless interesting because it shows how Rebar3 structures things.
 
-Everything in =_build/= is split by [[https://www.rebar3.org/docs/profiles][profile]], which lets rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in fact, you can define as many profiles as you want, and compose them together. The rebar3 documentation explains how this works.
+Everything in =_build/= is split by [[https://www.rebar3.org/docs/profiles][profile]], which lets Rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in fact, you can define as many profiles as you want, and compose them together. The Rebar3 documentation explains how this works.
 
 Within each profile, the =lib/= directory contains all the OTP applications that your project may use, outside of the standard distribution's libraries. You can see our =mylib= library replicated right there, but its directory structure is a bit different from what's directly at the project root:
 
@@ -850,9 +850,9 @@ In general, you will want to ignore the =_build/= directory entirely and avoid t
 
 Rebar3 chooses a license for you by default (because you should always choose a license if you plan on doing open source work), going for the [[https://en.wikipedia.org/wiki/Apache_License#Version_2.0][Apache 2.0]] license that Erlang ships with. Feel free to replace it as required. Rebar3 also sets up a =README= file that you might want to fix up and update with all the relevant contents. Don't be a jerk, write documentation!
 
-Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by rebar3 to track which versions you were using for any dependency in the project, and should therefore be checked into source control. The [[/docs/development/dependencies][Dependencies chapter]] contains more details.
+Then we get to two interesting files, =rebar.config= and =rebar.lock=. The lock file is used by Rebar3 to track which versions you were using for any dependency in the project, and should therefore be checked into source control. The [[/docs/development/dependencies][Dependencies chapter]] contains more details.
 
-The =rebar.config= file is a complete declarative configuration file that exposes options for all the Erlang tools that rebar3 integrates with. [[https://www.rebar3.org/docs/configuration][The official documentation]] explains all the values possible, but by default it is quite empty. In fact, if you only want default values with no dependencies, you can just delete the file. As long as your project is structured like an OTP application, rebar3 will figure out what needs to be done.
+The =rebar.config= file is a complete declarative configuration file that exposes options for all the Erlang tools that Rebar3 integrates with. [[https://www.rebar3.org/docs/configuration][The official documentation]] explains all the values possible, but by default it is quite empty. In fact, if you only want default values with no dependencies, you can just delete the file. As long as your project is structured like an OTP application, Rebar3 will figure out what needs to be done.
 
 Let's see what the standards are for that to happen.
 
@@ -880,7 +880,7 @@ $ cat _build/default/lib/mylib/ebin/mylib.app
 ]}.
 #+END_SRC
 
-This is essentially a metadata file that describes everything about the application. We've taken the time to annotate it for you, so check it out. A lot of the content in there is annoying to write by hand so if you look at the source file (=src/mylib.app.src=), you'll see that the fields are mostly pre-populated when you apply the rebar3 template. You may also notice that =modules= is empty. That's on purpose: rebar3 will populate the list for you when compiling your code.
+This is essentially a metadata file that describes everything about the application. We've taken the time to annotate it for you, so check it out. A lot of the content in there is annoying to write by hand so if you look at the source file (=src/mylib.app.src=), you'll see that the fields are mostly pre-populated when you apply the Rebar3 template. You may also notice that =modules= is empty. That's on purpose: Rebar3 will populate the list for you when compiling your code.
 
 By far, the most critical field to keep up to date in there is the =applications= tuple. It lets Erlang libraries know the order in which OTP applications must be started to work, and also allows build tools to build a dependency graph between all available OTP applications to know which to keep and which to remove from the distribution when building a release.
 
@@ -890,7 +890,7 @@ For now, let's focus on what exactly is the difference between a stateless and a
 
 *** What Makes a Runnable App an App
 
-To make a runnable application, we're going to use the "app" template in rebar3, and see what are the differences with a stateless application.
+To make a runnable application, we're going to use the "app" template in Rebar3, and see what are the differences with a stateless application.
 
 So let's grab your command line tool and run the following:
 
@@ -1181,7 +1181,7 @@ And now we can start it. We'll use the =foreground= argument, which means we'll 
 
 #+BEGIN_SRC sh
 $ ./_build/default/rel/hello_world/bin/hello_world foreground
-<debug output provided by wrappers bundled with rebar3>
+<debug output provided by wrappers bundled with Rebar3>
 Hello, heavy world!
 #+END_SRC
 
@@ -1328,11 +1328,428 @@ Discuss these with your team. Shuffle supervisors around, adjust the strategies 
 
 Repeat this exercise from time to time, and eventually do some [[https://principlesofchaos.org/][chaos engineering]] by killing Erlang processes on a running node to see if it behaves and recovers the way you think it should (you can of course do chaos engineering on entire nodes, as is more common). What you'll end up with is a fault tolerant piece of code. You will also build a team with a strong understanding of the failure semantics that are baked in their system, with a good mental model of how things should break down when they inevitably do. This is worth its weight in gold.
 
-** TODO Dependencies
+** DONE Dependencies
+CLOSED: [2019-10-29 Sat 13:49]
 :PROPERTIES:
 :EXPORT_FILE_NAME: dependencies
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
+
+There have been large shifts in how people approached programming over the last 20 years. Whereas material of yesterday focused a lot on writing reusable and extendable components within each project, the current trend is to make small, isolated projects that each individually ends up being easy to throw away and replace. Current microservice implementations and Javascript dependency trees may lead us to believe no project is too small to be discardable.
+
+Ironically, the shift towards strong isolation and clearly-defined boundaries—whether they be interfaces, network APIs, or protocols—that was necessary for small single-purpose components has given rise to what is possibly the greatest amount of code reuse we've ever seen. Reuse materialized from shared needs across various people and projects, not from the mythical ability of providing a perfectly extendable class hierarchy. There is so much reuse today that we have reached the point where folks are starting to ask if maybe, just maybe, we aren't reusing more code than we should: each library comes with risks and liabilities, and we're exposing ourselves to a lot of it for the sake of moving fast.
+
+Erlang, for its own part, has always lived and breathed strong isolation with clearly defined message-passing protocols wrapped in functional interfaces. Its small community size of, generally, experienced developers probably made it lag behind other communities when it comes to libraries and packaging. Despite prior efforts on package managers like [[https://web.archive.org/web/20111026040038/http://cean.process-one.net/][CEAN]] by ProcessOne and Faxien, both of which installed OTP applications globally, it was not until 2009 that it really became easy to install libraries from other people. This was made possible through the first version of =rebar=, which favored per-project dependency installation, and was the first to come as an [[http://erlang.org/doc/man/escript.html][escript]], a portable script that required no installation by the developer.
+
+Erlang libraries proliferated all over GitHub and similar hosted version control services haphazardly, and at some point, it became possible to find over twelve different versions of the same PostgreSQL driver, which all had the same name and similar versions, but all did a few things differently.
+
+It took a decent push in the back from Elixir, which was bringing in newer perspectives and tools such as =mix= and hex.pm, for the Erlang community to collect themselves and get to a more understandable ecosystem. In modern days, Erlang's community is still small, but it has adopted better practices, and now shares its package and library infrastructure with Elixir and half a dozen smaller languages on the same virtual machine.
+
+In this chapter, we'll see how modern library usage and community integration is done within the Erlang world by answering questions like:
+
+- What is a library?
+- How can I use one as a dependency?
+- What is a dependency's lifecycle?
+- How can I use Elixir dependencies?
+- What do I do if my work uses a monorepo?
+
+*** Using Open Source Libraries
+
+Erlang's open source dependencies are just OTP applications, like every other library in a release. As such, all that's required to use an open source library is to have that OTP application visible to the Erlang toolchain. This is conceptually simple, but every language and community takes slightly different approaches here. We have choices to make between installing libraries globally on a computer, within shared environments, or locally within each project. Then, there are norms regarding versioning and publishing, which also must be adhered to. This section will show how that's all done, but first we'll take a detour through the expectations of Rebar3 regarding your project's lifecycle.
+
+**** Rebar3 Expectations
+
+Some of the tricky decisions around open source work have been enshrined in Rebar3, and it's often easier to go with the flow than fight it, especially when you're first starting. Rebar3 has initially been built in a mid-size corporation writing services in a semi-private mode: open-source dependencies are both used and published, but some of the code is to remain private forever. Multiple unrelated services are developed at the same time, and not all of them will necessarily be on the same Erlang version with the same libraries. Some programs will only be deployed through rolling restarts (as is usual everywhere in the cloud) but some systems will absolutely require hot code loading. Rebar3 was also developed at a time where versioning practices were downright messy in the community: many libraries had different versions in their =.app= files than their git tag on GitHub, and documentation yet again mentioned another version. Back then, roughly 4 out of 5 libraries on hex.pm had not even reached version 1.0.0 either.
+
+As such, Rebar3 has the following properties:
+
+- Rebar3 is a declarative build tool. You provide a configuration, and it executes code to satisfy that configuration. If you want to run custom scripts and extend the build, it specifically provides [[https://www.rebar3.org/docs/configuration#section-hooks][hooks]] or [[https://www.rebar3.org/docs/using-available-plugins][plugins]] interfaces to do so. There are also ways to gain [[https://www.rebar3.org/docs/dynamic-configuration][Dynamic Configuration]] to more flexibly populate config files.
+- As part of that declarative approach, commands in Rebar3 are defined with dependency sequences. For example, the =rebar3 compile= task relies on =rebar3 get-deps= (or rather, a private form of it that locks dependencies), and will run it for you. The command =rebar3 tar= will implicitly call a sequence that includes =get-deps -> compile -> release -> tar= for you. Rebar3 therefore knows that to compile your project, its dependencies are needed.
+- Rebar3 defines its own working area within the =_build= directory; it expects to have control over what goes in there, and for you not to track that directory in source control nor rely on its internal structure. When it creates an artifact the user will want to use directly, it outputs the path to that artifact in the terminal. For example =rebar3 escriptize= will print the path to the generated escript in =_build/default/bin/= after each run, =rebar3 ct= prints the path to the Common Test HTML output if tests fail and =rebar3 tar= prints the path to the release tarball.
+- All projects are built locally within their own directory based on the Erlang runtime currently loaded in your environment, i.e. the =erl= found in =$PATH=.
+- All dependencies are fetched to the project's =_build= directory.
+- All dependencies can define their own dependencies, and Rebar3 will recognize this and fetch them to the root project's =_build= directory as well.
+- Since version numbers are unreliable (even with semantic versioning), we consider versions as information for humans, not build tools. In case of libraries that end up declared multiple times, the one closest to the project root is chosen, while [[https://www.rebar3.org/docs/dependencies][warnings]] are emitted during the first build (it knows it is the "first" because there is no lock for the dependency) to let the user know versions not being used, with the assumption that libraries declared closer to the root project are used more thoroughly.
+- Circular dependencies are forbidden.
+- Rebar3 supports composable per-project [[https://www.rebar3.org/docs/profiles][_profiles_] that let you segment or combine configuration settings, such as dependencies that are to only be used for tests or only in a specific environment (say on a specific target OS). There are no restrictions on the number or names of profiles, but there are four profiles, =default=, =test=, =docs=, and =global=, which are used by Rebar3 automatically for specific tasks.
+- Builds are meant to be repeatable. Dependencies are locked, and only upgraded when specifically asked to. The version in =rebar3.lock= takes precedence of whatever version is declared in =rebar.config= until =rebar3 upgrade= is called to update the lock file. If the lock file changes but dependencies have already been fetched, for example if the current branch checked out from git is changed, =rebar3 compile= will verify the fetched dependencies are those that the lock file specifies and fetch the locked version if needed.
+- Dependencies are always built with the =prod= profile applied. Rebar3 will always check that they match the lock file and that build artifacts are present, but will not detect code changes done within a dependency.
+- Rebar3 assumes that you'll sometimes need to tweak the configuration of libraries you do not control and supports [[https://www.rebar3.org/docs/configuration#section-overrides][overrides]] for this purpose.
+- The tool assumes you're developing with a source control mechanism such as =git= or =hg= (mercurial), which means that switching branches may switch dependency versions in the lock file. Since Rebar3 verifies dependencies before each build, it will automatically re-fetch libraries to get the locked version for the current branch if there is a change when switching branches.
+- To ease contribution and publishing, Rebar3 does not natively support ways to use relative paths to declare libraries, since this could make builds brittle, non-repeatable, and non-portable when publishing code.
+- Knowing relative paths are very common when making changes within the dependencies of a project, [[https://www.rebar3.org/docs/dependencies#section-checkout-dependencies][=_checkouts=]] allow for an automatic way to temporary override of a dependency with a local copy. For other use cases [[https://www.rebar3.org/docs/using-available-plugins#section-vendoring-dependencies][plugins]] allow the creation of [[https://www.rebar3.org/docs/custom-dep-resources][custom resource types]].
+- Rebar3 is not an installer or runner of end-user applications and does not support anything related to that; it aims to generate build artifacts that you can then install through the correct dedicated channels. Rebar3 does not expect or need to ever be on a production device or server.
+- Rebar3 is not a sandbox. While it will make sure all dependencies you download match the right signatures and provides repeatable builds, it cannot guarantee that script files invoked during builds or [[https://stackoverflow.com/questions/2416192/is-there-a-good-complete-tutorial-on-erlang-parse-transforms-available][parse transforms]] run during compilation are ever going to be safe, and has no intention of taking on that responsibility. Plugins are also not locked automatically, and it is up to library authors to pin versions in cases where they impact compilation.
+
+That's a lot of information, but we find that it's useful to know about it before getting in too deep with dependencies. If you operate under assumptions that Rebar3 works like Javascript's =npm=, Elixir's =mix=, Go's toolchain, or even the original =rebar=, you might find some behaviours confusing. With that being said, let's use dependencies.
+
+**** Declaring Dependencies
+
+Since dependencies are all project-local, they have to be declared in the =rebar.config= file of your project. This will let Rebar3 know it needs to fetch them, build them, and make them available to your project. All dependencies must be individual OTP applications, so that they can be versioned and handled independently from each other.
+
+The following formats are valid:
+
+#+NAME: dep-types
+#+BEGIN_SRC erlang
+{deps, [
+    %% git dependencies
+    {AppName, {git, "https://host.tld/path/to/app", {tag, "1.2.0"}}},
+    {AppName, {git, "https://host.tld/path/to/app", {branch, "master"}}},
+    {AppName, {git, "https://host.tld/path/to/app", {ref, "aed12f..."}}},
+    %% similar format for mercurial deps
+    {AppName, {hg, "https://host.tld/path/to/app", {RefType, Ref}}}
+    %% hex packages
+    AppName, % latest known version (as per `rebar3 update`)
+    {AppName, "1.2.0"},
+    {AppName, "~> 1.2.0"}, % latest version at 1.2.0 or above, and below 1.3.0
+    {AppName, "1.2.0", {pkg, PkgName}}, % when application AppName is published with package name PkgName
+]}.
+#+END_SRC
+
+Additionally, plugins allow to define [[https://www.rebar3.org/docs/custom-dep-resources][custom resource definitions]] that let you add new types of dependencies to projects.
+
+Let's see how this would work with a project we've created specifically for this book, [[https://github.com/adoptingerlang/service_discovery][=service_discovery=]. Open up the =rebar.config= file and you'll see:
+
+#+NAME: service_discovery.deps
+#+BEGIN_SRC erlang
+...
+
+{deps, [
+    {erldns,
+     {git, "https://github.com/tsloughter/erldns.git",
+     {branch, "revamp"}}},
+    {dns,
+     {git, "https://github.com/tsloughter/dns_erlang.git",
+     {branch, "hex-deps"}}},
+
+    recon,
+    eql,
+    jsx,
+    {uuid, "1.7.5", {pkg, uuid_erl}},
+    {elli, "~> 3.2.0"},
+    {grpcbox, "~> 0.11.0"},
+    {pgo,
+     {git, "https://github.com/tsloughter/pgo.git",
+     {branch, "master"}}}
+]}.
+
+...
+#+END_SRC
+
+Both git and hex dependencies can work together for most projects. The only exception is hex packages, which can only depend on other hex packages. Let's compile the whole project and step through what is going on:
+
+#+NAME: service_discovery.compile
+#+BEGIN_SRC sh
+$ rebar3 compile
+===> Fetching covertool v2.0.1
+===> Downloaded package, caching at /Users/ferd/.cache/rebar3/hex/hexpm/packages/covertool-2.0.1.tar
+===> Compiling covertool
+...
+===> Verifying dependencies...
+===> Fetching dns (from {git,"https://github.com/tsloughter/dns_erlang.git",
+               {ref,"abc562548e8a232289eec06cf96ce7066261cc9d"}})
+===> Fetching provider_asn1 v0.2.3
+===> Downloaded package, caching at /Users/ferd/.cache/rebar3/hex/hexpm/packages/provider_asn1-0.2.3.tar
+===> Compiling provider_asn1
+===> Fetching elli v3.2.0
+...
+===> Fetching rfc3339 v0.9.0
+===> Version cached at /Users/ferd/.cache/rebar3/hex/hexpm/packages/rfc3339-0.9.0.tar is up to date, reusing it
+===> Compiling quickrand
+===> Compiling uuid
+===> Compiling recon
+...
+===> Compiling service_discovery_storage
+===> Compiling service_discovery
+===> Compiling service_discovery_http
+===> Compiling service_discovery_grpc
+===> Compiling service_discovery_postgres
+#+END_SRC
+
+Running this build, you can see multiple things going on:
+
+1. Plugins (such as =covertool=) are fetched and compiled before anything else goes on
+2. Actual dependencies of the project (such as =dns= and =elli=) are fetched
+3. Dependencies are compiled (=quickrand= and others)
+4. The main applications are compiled
+
+If you were to try again and run things from scratch while deleting the =rebar.lock= file, things would be a bit different. You might see something looking like this as part of the output:
+
+#+NAME: service_discovery.resolve
+#+BEGIN_SRC
+...
+===> Fetching dns (from {git,"https://github.com/tsloughter/dns_erlang.git",
+               {branch,"hex-deps"}})
+...
+===> Skipping dns (from {git,"git://github.com/dnsimple/dns_erlang.git",
+               {ref,"b9ee5b306acca34b3d866d183c475d5f12b313a5"}}) as an app of the same name has already been fetched
+...
+===> Skipping jsx v2.9.0 as an app of the same name has already been fetched
+===> Skipping recon v2.4.0 as an app of the same name has already been fetched
+...
+#+END_SRC
+
+Those are little notices and warnings that happen during dependency resolution, which is not necessary when a =rebar.lock= file is available. They inform the library maintainer that a conflict was detected, and a certain version of a library was skipped. To finish an audit of your build, you can inspect the final dependency resolving by calling =rebar3 tree=:
+
+#+NAME: service_discovery.deps-tree
+#+BEGIN_SRC sh
+$ rebar3 tree
+===> Verifying dependencies...
+├─ service_discovery─e4b7061 (project app)
+├─ service_discovery_grpc─e4b7061 (project app)
+├─ service_discovery_http─e4b7061 (project app)
+├─ service_discovery_postgres─e4b7061 (project app)
+└─ service_discovery_storage─e4b7061 (project app)
+   ├─ dns─0.1.0 (git repo)
+   │  └─ base32─0.1.0 (hex package)
+   ├─ elli─3.2.0 (hex package)
+   ├─ eql─0.2.0 (hex package)
+   ├─ erldns─1.0.0 (git repo)
+   │  ├─ iso8601─1.3.1 (hex package)
+   │  ├─ opencensus─0.9.2 (hex package)
+   │  │  ├─ counters─0.2.1 (hex package)
+   │  │  └─ wts─0.3.0 (hex package)
+   │  │     └─ rfc3339─0.9.0 (hex package)
+   │  └─ telemetry─0.4.0 (hex package)
+   ├─ grpcbox─0.11.0 (hex package)
+   │  ├─ acceptor_pool─1.0.0 (hex package)
+   │  ├─ chatterbox─0.9.1 (hex package)
+   │  │  └─ hpack─0.2.3 (hex package)
+   │  ├─ ctx─0.5.0 (hex package)
+   │  └─ gproc─0.8.0 (hex package)
+   ├─ jsx─2.10.0 (hex package)
+   ├─ pgo─0.8.0+build.91.refaf02392 (git repo)
+   │  ├─ backoff─1.1.6 (hex package)
+   │  └─ pg_types─0.0.0+build.24.ref32ed140 (git repo)
+   ├─ recon─2.4.0 (hex package)
+   └─ uuid─1.7.5 (hex package)
+      └─ quickrand─1.7.5 (hex package)
+#+END_SRC
+
+This listing starts with the =Verifying dependencies ...= line, which is Rebar3 validating that all dependencies are resolved before printing the tree. Following it are all the top-level applications (those we write in the repository), and the dependencies we just fetched are all below them. You can see the entire resolution tree that way, find which versions have been fetched and which application brought them in. This can prove useful to understand why a version was selected when a transitive dependency is included by two or more applications.
+
+If you take a look within =_build/default/lib=, you will see all these applications within their own directory:
+
+#+NAME: service_discovery.deps-ls
+#+BEGIN_SRC sh
+$ ls _build/default/lib
+acceptor_pool  gproc       rfc3339
+backoff        grpcbox     service_discovery
+base32         hpack       service_discovery_grpc
+chatterbox     iso8601     service_discovery_http
+counters       jsx         service_discovery_postgres
+ctx            opencensus  service_discovery_storage
+dns            pgo         telemetry
+elli           pg_types    uuid
+eql            quickrand   wts
+erldns         recon
+#+END_SRC
+
+Each of these is an OTP application with similar directory structures. This layout is rather similar to the project structure described for releases in [[OTP at a High Level]], but this is still just a staging area.
+
+**** Building a Project with Dependencies
+
+Building the OTP applications in a project requires more than just fetching its dependencies and compiling them. As mentioned in [[What Makes a Lib an App]], the Erlang run-time system expects to find run-time definitions of dependencies within the =.app= file. Not putting them there tells Rebar3 they are build-time dependencies, not runtime ones. This means they will not be included in some tasks and environments: releases will ignore them, and =rebar3 dialyzer= will avoid including them in its analysis, for example.
+
+Open up =apps/service_discovery/src/service_discovery.app.src= and look at the values in the =applications= tuple:
+
+#+NAME: service_discovery.app-src
+#+BEGIN_SRC erlang
+{application, service_discovery,
+ [{description, "Core functionality for service discovery service"},
+  {vsn, {git, short}},
+  {registered, []},
+  {mod, {service_discovery_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    erldns,
+    service_discovery_storage
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
+#+END_SRC
+
+You can see =erldns= and =service_discovery_storage= have been added. Specifying these dependencies ensures they are available at runtime and in releases. Not putting them there can result in broken builds.
+
+If you have ever worked with other build tools in the Erlang ecosystem, you likely never had to do this. These tools (erlang.mk or Mix in elixir) end up copying dependencies in the project configuration into the =applications= tuple for you. It sounds like a huge hindrance to have to do this by hand instead, but it ends up following OTP standards to support build-time dependencies. Other tools reach similar results through additional options within configuration files. Let's see a few scenarios where Rebar3's approach can give a critical bit of control.
+
+The first case where this is important is downloading a dependency that you want to include in a release to help you debug it, but on which none of your OTP applications depend. Examples of this include =recon=, =redbug= or custom [[https://ferd.ca/erlang-otp-21-s-new-logger.html][=logger=]] [[http://erlang.org/doc/apps/kernel/logger_chapter.html#handlers][handlers]]. You would want these applications to be available in a release, but since the =applications= tuple lets releases know in which order applications must be booted or started, you do not necessarily want these to be part of your dependency chain. Why should a debugging tool installed just in case be up and running for a website to work? It's not necessary at all. You wouldn't want a malfunctioning debug tool to prevent your actual application from booting.
+
+In such cases you'd want to have a project configuration that looks like this part of =service_discovery=:
+
+#+NAME: service_discovery.relx-cfg
+#+BEGIN_SRC erlang
+{relx, [
+    {release, {service_discovery, {git, long}},
+     [service_discovery_postgres,
+      service_discovery,
+      service_discovery_http,
+      service_discovery_grpc,
+      recon]},
+    ...
+]}.
+#+END_SRC
+
+You can see that, along with our applications, the =recon= debugging tool is explicitly included in the release's list of applications. All their transitive dependencies will be included (according to the =applications= tuple in the =.app= file), but the various OTP applications are handled in a disjoint manner.
+
+Let's focus on these 4 =service_discovery= applications just a bit. These represent the second type of situation where we want to split the declaration of dependencies for builds in =rebar.config=, and the declaration of dependencies for runtime in =.app.src= files.
+
+You can see that at the top-level, all the dependencies for all the libraries are declared in a single =rebar.config= file. That makes it easy for developers to handle and update all versions required. However, if you go look into the =.app.src= files of both =service_discovery= and =service_discovery_http=, you will find this:
+
+#+NAME: service_discovery.app-src-compare
+#+BEGIN_SRC erlang
+%% service_discovery.app.src
+...
+  {applications,
+   [kernel,
+    stdlib,
+    erldns,
+    service_discovery_storage
+   ]},
+...
+%% service_discovery_http.app.src
+...
+  {applications,
+   [kernel,
+    stdlib,
+    service_discovery,
+    jsx,
+    elli
+   ]},
+...
+#+END_SRC
+
+Here, =service_discovery_http= depends on a web server (=elli=), but =service_discovery= does not. This allows for cleaner boot and shutdown scenarios, where you don't actually need the HTTP server to be up and running to actually start booting the back-end of the system.
+
+For a third scenario, you might also imagine a small app =service_discovery_mgmt= that is used only to generate an escript that lets you do system administration tasks to interact with the system and send commands around.
+
+If the run-time dependencies were shared across all applications depending on the same =rebar.config= file, then even if =service_discovery_mgmt= were to _not_ be included in the release (it'd just be a script on the side), its dependencies would still risk being pushed to production in it through other apps getting them automatically inserted in there. Possibly worse, all the dependencies of the =service_discovery= release would risk being bundled with the script as well! We could end up with a small admin tool that contains web servers and database drivers because the build tool tried to be nice.
+
+The Rebar3 maintainers therefore just decided to keep a clear distinction between the applications that need fetching for the project to build or run (in =rebar.config=), and the run-time dependencies of each OTP application (in the =.app= file) which may be part of the default OTP install, and would therefore not be included in =rebar.config=. Other build tools in the ecosystem let you achieve similar results, but they default to including everything at run-time whereas Rebar3 asks of developers to always be specific in their intent.
+
+With this all in place, all we have to do is groom and clean our sets of dependencies.
+
+*** Dependency Lifecycles
+
+When it comes to initianalizing a project, the dependency resolution and fetching is where the heaviest work is done. The result is stored in a lock file, and all the results after that are handled through shorter partial changes done through Rebar3. This first phase is important to understand, even if you need to do it rather infrequently.
+
+The Rebar3 lock file is created at the root of your project, the directory from which you called Rebar3. It is saved as =rebar.lock= and you should track it in your source control of choice. You can open the file and look at its content, but there shouldn't be any need to ever edit it by hand. You'll find that it mostly contains version numbers, application names, and various hashes. It might be interesting to audit it from time to time, but you'll end up doing that indirectly as you maintain your dependency tree.
+
+The lock file represents the flattened tree of all dependencies as desired at the time of the build. It will not be modified unless you ask for it to be changed, or unless you delete it, forcing a new resolution to be done from scratch. This strictness is on purpose, and is part of how Rebar3 can guarantee repeatable builds under all circumstances.
+
+The hashes in the file mean that even if the dependencies are fetched by multiple layered [[https://www.rebar3.org/docs/configuration#section-hex-repos-and-indexes][mirrors]], and some malevolent person alters the packages in one or more of the various hex indices or git sources you might use, Rebar3 will be able to find that the information is not as expected, and error out because of it.
+
+You should, therefore, only update the lock file as required. You can do so by using the following operations:
+
+- =rebar3 unlock <appname>= removes an unused dependency from the lockfile. You will usually want to call this _after_ you have already removed it from your =rebar.config= file, to tell Rebar3 that it's really gone or has been downgraded to a transitive dependency.
+- =rebar3 upgrade <appname>= tells Rebar3 to disregard the locked version for that application, and re-build the dependency tree from the version currently specified in =rebar.config= (if any). This will generate a new lock file and re-resolve all transitive dependencies that might have changed.
+- =rebar3 update=, while not strictly about the lock file, updates the local _snapshot_ of remote hex packages, a kind of cache that prevents each build from pinging the package server. If you find yourself calling =rebar3 upgrade= on an app and it isn't upgrading to the latest version you know is available in Hex, you will want to =update= first. This is because Rebar3 limits the use of the network by trying to resolve dependencies with the local index cache. =rebar3 update= will fetch the latest index entries for each package already in the index and then another run of =upgrade= will see the latest versions. Note that if you specify an exact version to upgrade to Rebar3 will automatically fetch the updated index because it is unable to satisfy the dependency locally.
+- =rebar3 tree= prints out the dependency tree that was built and is represented by the lock file.
+- =rebar3 deps= lists out dependencies and annotate those that could be updated. Do note that there are strong limitations in what it considers worth updating: a branch in git, a tag whose reference shifted, or hex versions that weren't specified. But if you specified a package to have version ="1.2.3"= and =1.2.4= is available, it won't tell you anything.
+
+There are other commands that are a bit more drastic, namely =rebar3 unlock= and =rebar3 upgrade= (without any arguments). These will just get rid of the lock file for the next build of the project. But overall, all these commands will do everything you need to manage most dependencies.
+
+In general your workflow might look like this:
+
+1. set up the initial project, compile once, and track the lock file in source control
+2. find out you have a top-level dependency you want to change
+3. change the dependency definition in the rebar.config file (or optionally if using a non-versioned hex package, call =rebar3 update=)
+4. call =rebar3 upgrade <app>= to update the application and its transitive dependencies
+
+And that's it, you're done.
+
+*** Checkout Dependencies
+
+Rebar3 wants to make the developers life easier, while also staying safe and repeatable. =_checkouts= are a feature that goes _against_ repeatability and concept such as lock files, but that provides quick feedback and a better experience around local changes to dependencies.
+
+If you're just adopting Erlang, whether for fun or at work, chances are you'll have few projects with dependencies that live in separate repositories. Working with them won't be too hard. But sooner or later, if you have to start patching dependencies or if you're working in a corporate environment with dozens and dozens of repositories, working with Rebar3 might become frustrating.
+
+The problem would be that every time you want to try a modification of a dependency you will have to commit and publish the change somewhere Rebar3 can fetch it, because it will not build changes made to source files under `_build` if there is already a corresponding `.beam` file for the module. This can become annoying really fast when you have to work across repository boundaries and just want to test a change.
+
+So there's a little trickshot of a feature called _checkout dependencies_. Checkout dependencies work as follows:
+
+- you have your main project somewhere on your file system
+- the dependency is declared in the rebar.config file of the main project
+- you also have that dependency somewhere on your file system, as a standalone project
+- you add a =_checkouts/= directory to the main project
+- you either copy or symlink the dependency's directory in the =_checkouts/= directory
+
+From that point on, every time the main app is built, it will add an =ebin/= directory to the dependency's directory in checkouts, and re-compile it as if it were a top-level application within the main project.
+
+You can then test the changes to your dependency within the main project until they're ready. Once you're done, remove the =ebin/= directory from the dependency, commit and publish your code in the dependency, remove it from the =_checkouts= directory, and =rebar3 upgrade= it.
+
+This lets you do a lot of small iterative changes locally on a dependency, within the context of the main project, without having to push the dependency's changes nor changing configuration files to point a dependency to some local directory. It massively reduces the overhead of per-application repositories as an overall development strategy.
+
+*** Using Elixir Dependencies
+
+For many years, the Elixir and Erlang road was a one way street. You could include Erlang dependencies in your Elixir project, but the opposite wasn't true. Since then, and thanks to the support of the Erlang Ecosystem Foundation, changes have been made to Rebar3 to give it a brand new compiler management structure. This structure has made it possible to write compiler plugins that can let Erlang users use Elixir code.
+
+The way to do it is to first install Elixir. For this you might want to follow the steps at LOCATION X. Most Elixir developers use =asdf= as a tool to manage versions. As described in TODO SECTION OF BUILD TOOLS, =kerl= options for Erlang can be used with the Erlang plugin for =asdf=, so that can give you a complete setup.
+
+With Elixir in place, add the [[https://www.rebar3.org/docs/using-available-plugins#section-elixir-dependencies][rebar_mix]] plugin to your library or project:
+
+#+NAME: rebar_mix.config
+#+BEGIN_SRC erlang
+{plugins, [rebar_mix]}.
+{provider_hooks, [{post, [{compile, {mix, consolidate_protocols}}]}]}.
+
+{relx, [
+    ...
+    {overlay, [
+        {copy, "{{base_dir}}/consolidated", "releases/{{release_version}}/consolidated"}
+    ]
+}.
+#+END_SRC
+
+And the following line to your =vm.args.src= file if you have one:
+
+#+NAME: rebar_mix.args
+#+BEGIN_SRC sh
+-pa releases/${REL_VSN}/consolidated
+#+END_SRC
+
+From that point on, you will be able to install any hex dependency containing Elixir code without a problem. For now, the plugin only supports hex dependencies that also only rely on other hex dependencies; support for transitive dependencies using git should be coming soon, however.
+
+Do note that mixed Rebar3 projects using both Erlang and Elixir within the same library are not currently supported since more work both on the Rebar3 and Elixir side would need to be done to make this possible. On the other hand, Mix does support this pattern if you need it.
+
+*** Corporate Environments
+
+Corporate environments tend to have all kinds of weird restrictions regarding what can or cannot be done, and development tools can be very idiosyncratic. Rebar3 was mostly developed to fit an open-sourced world and mainly focuses on enforcing project structure, fetching dependencies, and using both together as a great pretext to wrap a bunch of standard tools.
+
+As such, it is perhaps unsurprising that fitting a corporate environment with the tool can prove to be a bit challenging. In this section, we'll cover some standard tools that are common to corporate environments and may make your life easier when adopting Erlang.
+
+**** Proxy Support
+
+Many workplaces enforce very strict firewall rules, to the point where all incoming and outgoing data must be intercepted and monitored. Generally, these places will not be totally isolated from the public Internet, but will require the use of proxy servers to make outgoing connections.
+
+It is rather standard for programs to respect both the =HTTP_PROXY= and =HTTPS_PROXY= environment variable. When those are set in your development environment Rebar3 will make sure that all the communications it makes talking to the outside world uses these proxies.
+
+This should let you properly work in line with your IT department's policies. In some cases, that won't even be enough.
+
+**** Private Hex Mirrors
+
+Some corporations go a step further and segment their internal network from the public Internet. All data that comes on site has to be inspected and hosted independently, without a chance to talk to a common code repository like github, gitlab, or hex. Another interesting case is build servers, where you might want to prevent all connectivity to the outside world both for safety and for repeatability reasons.
+
+For such setups, two approaches tend to be used: vendoring in a monorepo, which will be covered in the next section, and through privately hosted package indexes, which we'll cover here.
+
+The idea behind a privately hosted index is that all packages and dependencies to be used in a project need to be fully vetted. You might want to give it a technical review for code quality, a security assessment, or have corporate lawyers look at code for licensing or patent issues. Then, only the packages of the right version can be used. This kind of index is frequently accepted for hermetic builds with the assumption that it either runs locally on each build server, or within a private network that is as tightly monitored as build servers.
+
+Rebar3 supports this use case. If you want to enable it, you will need to first set up a private hex instance. This can be done through the [[http://blog.plataformatec.com.br/2019/07/announcing-minirepo-a-minimal-hex-server/][minirepo]] project. By following the instructions [[https://github.com/wojtekmach/mini_repo][on the project page]], you will end up running your own private hex server, with either a local filesystem or S3-based storage, and the ability to both mirror other indexes and publish your own packages privately.
+
+You will need to [[https://github.com/wojtekmach/mini_repo#usage-with-rebar3][tweak your global Rebar3 config]] to make use of it, but once that's done, you're good to go.
+
+**** About Monorepos
+
+If you work in a corporate environment with a monorepo where all private libraries, OTP applications, and dependencies are treated on equal footing (it's not just an umbrella release), Rebar3 is not the best tool for the job. Mostly, this comes down to the fact that most companies using a monorepo have a lot of custom tooling with very custom workflows, large codebases, and a very strong propension to never share access with maintainers of Rebar3. Until it becomes possible for maintainers to get access, little will be possible to do on that front.
+
+Various commercial users who rely on Rebar3 despite using monorepos have reported obtaining successful builds with a combination of using =_checkouts= dependencies, along with re-configuring the =_build= directory. However, we cannot recommend this approach at this time, and no official support is provided for monorepos.
+
+Another option is to vendor dependencies, which can be done through plugins such as [[https://www.rebar3.org/docs/using-available-plugins#section-vendoring-dependencies][=rebar3_path_deps=]].
 
 ** TODO Multi-App Projects
 :PROPERTIES:
@@ -1411,7 +1828,7 @@ The =surefire= hook can be enabled in =rebar.config= with the following =ct_opts
 {ct_opts, [{ct_hooks, [cth_surefire]}]}.
 #+END_SRC
 
-CircleCI has no official support for rebar3 projects, but they do host Erlang docker images which contain rebar3 and tools necessary for interacting with CircleCI's cache and artifact store. But thanks to [[https://circleci.com/orbs/][CircleCI Orbs]] it is easy to get started with rebar3 on CircleCI and take advantage of its unique features. CircleCI Orbs are reusable commands, executors and jobs that make writing workflows simpler. The [[https://circleci.com/orbs/registry/orb/tsloughter/rebar3][rebar3 Orb]] takes care of caching built dependencies and moving artifacts, like CT's HTML output, with CircleCI's artifacts commands.
+CircleCI has no official support for Rebar3 projects, but they do host Erlang docker images which contain Rebar3 and tools necessary for interacting with CircleCI's cache and artifact store. But thanks to [[https://circleci.com/orbs/][CircleCI Orbs]] it is easy to get started with Rebar3 on CircleCI and take advantage of its unique features. CircleCI Orbs are reusable commands, executors and jobs that make writing workflows simpler. The [[https://circleci.com/orbs/registry/orb/tsloughter/rebar3][Rebar3 Orb]] takes care of caching built dependencies and moving artifacts, like CT's HTML output, with CircleCI's artifacts commands.
 
 CircleCI runs Docker images on machines with many more CPU's than are allocated for your job. Because Erlang can not limit the number of schedulers it starts to the number of CPU's allocated to the container, Erlang will start as many schedulers as CPU's it sees on the host. This results in wasted resources because the VM is busy scheduling something like 32 schedulers when it only has access to 1 or 2 processors. To configure the number of schedulers that Erlang will start when running =rebar3= use the environment variable =ERL_FLAGS= which takes the arguments that need to be passed to =erl= in this case ="+S 2"=.
 
@@ -1777,7 +2194,7 @@ Going back to the operating system comparison, starting an Erlang release is sim
 
 In the earlier days of Erlang/OTP, there was only =systools= and its functions for generating boot scripts from release resource files. Back then, release handling was a manual process around which users built their own tooling. Then came =reltool=, a release management tool that ships with Erlang/OTP and was meant to ease the creation of releases—it even has a GUI. While creating and installing target systems has never been provided outside of an example module found in the =sasl= application, =sasl/examples/src/target_system.erl=.
 
-Releases continued to be mysterious and difficult to build to many users. relx was created with the goal of making release creation and management so simple that users no longer felt it was a burden best not undertaken -- this is done in part through requiring minimal configuration to get started and by including tools for runtime management in the generated release. When rebar3 was started, it bundled relx to provide its release building functionality.
+Releases continued to be mysterious and difficult to build to many users. relx was created with the goal of making release creation and management so simple that users no longer felt it was a burden best not undertaken -- this is done in part through requiring minimal configuration to get started and by including tools for runtime management in the generated release. When Rebar3 was started, it bundled relx to provide its release building functionality.
 
 Along with building and packaging =relx= comes with a shell script for starting a release and interacting with the running release. While running a release can be as simple as =erl= (which itself runs a boot script built from =start.script= you can find in the =bin/= directory of your Erlang install) the provided script handles setting appropriate arguments to point to configuration files, attaching a remote console to a running node, running functions on a running node and more.
 
@@ -1812,7 +2229,7 @@ included in the release. The version here is ={git, long}= which tells =relx= to
 
 The order the applications are listed is important here. When constructing the boot script a stable sort on all applications based on their dependencies is done to decide the order to start them. However, when the dependency order is not specific enough to make a decision, the order defined in the list is kept. Each of =service_discovery_postgres=, =service_discovery_http= and =service_discovery_grpc= depend on =service_discovery=, resulting in the latter being the first to start. The next one will then be =service_discovery_postgres= because it is listed first. This is important because we need the storage backend available before the HTTP and grpc services are usable.
 
-=rebar3 release= runs =relx= with a configuration based on the =relx= section of =rebar.config= and the rebar3 project structure, allowing =relx= to find the necessary applications for building the release.
+=rebar3 release= runs =relx= with a configuration based on the =relx= section of =rebar.config= and the Rebar3 project structure, allowing =relx= to find the necessary applications for building the release.
 
 #+BEGIN_SRC shell
 $ rebar3 release
@@ -1838,7 +2255,7 @@ The first =relx= step seen in the output is "Resolving OTP Applications" followe
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-Note that the application <code>sasl</code> is not included in the <code>relx</code> config's list of applications. By default in the rebar3 template it is in the list. This is because <code>sasl</code> is required for certain release operations. The <code>sasl</code> application includes <code>release&#95;handler</code> which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded <code>sasl</code> does not need to be included.
+Note that the application <code>sasl</code> is not included in the <code>relx</code> config's list of applications. By default in the Rebar3 template it is in the list. This is because <code>sasl</code> is required for certain release operations. The <code>sasl</code> application includes <code>release&#95;handler</code> which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded <code>sasl</code> does not need to be included.
 #+end_notice
 
 Because this release is built with ={dev_mode, true}=, symlinks are created in the release's lib directory that point to each application instead of being copied:
@@ -1925,7 +2342,7 @@ $ docker-compose up
 #+attr_shortcode: info
 #+attr_latex: :environment bclogo :options [logo=\bcinfo, couleurBarre=orange, noborder=true, couleur=white]{Information}
 #+begin_notice
-You don't have to start everything to get an Erlang shell from your release. Every release built with <code>rebar3</code> comes with a boot script called <code>start&#95;clean</code> which only starts the <code>kernel</code> and <code>stdlib</code> applications. This can be run with the command <code>console&#95;clean</code> and can be useful for debugging purposes.
+You don't have to start everything to get an Erlang shell from your release. Every release built with Rebar3 comes with a boot script called <code>start&#95;clean</code> which only starts the <code>kernel</code> and <code>stdlib</code> applications. This can be run with the command <code>console&#95;clean</code> and can be useful for debugging purposes.
 #+end_notice
 
 To boot the development release to an interactive Erlang shell run the extended start script with command =console=:
@@ -2079,7 +2496,7 @@ In the =service_discovery= project we have two files for configuration under the
 
 The second level is the configuration for the Erlang applications that make up the release. This is done with a file passed to =erl= through the =-config= argument. The file is a list of 2-tuples where the first element is the name of the application to set the environment of and the second element is a list of key-value pairs to set in the environment.
 
-Of course static files can be pretty limiting and it has become common to want to set configuration through OS environment variables. To offer flexibility and support for environment variable configuration the release start script generated when using =rebar3= can replace variables of the form =${FOO}= with the value found in the current environment. This is done automatically if the files end with extension =.src=.
+Of course static files can be pretty limiting and it has become common to want to set configuration through OS environment variables. To offer flexibility and support for environment variable configuration the release start script generated when using Rebar3 can replace variables of the form =${FOO}= with the value found in the current environment. This is done automatically if the files end with extension =.src=.
 
 In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include the files and signal that they are templates -- this is necessary so that the release building does not attempt to verify that =sys.config= is a proper list of Erlang terms, which, for example, ={port, ${PORT}}= is not:
 
@@ -2135,7 +2552,7 @@ The flags are:
 ...
 #+END_SRC
 
-Not all failures from missing variables are so simple and they can result in very odd crashes, or no crash on boot but failures within the application that depends on the value. We hope to improve this in future =rebar3= versions to enable a check before startup that will fail with a list of missing environment variables. But for now if you are seeing odd behavior, or a crash that you can't understand, checking the environment variables is a good place to start.
+Not all failures from missing variables are so simple and they can result in very odd crashes, or no crash on boot but failures within the application that depends on the value. We hope to improve this in future Rebar3 versions to enable a check before startup that will fail with a list of missing environment variables. But for now if you are seeing odd behavior, or a crash that you can't understand, checking the environment variables is a good place to start.
 
 *** Coming Up
 
@@ -2208,11 +2625,11 @@ $ mv buildx ~/.docker/cli-plugins/docker-buildx
 
 *** Building Images
 
-[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for the base to your own repository, even if your repository is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability. This best practice is why in the examples to follow and the =service_discovery= repository use images from =docker.pkg.github.com/adoptingerlang/service_discovery/= and =us.gcr.io/adoptingerlang/=.
+[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include Rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of Rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for the base to your own repository, even if your repository is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability. This best practice is why in the examples to follow and the =service_discovery= repository use images from =docker.pkg.github.com/adoptingerlang/service_discovery/= and =us.gcr.io/adoptingerlang/=.
 
 **** Private Dependencies
 
-The first stumbling block many in a work environment encounter when building Docker images is access to private dependencies. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with =rebar3= before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
+The first stumbling block many in a work environment encounter when building Docker images is access to private dependencies. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with Rebar3 before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
 
 Since =service_discovery= has no private dependencies we will look at how to support them separately, before getting started with building the images for =service_discovery=.
 
@@ -2263,14 +2680,14 @@ Additional information and options for the SSH mount type can be found [[https:/
 
 ***** Basic Instruction Ordering
 
-The order of commands in a Dockerfile is very important to the build time and size of the images it creates. Each command in the Dockerfile creates a layer which is then reused in future builds to skip a command if nothing has changed. With =rebar3= we take advantage of this by creating a layer containing the built dependencies of our project:
+The order of commands in a Dockerfile is very important to the build time and size of the images it creates. Each command in the Dockerfile creates a layer which is then reused in future builds to skip a command if nothing has changed. With Rebar3 we take advantage of this by creating a layer containing the built dependencies of our project:
 
 #+BEGIN_SRC dockerfile
 COPY rebar.config rebar.lock .
 RUN rebar3 compile
 #+END_SRC
 
-The =COPY= command will only invalidate the cache of the command that runs =rebar3 compile= (and subsequent commands in the file) if =rebar.config= or =rebar.lock= are different from a previously created layer. Since none of the project's code was copied and rebar3 only builds the dependencies, this results in a layer containing only the built dependencies under =_build/default/lib=.
+The =COPY= command will only invalidate the cache of the command that runs =rebar3 compile= (and subsequent commands in the file) if =rebar.config= or =rebar.lock= are different from a previously created layer. Since none of the project's code was copied and Rebar3 only builds the dependencies, this results in a layer containing only the built dependencies under =_build/default/lib=.
 
 After the dependencies are built and cached we can copy in the rest of the project and compile it:
 
@@ -2281,11 +2698,11 @@ RUN rebar3 compile
 
 Because of the order of operations in the Dockerfile each run of =docker build .= only compiles the project's source, assuming there is a change, otherwise an existing layer is used here as well. Any command that does not need to be rerun when there are changes to the project need to come before either of the =COPY= commands. For example, installing Alpine packages, =RUN apk add git= and =WORKDIR /app/src= for setting the working directory.
 
-Use of =COPY . .= is discouraged because it makes it more likely to invalidate the cache. If possible it is better to copy only the files and directories needed for the build or having a =.dockerignore= file filter out files that are not needed. The =.git= directory is one that because of its size and the fact changes to the contents in it do not effect the build artifacts is good to ignore. However, in =service_discovery= we rely on git commands for setting the version of the release and the applications that make up the release. In projects that do not rely on this feature of =rebar3= it is recommended to add =.git= to =.dockerignore=.
+Use of =COPY . .= is discouraged because it makes it more likely to invalidate the cache. If possible it is better to copy only the files and directories needed for the build or having a =.dockerignore= file filter out files that are not needed. The =.git= directory is one that because of its size and the fact changes to the contents in it do not effect the build artifacts is good to ignore. However, in =service_discovery= we rely on git commands for setting the version of the release and the applications that make up the release. In projects that do not rely on this feature of Rebar3 it is recommended to add =.git= to =.dockerignore=.
 
 ***** Experimental Mount Syntax
 
-Copying files into an image and caching layers are no longer the only options for efficiency when building a Docker image. Caching the built dependencies in a layer is all well and good but that layer also contains the Hex package cache =rebar3= creates under =~/.cache/rebar3/hex=. Any change to =rebar.config= or =rebar.lock= will result in all the packages having to not only be rebuilt but also be re-fetched from Hex. Additionally, the instruction to copy in the whole project, creating an additional layer with all the source is wasteful since we only care about the build artifacts.
+Copying files into an image and caching layers are no longer the only options for efficiency when building a Docker image. Caching the built dependencies in a layer is all well and good but that layer also contains the Hex package cache Rebar3 creates under =~/.cache/rebar3/hex=. Any change to =rebar.config= or =rebar.lock= will result in all the packages having to not only be rebuilt but also be re-fetched from Hex. Additionally, the instruction to copy in the whole project, creating an additional layer with all the source is wasteful since we only care about the build artifacts.
 
 These issues are resolved as of Docker 19.03 through an experimental syntax for mounting files to the context of a =RUN= command. To enable the experimental syntax the environment variable =DOCKER_BUILDKIT= must be set or ={"features":{"buildkit": true}}= be set in =/etc/docker/daemon.json=, and =# syntax = docker/dockerfile:experimental= used as the first line of the Dockerfile:
 
@@ -2308,13 +2725,13 @@ RUN --mount=target=. \
     rebar3 compile
 #+END_SRC
 
-In this new set of instructions the build sets the =WORKDIR= to =/app/src=, this is then the current working directory of the commands that follow. And an environment variable =REBAR_BASE_DIR= is set to =/app/_build=. The base directory is where =rebar3= will output all build artifacts and by default is a directory =_build/= at the root of the project, in this case without the environment variable it would have been =/app/src/_build=.
+In this new set of instructions the build sets the =WORKDIR= to =/app/src=, this is then the current working directory of the commands that follow. And an environment variable =REBAR_BASE_DIR= is set to =/app/_build=. The base directory is where Rebar3 will output all build artifacts and by default is a directory =_build/= at the root of the project, in this case without the environment variable it would have been =/app/src/_build=.
 
-The =COPY= of the =rebar3= configuration and lock file remains the same but the following =RUN= has changed to include a =--mount= option with type =cache=. This tells Docker to create a cache directory separate from the Docker layers and stored locally on the host. This cache will remain between runs of =docker build=, so future local runs of =docker build=, even if the config or lock file has changed, will mount this cache and only newly needed packages will be fetched from Hex.
+The =COPY= of the Rebar3 configuration and lock file remains the same but the following =RUN= has changed to include a =--mount= option with type =cache=. This tells Docker to create a cache directory separate from the Docker layers and stored locally on the host. This cache will remain between runs of =docker build=, so future local runs of =docker build=, even if the config or lock file has changed, will mount this cache and only newly needed packages will be fetched from Hex.
 
 Next, unlike the previous instructions for building the rest of the project the instruction =COPY . .= has been removed. Instead, a mount of type =bind= (the default) is used with a =target= of =.=. A bind mount, as opposed to the =cache= mount, means Docker will mount from the build context into the container, giving us the same result as =COPY . .=, but without creating a layer from copying in the files, making the build faster and smaller. With the =COPY= command there are two copies made from the host: the build context and the copy in the build container. Each run of =build= with =COPY= requires copying the whole project from the build context into the build container again.
 
-By default the mount is immutable, meaning the build will error out if anything is written to =/app/src=, and that is why the =rebar3= base directory has been configured to =/app/_build=. There is an option to mount in =read-write= mode but the writes are not persisted and it removes optimizations around not having to make copies of the data from the build context for the build container. More can be read about the mount options in the Buildkit docs for [[https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md][Dockerfile frontend experimental syntax]].
+By default the mount is immutable, meaning the build will error out if anything is written to =/app/src=, and that is why the Rebar3 base directory has been configured to =/app/_build=. There is an option to mount in =read-write= mode but the writes are not persisted and it removes optimizations around not having to make copies of the data from the build context for the build container. More can be read about the mount options in the Buildkit docs for [[https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/experimental.md][Dockerfile frontend experimental syntax]].
 
 The end result is a layer containing =/app/_build= with the compiled dependencies (along with =/app/src/rebar.*=, but they add very little to the size of the layer) followed by a layer containing =/app/_build= with the compiled project but nothing in =/app/src=. Separately there is a cache of all the hex packages that were downloaded.
 
@@ -2340,7 +2757,7 @@ With =buildx= a cache manifest is built that will include information about prev
 
 **** Multi-Stage Build
 
-For an Erlang project we are going to need an image with the built release and this image should not contain anything not required for running the release. Tools like rebar3, the Erlang/OTP version used to build the project, git that was used for fetching dependencies from github, etc all must go. Instead of removing items after the build is complete, a multi-stage Dockerfile can be used to copy the final release, which bundles the Erlang runtime, from the stage it was built to a stage with an Alpine base and only the shared libraries necessary to run the release, such as OpenSSL.
+For an Erlang project we are going to need an image with the built release and this image should not contain anything not required for running the release. Tools like Rebar3, the Erlang/OTP version used to build the project, git that was used for fetching dependencies from github, etc all must go. Instead of removing items after the build is complete, a multi-stage Dockerfile can be used to copy the final release, which bundles the Erlang runtime, from the stage it was built to a stage with an Alpine base and only the shared libraries necessary to run the release, such as OpenSSL.
 
 We will step through the stages in the =service_discovery= project's [[https://github.com/adoptingerlang/service_discovery/blob/docker-chapter/Dockerfile][Dockerfile]]. The first stage is named =builder=:
 
@@ -2377,7 +2794,7 @@ The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= 
 #+begin_alert
 <h3>Old Docker Caching</h3>
 
-<p>For remote caching using the old <code>--cache-from</code>, as described in the previous section,  the <code>builder</code> stage would be built and tagged with an identifier that lets us reference the image based on the rebar3 dependencies it containers. To do this we can use the command <code>cksum</code> on <code>rebar.config</code> and <code>rebar.lock</code>. This acts similarly to what Docker does before choosing to invalidate its cache or not.</p>
+<p>For remote caching using the old <code>--cache-from</code>, as described in the previous section,  the <code>builder</code> stage would be built and tagged with an identifier that lets us reference the image based on the Rebar3 dependencies it containers. To do this we can use the command <code>cksum</code> on <code>rebar.config</code> and <code>rebar.lock</code>. This acts similarly to what Docker does before choosing to invalidate its cache or not.</p>
 
 <code><pre>
 $ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
@@ -2387,7 +2804,7 @@ $ docker push service&#95;discovery:builder-${CHKSUM}
 
 <p>When building any stage that uses <code>FROM builder</code> we would include <code>--cache-from=service&#95;discovery:builder-${CHKSUM}</code> to pull the previously built dependencies.</p>
 
-<p>It is common for developers to be working on concurrent branches of the same project, potentially with varying dependencies, using a checksum of the current rebar3 config and lock files when defining the image to use as a cache allows for multiple sets of dependencies for a project to be cached and the correct set to be used when building.</p>
+<p>It is common for developers to be working on concurrent branches of the same project, potentially with varying dependencies, using a checksum of the current Rebar3 config and lock files when defining the image to use as a cache allows for multiple sets of dependencies for a project to be cached and the correct set to be used when building.</p>
 #+end_alert
 
 The next stage, named =releaser=, uses the =prod_compiled= image as its base:
@@ -2654,7 +3071,7 @@ In order to develop and test the Kubernetes deploy, we will need to run Kubernet
 
 **** Locally
 
-- [[https://github.com/kubernetes/minikube][minikube]]: The oldest and most flexible option, this is now an official part of the Kubernetes project. `minikube` offers support for various hypervisors and has an option to run without creating a new virtual machine, but it still suggests doing so within a Linux VM.
+- [[https://github.com/kubernetes/minikube][minikube]]: The oldest and most flexible option, this is now an official part of the Kubernetes project. =minikube= offers support for various hypervisors and has an option to run without creating a new virtual machine, but it still suggests doing so within a Linux VM.
 - [[https://docs.docker.com/docker-for-mac/#kubernetes][Docker for Mac Kubernetes]]: The easiest to get going with when running on MacOS.
 - [[https://microk8s.io/][microk8s]]: An offering from Ubuntu, but runs on any [[https://docs.snapcraft.io/installing-snapd/6735][Linux distro that supports]] [[https://snapcraft.io/][snaps]]. microk8s is simple to install and get started with, and it runs locally, not within a VM like minikube, so is less of a resource hog.
 
@@ -3527,7 +3944,7 @@ ENTRYPOINT ["rebar3"]
 CMD ["dialyzer"]
 #+END_SRC
 
-=rebar3= will store only the PLT of the OTP libraries in the global cache directory that is part of the =hex-cache=. A PLT that contains both the OTP libraries and the dependencies of the project is output to the build directory, in this case =/app/_build/=. This means we have a cached layer with the full PLT as well as the separate local cache of the OTP PLT. It is important to note that the base directory is still set to =/app/_build= in this image because when it is used to run =dialyzer= on the project's current code with =docker run= the mounting of the project's source would have replaced =/app/src/_build=, resulting in the PLT needing to be rebuilt from scratch. This is done because when running the container the project must be mounted as a volume to the same directory. Mounting a volume overrides any existing files on the path it is mounted to. Storing the PLT in a separate location ensure it is not lost when the volume is mounted and isn't rebuilt on each run.
+Rebar3 will store only the PLT of the OTP libraries in the global cache directory that is part of the =hex-cache=. A PLT that contains both the OTP libraries and the dependencies of the project is output to the build directory, in this case =/app/_build/=. This means we have a cached layer with the full PLT as well as the separate local cache of the OTP PLT. It is important to note that the base directory is still set to =/app/_build= in this image because when it is used to run =dialyzer= on the project's current code with =docker run= the mounting of the project's source would have replaced =/app/src/_build=, resulting in the PLT needing to be rebuilt from scratch. This is done because when running the container the project must be mounted as a volume to the same directory. Mounting a volume overrides any existing files on the path it is mounted to. Storing the PLT in a separate location ensure it is not lost when the volume is mounted and isn't rebuilt on each run.
 
 Now to build the PLT image using the builder image as a cache (note that the stages =releaser= and =runner= will be skipped since they are not needed by the =plt= stage):
 
