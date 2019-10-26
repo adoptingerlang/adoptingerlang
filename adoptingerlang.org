@@ -1328,8 +1328,15 @@ Discuss these with your team. Shuffle supervisors around, adjust the strategies 
 
 Repeat this exercise from time to time, and eventually do some [[https://principlesofchaos.org/][chaos engineering]] by killing Erlang processes on a running node to see if it behaves and recovers the way you think it should (you can of course do chaos engineering on entire nodes, as is more common). What you'll end up with is a fault tolerant piece of code. You will also build a team with a strong understanding of the failure semantics that are baked in their system, with a good mental model of how things should break down when they inevitably do. This is worth its weight in gold.
 
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/development/otp_applications/">← Prev</a></div>
+  <div><a href="/docs/development/dependencies/">Next →</a></div>
+</div>
+#+END_EXPORT
+
 ** DONE Dependencies
-CLOSED: [2019-10-29 Sat 13:49]
+CLOSED: [2019-10-26 Sat 15:03]
 :PROPERTIES:
 :EXPORT_FILE_NAME: dependencies
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1751,6 +1758,14 @@ Various commercial users who rely on Rebar3 despite using monorepos have reporte
 
 Another option is to vendor dependencies, which can be done through plugins such as [[https://www.rebar3.org/docs/using-available-plugins#section-vendoring-dependencies][=rebar3_path_deps=]].
 
+
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/development/supervision_trees/">← Prev</a></div>
+  <div><a href="/docs/development/hard_to_get_right/">Next →</a></div>
+</div>
+#+END_EXPORT
+
 ** TODO Multi-App Projects
 :PROPERTIES:
 :EXPORT_FILE_NAME: umbrella_projects
@@ -2139,6 +2154,13 @@ Coming Soon...
 
 Coming Soon...
 
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/development/dependencies/">← Prev</a></div>
+  <div><a href="/docs/production/">Next →</a></div>
+</div>
+#+END_EXPORT
+
 * Production
 :PROPERTIES:
 :EXPORT_HUGO_SECTION: docs/production
@@ -2172,8 +2194,8 @@ However, containers and Kubernetes are not appropriate in all cases. Kubernetes 
 
 #+BEGIN_EXPORT html
 <div class="pagination">
-  <div><a href="/docs/development/otp_applications">← Prev</a></div>
-  <div><a href="/docs/team_building">Next →</a></div>
+  <div><a href="/docs/development/hard_to_get_right">← Prev</a></div>
+  <div><a href="/docs/production/releases">Next →</a></div>
 </div>
 #+END_EXPORT
 
@@ -2586,6 +2608,13 @@ $ bin/service_discovery remote_console
 #+END_SRC
 
 =remote_console= uses =-remsh= [[http://erlang.org/doc/man/erl.html#flags][erl]] flag for connecting an interactive shell to the running release. The command knows which running Erlang node to connect to based on the same configuration, from =vm.args=, that sets the name and cookie for the node that was run originally. This means any environment variables used to populate =vm.args= when the node is started must be set the same when connecting the remote console.
+
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/production/">← Prev</a></div>
+  <div><a href="/docs/production/docker/">Next →</a></div>
+</div>
+#+END_EXPORT
 
 ** DONE Docker
 CLOSED: [2019-09-28 Sat 09:32]
@@ -3055,6 +3084,14 @@ For more details on using Kaniko in Google Cloud Build see their [[https://cloud
 
 In this chapter we built images for our service and finished off by creating a CI pipeline for continually building and publishing those images when changes are made to the repository. In the next chapter we will cover how to build a deployment to Kubernetes from these images. After we are running in Kubernetes the following chapter covers observability, such as connecting to a running node, well structured logs, reporting metrics and distributed traces.
 
+
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/production/releases/">← Prev</a></div>
+  <div><a href="/docs/team_building/">Next →</a></div>
+</div>
+#+END_EXPORT
+
 ** TODO Kubernetes
 :PROPERTIES:
 :EXPORT_FILE_NAME: kubernetes
@@ -3454,6 +3491,7 @@ No business works only with code; it is way more frequent to hear about projects
 #+BEGIN_EXPORT html
 <div class="pagination">
   <div><a href="/docs/production">← Prev</a></div>
+  <div><a href="/docs/cheat_sheets/">Next →</a></div>
 </div>
 #+END_EXPORT
 
@@ -3492,9 +3530,7 @@ No business works only with code; it is way more frequent to hear about projects
 **** Hiring for Mentorship
 *** It is Easier to Train than Hire
 
-* DONE Appendix 1: Erlang/OTP Cheat Sheets
-
-CLOSED: [2019-08-08 Thu 08:06]
+* Appendix 1: Erlang/OTP Cheat Sheets
 :PROPERTIES:
 :EXPORT_FILE_NAME: cheat_sheets
 :EXPORT_HUGO_MENU: :menu main :weight 5001
@@ -3882,6 +3918,12 @@ The =Actions= value is any combination of the following list (non-inclusive): =p
 | ={timeout, T, Msg}= | =Action= return value | =timeout= | =Msg= | A specific timeout that can be set and received internally when the state machine has not received a new event in =T= milliseconds |
 | ={state_timeout, T, Msg}= | =Action= return value | =state_timeout= | =Msg= | A specific timeout that can be set and received internally when the state machine has not transitioned to a new different state in =T= milliseconds |
 | ={next_event, internal, Msg}= | =Action= return value | =internal= | =Msg= | Internal messages that can be generated by a state machine wanting to trigger itself without looking like external calls |
+
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/team_building">← Prev</a></div>
+</div>
+#+END_EXPORT
 
 * TODO Appendix 2: Releases
 

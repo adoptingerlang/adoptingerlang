@@ -12,12 +12,13 @@
 (require 'org)
 
 (with-eval-after-load 'org
-  (setq org-latex-listings 'minted
-        org-latex-packages-alist '(("" "minted"))
-        org-latex-pdf-process
-        '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  ;; (setq org-latex-listings 'minted
+  ;;       org-latex-packages-alist '(("" "minted"))
+  ;;       org-latex-pdf-process
+  ;;       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+  ;;         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
   ;; (with-temp-file "/home/tristan/Devel/adoptingerlang/adoptingerlang.org"
   (org-hugo-export-wim-to-md :all-subtrees nil nil :noerror)
-  (org-latex-export-to-latex))
+  ;; (org-latex-export-to-latex)
+  )
