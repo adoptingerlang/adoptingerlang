@@ -1328,7 +1328,8 @@ Discuss these with your team. Shuffle supervisors around, adjust the strategies 
 
 Repeat this exercise from time to time, and eventually do some [[https://principlesofchaos.org/][chaos engineering]] by killing Erlang processes on a running node to see if it behaves and recovers the way you think it should (you can of course do chaos engineering on entire nodes, as is more common). What you'll end up with is a fault tolerant piece of code. You will also build a team with a strong understanding of the failure semantics that are baked in their system, with a good mental model of how things should break down when they inevitably do. This is worth its weight in gold.
 
-** TODO Dependencies
+** DONE Dependencies
+CLOSED: [2019-10-29 Sat 13:49]
 :PROPERTIES:
 :EXPORT_FILE_NAME: dependencies
 :EXPORT_HUGO_MENU: :menu main :parent development
