@@ -1,0 +1,103 @@
+
+$admonitions:
+    "info" rgb(0, 184, 212) "",
+    "warning" rgb(255, 145, 0) "",
+    "note" rgb(68, 138, 255) "",
+    "tip" rgb(0, 191, 165) "",
+    "danger" rgb(255, 23, 68) "",
+    "example" rgb(101, 31, 255) "",
+    "quote" rgb(158, 158, 158) "",
+    "bug" rgb(245, 0, 87) "",
+    "failure" rgb(255, 82, 82) "",
+    "success" rgb(0, 200, 83) "",
+    "question" rgb(100, 221, 23) "";
+
+@each $name, $color, $icon in $admonitions {
+    .#{$name} {
+        border-left-color: $color;
+
+        > .admonition-title {
+            background-color: transparentize($color, 0.9);
+            border-bottom-color: transparentize($color, 0.9);
+
+            &::before {
+                color: $color;
+                content: $icon;
+            }
+        }
+    }
+}
+
+.admonition {
+    border-bottom-left-radius: 2.2px;
+    border-bottom-right-radius: 2.2px;
+    border-left-style: solid;
+    border-left-width: 4px;
+    border-top-left-radius: 2.2px;
+    border-top-right-radius: 2.2px;
+    box-shadow: rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px, rgba(0, 0, 0, 0.2) 0px 3px 1px -2px;
+    box-sizing: border-box;
+    color: rgba(0, 0, 0, 0.87);
+    font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-feature-settings: "kern", "liga";
+    font-size: 14.0833px;
+    line-height: 22.5333px;
+    margin-bottom: 22px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 22px;
+    overflow: auto;
+    overflow-x: auto;
+    overflow-y: auto;
+    padding-bottom: 0px;
+    padding-left: 13.2px;
+    padding-right: 13.2px;
+    padding-top: 0px;
+    position: relative;
+    -moz-text-size-adjust: none;
+
+    > .admonition-title {
+        &::before {
+            box-sizing: border-box;
+            direction: ltr;
+            font-family: "Material Icons";
+            font-feature-settings: "kern", "liga";
+            font-size: 22px;
+            font-style: normal;
+            font-variant: normal;
+            font-variant-alternates: normal;
+            font-variant-caps: normal;
+            font-variant-east-asian: normal;
+            font-variant-ligatures: normal;
+            font-variant-numeric: normal;
+            font-variant-position: normal;
+            font-weight: 400;
+            left: 13.2px;
+            line-height: 22px;
+            overflow-wrap: normal;
+            position: absolute;
+            white-space: nowrap;
+            -moz-text-size-adjust: none;
+        }
+        text-transform: capitalize;
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+        box-sizing: border-box;
+        color: rgba(0, 0, 0, 0.87);
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-feature-settings: "kern", "liga";
+        font-size: 14.0833px;
+        font-weight: 700;
+        line-height: 22.5333px;
+        margin-bottom: 0px;
+        margin-left: -13.2px;
+        margin-right: -13.2px;
+        margin-top: 0px;
+        padding-bottom: 8.8px;
+        padding-left: 44px;
+        padding-right: 13.2px;
+        padding-top: 8.8px;
+        -moz-text-size-adjust: none;
+    }
+}
+

@@ -1,0 +1,4 @@
+<div class="admonition {{ .Get 0 }}">
+  <p class="admonition-title">{{ if len .Params | eq 2 }} {{ .Get 1 }} {{else}} {{ .Get 0 }} {{ end }}</p>
+  <p>{{ .Inner }}</p>
+</div>
