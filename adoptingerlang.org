@@ -2806,7 +2806,7 @@ The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= 
 
 #+attr_shortcode: info "Old Docker Caching"
 #+begin_admonition
-<p>For remote caching using the old <code>--cache-from</code>, as described in the previous section,  the <code>builder</code> stage would be built and tagged with an identifier that lets us reference the image based on the Rebar3 dependencies it containers. To do this we can use the command <code>cksum</code> on <code>rebar.config</code> and <code>rebar.lock</code>. This acts similarly to what Docker does before choosing to invalidate its cache or not.</p>
+<p>For remote caching using the old <code>--cache-from</code>, as described in the previous section,  the <code>builder</code> stage would be built and tagged with an identifier that lets us reference the image based on the Rebar3 dependencies it contains. To do this we can use the command <code>cksum</code> on <code>rebar.config</code> and <code>rebar.lock</code>. This acts similarly to what Docker does before choosing to invalidate its cache or not.</p>
 
 <code><pre>
 $ CHKSUM=$(cat rebar.config rebar.lock | cksum | awk '{print $1}')
