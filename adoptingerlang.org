@@ -969,7 +969,7 @@ You now understand most of the weird stuff about Erlang/OTP's project structure 
 #+BEGIN_EXPORT html
 <div class="pagination">
   <div><a href="/docs/development/otp_high_level">← Prev</a></div>
-  <div><a href="/docs/supervision_trees">Next →</a></div>
+  <div><a href="/docs/development/supervision_trees">Next →</a></div>
 </div>
 #+END_EXPORT
 
