@@ -1767,7 +1767,7 @@ With all this in place, you should be set to manage the lifecycle of your projec
 :EXPORT_HUGO_MENU: :menu main :parent development
 :END:
 
-Multi-application projects, more frequently called _umbrella projects_, are how most projects are structured in a business environment, moslty because they make it easier to maintain multiple OTP Applications within a single repository. In this chapter, we'll cover their structure, when they prove most and least useful, some subtleties of this new structure, and finally, give tips to help properly split up a monolithic library into multiple OTP Applications.
+Multi-application projects, more frequently called _umbrella projects_, are how most projects are structured in a business environment, mostly because they make it easier to maintain multiple OTP Applications within a single repository. In this chapter, we'll cover their structure, when they prove most and least useful, some subtleties of this new structure, and finally, give tips to help properly split up a monolithic library into multiple OTP Applications.
 
 *** Organizing Multi-App Projects
 
@@ -1840,7 +1840,7 @@ In short, this creates a multi-tiered dynamic to building and structuring applic
 
 There are a few exceptions to these. For example, dependencies are shared for the project, so while each top-level app can specify its own dependencies, they can't have wildly different versions. At the opposite, directories such as =priv/= are meant for a single app's private files and cannot be shared.
 
-Another small subtlety is around hooks; some hooks can be defined both for a single OTP application and for a whole project. For example, a =compile= hook defined at the top level will run before and after _all_ applications are built, and the same hook defined for a single application in =apps/= will run only before and after that one application is compiled.
+Another small subtlety is around hooks; some hooks can be defined both for a single OTP application and for a whole project. For example, a =compile= hook defined at the top level will run before or after _all_ applications are built, and the same hook defined for a single application in =apps/= will run only before or after that one application is compiled.
 
 *** Should You Migrate
 
@@ -1862,7 +1862,7 @@ If at some point a library from a multi-app project becomes useful to other user
 
 This structure is also helpful when your organization intends to patch or develop, and then publish open source code, and makes it somewhat less costly to make changes in a library without having to synchronize all of its users at once.
 
-It also keeps things somewhat straightforwards when it comes to developing specific scripts around deployments and CI for each project; open source tools tend to keep working well. However, it has a higher cost when you're in an organization that already has monorepos and tooling developed for these. Another common roadblock is that it requires that CI and build servers for one project have read-access to those of dependencies, which isn't necessarily in place in all organizations.
+It also keeps things somewhat straightforward when it comes to developing specific scripts around deployments and CI for each project; open source tools tend to keep working well. However, it has a higher cost when you're in an organization that already has monorepos and tooling developed for these. Another common roadblock is that it requires that CI and build servers for one project have read-access to those of dependencies, which isn't necessarily in place in all organizations.
 
 *** Cutting Up Apps
 
