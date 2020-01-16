@@ -1761,7 +1761,8 @@ With all this in place, you should be set to manage the lifecycle of your projec
 </div>
 #+END_EXPORT
 
-** TODO Multi-App Projects
+** DONE Multi-App Projects
+CLOSED: [2020-01-15 Wed 20:00]
 :PROPERTIES:
 :EXPORT_FILE_NAME: umbrella_projects
 :EXPORT_HUGO_MENU: :menu main :parent development
@@ -1838,7 +1839,7 @@ In short, this creates a multi-tiered dynamic to building and structuring applic
 - everything at the top level is shared across all top-level applications (even tests)
 - each application is allowed to be more specific by creating a local version of directories or test files
 
-There are a few exceptions to these. For example, dependencies are shared for the project, so while each top-level app can specify its own dependencies, they can't have wildly different versions. At the opposite, directories such as =priv/= are meant for a single app's private files and cannot be shared.
+There are a few exceptions to these. For example, dependencies are shared for the project: while each top-level app can specify its own dependencies, Erlang and Rebar3 only allow one version of a library to be loaded at a time (live code upgrades aside). This means that dependency resolution will pick a single winning application for all conflicting versions, and considering them shared therefore makes sense. At the opposite, directories such as =priv/= are meant for a single app's private files, and while anyone can read their content, the same directory cannot be owned by multiple applications.
 
 Another small subtlety is around hooks; some hooks can be defined both for a single OTP application and for a whole project. For example, a =compile= hook defined at the top level will run before or after _all_ applications are built, and the same hook defined for a single application in =apps/= will run only before or after that one application is compiled.
 
@@ -1856,7 +1857,7 @@ Until Rebar3 (and other tools) can manage to catch-up to monorepos, you might wa
 
 - Make one multi-app repository per larger project, such as a service or micro-service
 - All your common libraries that are shared across larger projects are maintained and published individually, and pulled in when required by specific projects
-- Use [[TODO: CHANGE LINK][templates]] stored in some general [[TODO: CHANGE LINK][plugin]] that your teammates will install globally to automate the layout and specification of services, web APIs, CI configurations, and so on
+- Use [[https://www.rebar3.org/docs/using-templates#section-plugin-templates][templates]] stored in some general [[https://www.rebar3.org/docs/plugins][plugin]] that your teammates will install globally to automate the layout and specification of services, web APIs, CI configurations, and so on
 
 If at some point a library from a multi-app project becomes useful to other users within your organization, it becomes easy to just take it out into its own repository, publish it, and reimport it as a dependency. Similarly, orphaned libraries or forked libraries can then be maintain locally within each project.
 
