@@ -3629,6 +3629,18 @@ No business works only with code; it is way more frequent to hear about projects
 **** Hiring for Mentorship
 *** It is Easier to Train than Hire
 
+** TODO How to Do Polyglot Right
+:PROPERTIES:
+:EXPORT_FILE_NAME: how_to_polyglot
+:EXPORT_HUGO_MENU: :menu main :parent team-building
+:END:
+
+** TODO Selling and Defending Erlang
+:PROPERTIES:
+:EXPORT_FILE_NAME: selling_and_defending
+:EXPORT_HUGO_MENU: :menu main :parent team-building
+:END:
+
 * Appendix 1: Erlang/OTP Cheat Sheets
 :PROPERTIES:
 :EXPORT_FILE_NAME: cheat_sheets
