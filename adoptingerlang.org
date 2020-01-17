@@ -1757,7 +1757,7 @@ With all this in place, you should be set to manage the lifecycle of your projec
 #+BEGIN_EXPORT html
 <div class="pagination">
   <div><a href="/docs/development/supervision_trees/">← Prev</a></div>
-  <div><a href="/docs/development/hard_to_get_right/">Next →</a></div>
+  <div><a href="/docs/development/umbrella_projects/">Next →</a></div>
 </div>
 #+END_EXPORT
 
@@ -1890,6 +1890,13 @@ In the end, the best way to structure and organize code and repositories is to p
 
 Solve one problem at a time; if your team is learning Erlang for the first time, it may make sense to start with everything on the path of least resistance given your organization's existing deployment and build systems, knowing fully you'll rework them later to be more comfortable. Trying to tackle all the problems at once and trying to solve them all perfectly the first time around can be counterproductive when you have limited energy, time, or resources.
 
+#+BEGIN_EXPORT html
+<div class="pagination">
+  <div><a href="/docs/development/dependencies">← Prev</a></div>
+  <div><a href="/docs/development/hard_to_get_right/">Next →</a></div>
+</div>
+
+#+END_EXPORT
 ** TODO Rebar3 Shell
 :PROPERTIES:
 :EXPORT_FILE_NAME: rebar3_shell
@@ -2273,8 +2280,8 @@ Coming Soon...
 
 #+BEGIN_EXPORT html
 <div class="pagination">
-  <div><a href="/docs/development/dependencies/">← Prev</a></div>
-  <div><a href="/docs/development/supervision_trees/">Next →</a></div>
+  <div><a href="/docs/development/umbrella_projects/">← Prev</a></div>
+  <div><a href="/docs/production/">Next →</a></div>
 </div>
 #+END_EXPORT
 
