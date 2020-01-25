@@ -3768,7 +3768,9 @@ spec:
 
 *** Tilt for Local Development
 
-[[https://tilt.dev/][Tilt]] is a tool for deploying and updating Docker images and Kubernetes deploys locally for development purposes. The easiest way to get started with Tilt is using a registry within the local Kubernetes cluster. For =microk8s= a registry can be enabled easily, we will need DNS as well so enable that at this time as well:
+[[https://tilt.dev/][Tilt]] is a tool for deploying and updating Docker images and Kubernetes deploys locally for development purposes. By default it will only build and deploy services against a local Kubernetes, such as =microk8s=, =minikube=, etc. to safe guard against accidentally sending your development environment into production!
+
+The easiest way to get started with Tilt is using a registry within the local Kubernetes cluster. For =microk8s= a registry can be enabled easily, we will need DNS as well so enable that at this time as well:
 
 #+BEGIN_SRC shell
 $ microk8s.enable registry
@@ -3788,11 +3790,10 @@ To allow the host Docker to publish to this registry it must be added to =/etc/d
 Tilt works off of a file named =Tiltfile= at the root of the project. Stepping through the =Tiltfile= at the root of [[https://github.com/adoptingerlang/service_discovery][service_discovery]] it begins with:
 
 #+BEGIN_SRC python
-allow_k8s_contexts("microk8s")
 default_registry('127.0.0.1:32000')
 #+END_SRC
 
-=allow_k8s_contexts= restricts the Kubernetes context that Tilt will run against to =microk8s=, this is to protect the user from accidentally deploying their local development resources and images to an external Kubernetes cluster, like production! =default_registry= sets where to push Docker images built by Tilt, in this case the registry enabled in =microk8s= is used.
+=default_registry= sets where to push Docker images built by Tilt, in this case the registry enabled in =microk8s= is used. This line is not actually required because Tilt will pick up that =microk8s= with an enabled registry is being used and automatically configure itself to use that registry.
 
 Next the build of a couple of Docker images is configured, starting with =service_discovery_sql=:
 
@@ -3815,6 +3816,8 @@ COPY apps/service_discovery_postgres/priv/migrations/ /app/sql/
 
 It only contains the SQL migration files and uses =busybox= so that the =entrypoint= can use =cp=. The third argument to =custom_build=, =['apps/service_discovery_postgres/priv/migrations']=, tells Tilt to rebuild the image if any file in that directory, in this case the SQL migration files, changes. We will see how this image is used when we get to the kustomize deployment later in the =Tiltfile=.
 
+Notice the function [[https://docs.tilt.dev/custom_build.html][custom_build]] is used. Tilt offers a simpler function =docker_build= for building Docker images if that suites your needs. In the case of =service_discovery= we have specific =targets= in the =Dockerfile= to use and wanted to ensure the use of =buildx=.
+
 The next image built is =service_discovery=, the main image used by the =Deployment=:
 
 #+BEGIN_SRC python
@@ -3834,7 +3837,7 @@ custom_build(
 
 Note that =rebar.lock= is explicitly ignored, this is because it gets rewritten at times when it hasn't actually changed and Tilt does no comparison to verify a change has actually occurred, so would needlessly run the =live_update= instructions when Rebar3 is run locally. The migration files are also ignored because that is handled by the other Docker image.
 
-The target is =dev_release= because we want the ability to do live updates simply by recompiling and restarting inside the running image:
+The target is =dev_release= because we want the ability to do [[https://blog.tilt.dev/2019/04/02/fast-kubernetes-development-with-live-update.html][live updates]] simply by recompiling and restarting inside the running image:
 
 #+BEGIN_SRC dockerfile
 # image to use in tilt when running the release
@@ -3847,7 +3850,7 @@ ENTRYPOINT ["/app/_build/tilt/rel/service_discovery/bin/service_discovery"]
 CMD ["foreground"]
 #+END_SRC
 
-The =live_update= instructions will run in the container any time a file changes. Since a =dev_mode= release is used, the Rebar3 profile =tilt= keeps the default =dev_mode= of =true=, the update commands simply need to sync the =apps= directory to the running container, run =compile= and restart the release.
+The =live_update= instructions will run in the container any time a file changes. The Rebar3 profile =tilt= uses =dev_mode= for the release building, meaning to update the compiled modules in the release requires only running =compile= and not having to rebuild the whole release -- see the [[https://adoptingerlang.org/docs/production/releases/#building-a-development-release][Releases Chapter]] for more details on =dev_mode= and release building -- so the update commands simply sync the =apps= directory to the running container, run =compile= and restart the release.
 
 Lastly in the =Tiltfile= the Kubernetes resources to deploy are configured and a watch is set to rerun the =Tiltfile= if any of the kustomize files changes.
 
@@ -3908,6 +3911,8 @@ A console UI is brought up that shows the status of bringing up the difference r
 Tilt will also automatically open a page in the browser showing the same information:
 
 [[./static/img/tilt-webui.png]]
+
+TODO: show getting the IP from Tilt UI instead of kubectl
 
 Using =kubectl= the IP of =service_discovery= can be found:
 
