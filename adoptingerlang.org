@@ -3226,7 +3226,7 @@ In order to develop and test the Kubernetes deploy, we will need to run Kubernet
 
 All the big cloud providers offer managed Kubernetes clusters:
 
-- [[https://cloud.google.com/kubernetes-engine/][Google Kubernetes Engine]]: Google Cloud was used for writing this chapter, when not using microk8s, because it offers [[https://cloud.google.com/free/][$300 of credit when signing up as a new user]]
+- [[https://cloud.google.com/kubernetes-engine/][Google Kubernetes Engine]]: Google Cloud was used for this chapter when not using microk8s, because it offers [[https://cloud.google.com/free/][$300 of credit when signing up as a new user]]
 - [[https://www.digitalocean.com/products/kubernetes/][Digital Ocean Kubernetes]]
 - [[https://aws.amazon.com/eks/][AWS Elastic Container Service for Kubernetes]]
 - [[https://azure.microsoft.com/en-us/services/kubernetes-service/][Azure Kubernetes Service]]
@@ -3235,7 +3235,7 @@ There are [[https://kubernetes.io/docs/setup/pick-right-solution/#table-of-solut
 
 *** Deployment
 
-In Kubernetes, containers are part of a =Pod=. Each =Pod= has 1 or more containers, and 0 or more =init-containers= which run once to completion before the other containers are started. For an application a higher level abstraction, called a =Deployment=, is used so individual =Pods= don't have to be manually created for deploying or scaling. A =Deployment= is a declarative way to create and update the =Pods= of an application.
+In Kubernetes, containers are part of a =Pod=. Each =Pod= has 1 or more containers, and 0 or more =init-containers= which run once to completion before the other containers are started. For an application, a higher level abstraction called a =Deployment= is used, so individual =Pods= don't have to be manually created for deploying or scaling. A =Deployment= is a declarative way to create and update the =Pods= of an application.
 
 Each Kubernetes resource is defined in a =yaml= file containing the =apiVersion=, the =kind= of resource, =metadata=, such as a name, and the resource's specification:
 
@@ -3248,7 +3248,7 @@ spec:
 [...]
 #+END_SRC
 
-The =Deployment= spec entries we will cover here are =selector=, =replicas= and =template=. The =selector= is a specification for which =Pods= belong to a =Deployment=. =matchLabels= means that =Pods= with the label =app= with value =service-discovery=, within the same =Namespace=, will be considered part of the =Deployment=. =replicas= declares how many instances of the =Pod= should be running.
+The =Deployment= spec entries we will cover here are =selector=, =replicas=, and =template=. The =selector= is a specification for which =Pods= belong to a =Deployment=. =matchLabels= means that =Pods= with the label =app= with value =service-discovery=, within the same =Namespace=, will be considered part of the =Deployment=. =replicas= declares how many instances of the =Pod= should be running.
 
 #+BEGIN_SRC yaml
 spec:
@@ -3333,11 +3333,11 @@ In order to disable the scheduler busy waiting and to set the number of schedule
 #+end_admonition
 
 
-In the next section we will see how using an environment variable =${SCHEDULERS}= set through Kubernetes' [[https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api][Downward API]] makes it easy to adjust the number of schedulers when we want to change the CPU limits in the Kubernetes resource.
+In the next section we will see how using the environment variable =${SCHEDULERS}=, set through Kubernetes' [[https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api][Downward API]], makes it easy to adjust the number of schedulers when we want to change the CPU limits in the Kubernetes resource.
 
 **** Container Environments and ConfigMaps
 
-As we've seen in the Releases chapter, runtime configuration is done through environment variable substitution in =vm.args.src= and =sys.config.src=. We therefore have to insert those variable to the environment of the container. Each container in a Kubernetes Pod can have a field =env= declaring a set of environment variables. The simplest case is explicitly providing a =name= and a =value=:
+As we've seen in the Releases chapter, runtime configuration is done through environment variable substitution in =vm.args.src= and =sys.config.src=. We therefore have to insert those variables to the environment of the container. Each container in a Kubernetes Pod can have an =env= field declaring a set of environment variables. The simplest case is explicitly providing a =name= and a =value=:
 
 #+BEGIN_SRC yaml
 env:
@@ -3365,7 +3365,7 @@ env:
 
 The =fieldRef= =status.podIP= will return the current Pod's IP when it is created and the =resourceFieldRef= of =limits.cpu= with a =divisor= of =1= will return the CPU limit in a unit of CPU cores.
 
-The user defined environment variables like =LOGGER_LEVEL= can be better tracked in a Kubernetes resource specifically for configuration called a =ConfigMap=. A =ConfigMap= contains key-value pairs and can be populated from files, directories of files or literal values. Here we will use a literal value to set =LOGGER_LEVEL= to =error=:
+The user-defined environment variables like =LOGGER_LEVEL= can be better tracked in a Kubernetes resource specifically for configuration called a =ConfigMap=. A =ConfigMap= contains key-value pairs and can be populated from files, directories of files or literal values. Here we will use a literal value to set =LOGGER_LEVEL= to =error=:
 
 #+BEGIN_SRC yaml
 apiVersion: v1
@@ -3436,15 +3436,15 @@ initContainers:
       mountPath: /flyway/sql
 #+END_SRC
 
-The volume =migrations= exists only in memory and is used to copy the current SQL migration files from the release image to a shared directory that the =flyway= container will use to run validation. The =emptyDir= type of volume with =medium= =memory= is used because we are not using this volume to persist any data, only to share between two =Init Contianers=. If =medium: Memory= was not included the =emptyDir= is created on the host file system but it is still empty initially for each new =Pod= and is removed when the =Pod= is deleted.
+The volume =migrations= exists only in memory and is used to copy the current SQL migration files from the release image to a shared directory that the =flyway= container will use to run validation. The =emptyDir= type of volume with =medium= =memory= is used because we are not using this volume to persist any data, only to share between two =Init Containers=. If =medium: Memory= was not included, the =emptyDir= is created on the host file system but it is still empty initially for each new =Pod=, and is removed when the =Pod= is deleted.
 
 **** Readiness and Liveness Probes
 
-Kubernetes has multiple configurable probes to know when to restart a container and when a container is in a state it can accept traffic. The main two are the liveness and readiness probes, which handle container restart and whether traffic can be sent respectively. Additionally, a startup probe can be used to delay when the liveness and readiness probe start being checked.
+Kubernetes has multiple configurable probes to know when to restart a container and when a container is in a state it can accept traffic. The main two are the liveness and readiness probes, which respectively handle container restart and whether traffic can be forwarded. A startup probe can be added to delay when the liveness and readiness probes start being checked.
 
-Probes are defined as either a command to execute in the container, a HTTP =GET= request to make to a port and path or an attempt to open a TCP connection to a specific port.
+Probes are defined either as a command to execute in the container, as an HTTP =GET= request made to a given port and path, or as an attempt to open a TCP connection to a specific port.
 
-A =livenessProbe= is not necessarily needed. If the process in the container crashes or stop for any reason it will be restarted. The probe ensures that if our node does not crash but for some reason has deadlocked and can not respond to requests it will also be restarted.
+A =livenessProbe= is optional; if the process in the container crashes or stops for any reason, it will be restarted. The probe ensures that if our node does not crash but for some reason has deadlocked and can not respond to requests, it will also be restarted.
 
 In =service_discovery= a =livenessProbe= is included that starts probing =/healthz= with an HTTP request after an initial delay of 3 seconds and then does so every 15 seconds.
 
@@ -3478,7 +3478,7 @@ The =readinessProbe= is also important to having successful rolling deployments 
 
 **** Rolling Deployments
 
-Kubernetes =Deployment= resources have a configurable [[https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy][strategy]] for what happens when a new version of an image is deployed. The =service_discovery= =Deployment= uses a rolling update strategy, the alternative strategy is =Recreate= which means Kubernetes first terminates all =Pods= in the =Deployment= and then starts the new =Pods=. For the =RollingUpdate= strategy the Kubernetes =Deployment= controller will bring up new =Pods= and then terminate the old. There are two configuration variables to tell the controller how many =Pods= above the desired amount are allowed (=maxSurge=) and how many are allowed to be unavailable during the deploy (=maxUnavailable=).
+Kubernetes =Deployment= resources have a configurable [[https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy][strategy]] for what happens when a new version of an image is deployed. The =service_discovery= =Deployment= uses a rolling update strategy. An alternative strategy is =Recreate= which means Kubernetes first terminates all =Pods= in the =Deployment=, and then starts the new =Pods=. For the =RollingUpdate= strategy the Kubernetes =Deployment= controller will bring up new =Pods= and then terminate the old. There are two configuration variables to tell the controller how many =Pods= above the desired amount are allowed (=maxSurge=) and how many are allowed to be unavailable during the deploy (=maxUnavailable=).
 
 #+BEGIN_SRC yaml
 strategy:
@@ -3521,7 +3521,7 @@ The =Deployment's= container exposed three ports and gave each one a name, =dns=
 
 A proxy (=kube-proxy=) is used to route traffic to =Pods= instead of adding each =Pod= IP to a DNS record because of the rate of change for what =Pods= are actually running for a =Service=. If DNS were used it would require a low or zero time to live (TTL) and depend on the client to fully respect the TTL value. Having every request be routed through a proxy means as long as the proxy's data has been updated the right set of =Pod's= will be routed to.
 
-Kubernetes aware DNS services, like [[https://coredns.io/][CoreDNS]], will watch for new =Services= and create DNS records =[service-name].[namespace]= for each. When using named ports, like the three ports in the =service-discovery= =Service=, there are also SRV records created of the form =_[name]._[protocol].[service-name].[namespace]=. Querying the DNS service for the SRV record, such as =_http._tcp.service-discovery.default= will return the =Service= DNS name =service-discovery.default= and port 3000.
+Kubernetes-aware DNS services, like [[https://coredns.io/][CoreDNS]], will watch for new =Services= and create DNS records =[service-name].[namespace]= for each service. When using named ports, like the three ports in the =service-discovery= =Service=, there are also SRV records created of the form =_[name]._[protocol].[service-name].[namespace]=. Querying the DNS service for the SRV record, such as =_http._tcp.service-discovery.default= will return the =Service= DNS name =service-discovery.default= and port 3000.
 
 In a later section on clustering we will see how to use a =Headless Service= (a =Service= with =ClusterIP= set to =None=) resource and named ports for connecting Erlang nodes over distributed Erlang without the [[http://erlang.org/doc/man/epmd.html][Erlang Port Mapper Daemon (epmd)]].
 
@@ -3535,7 +3535,7 @@ There are a few open source options for working with Kubernetes resources. The t
 #+begin_admonition
 <p>Even if Helm is not used for deployment of your project itself it can still be useful for deployment of dependencies. There are a lot of <a href="https://github.com/helm/charts">Helm Charts</a> available and is likely how you would want to offer your project to the outside world if it was not simply for internal usage.</p>
 
-<p>There were a number of issues with Helm aside from the templating that we won't go into here, except to say that they are being worked out in the next major release, <a href="https://v3.helm.sh/">Helm v3</a>. As of this writing in November 2019 has release candidates available. So I would still suggest taking a look at the latest offering from Helm.</p>
+<p>There were a number of issues with Helm aside from the templating that we won't get into here, except to say that they are being worked out in the next major release, <a href="https://v3.helm.sh/">Helm v3</a>. As of this writing in November 2019 has release candidates available. So I would still suggest taking a look at the latest offering from Helm.</p>
 #+end_admonition
 
 [[https://kustomize.io/][Kustomize]] is a =kubectl= built-in tool (as of v1.14.0) that provides a template-free way to customize Kubernetes YAML resources. We will use it to create different configurations for various environments, starting with a development environment, =dev=, which will then be used in the next section, [[Tilt for Local Development]], to run =service_discovery= locally.
@@ -3732,7 +3732,7 @@ The trouble with using a =Job= for migrations is applying a set of Kubernetes YA
 
 One option, which is still an alpha feature as of Kubernetes 1.16, is setting =ttlSecondsAfterFinished: 0= in the =Job= specification. With this setting the =Job= will be eligible for deletion immediately after completion. Then, when the next deployment applies the new Kubernetes resources a new =Job= will be created, instead of attempting to update the =Job= from the last deployment.
 
-Since the =ttlSecondsAfterFinished= options is still an alpha feature and requires manually enabling. You can try the feature on Google Cloud by creating an [[https://cloud.google.com/kubernetes-engine/docs/concepts/alpha-clusters][alpha cluster]], but these clusters can only live for 30 days. An alternative solution is to manually (or with a script that can run in a CI pipeline) run migrations and delete the =Job= after completing a deployment.
+The =ttlSecondsAfterFinished= options is still an alpha feature and requires manually enabling. You can try the feature on Google Cloud by creating an [[https://cloud.google.com/kubernetes-engine/docs/concepts/alpha-clusters][alpha cluster]], but these clusters can only live for 30 days. An alternative solution is to manually (or with a script that can run in a CI pipeline) run migrations and delete the =Job= after completing a deployment.
 
 An advantage of running the =Job= separately from the main =kubectl apply= is the deployment can be stopped if the =Job= failed.
 
@@ -3863,7 +3863,7 @@ CMD ["foreground"]
 
 The =live_update= instructions will run in the container any time a file changes. The Rebar3 profile =tilt= uses =dev_mode= for the release building, meaning to update the compiled modules in the release requires only running =compile= and not having to rebuild the whole release -- see the [[https://adoptingerlang.org/docs/production/releases/#building-a-development-release][Releases Chapter]] for more details on =dev_mode= and release building -- so the update commands simply sync the =apps= directory to the running container, run =compile= and restart the release.
 
-Lastly in the =Tiltfile= the Kubernetes resources to deploy are configured and a watch is set to rerun the =Tiltfile= if any of the kustomize files changes.
+Finally, the Kubernetes resources to deploy are configured in the =TiltFile=, and we set a watcher to rerun it when any of the kustomize files change.
 
 #+BEGIN_SRC python
 k8s_yaml(kustomize('deployment/overlays/dev'))
@@ -3871,7 +3871,7 @@ k8s_yaml(kustomize('deployment/overlays/dev'))
 watch_file('deployment/')
 #+END_SRC
 
-Tilt has built in support for kustomize so we use =kustomize('deployment/overlays/dev')= to render the =dev= overlay and pass to =k8s_yaml= which tells Tilt what Kubernetes resources to deploy and track.
+Tilt has built-in support for kustomize so we use =kustomize('deployment/overlays/dev')= to render the =dev= overlay and pass to =k8s_yaml= which tells Tilt what Kubernetes resources to deploy and track.
 
 The important differences from the =base= overlay in the =dev= overlay's =kustomization.yaml= is the inclusion of the Postgres kustomize resources and a patch that is merged on the =base= resources:
 
@@ -3907,7 +3907,7 @@ spec:
         args: ["-c", "cp /app/sql/* /flyway/sql"]
 #+END_SRC
 
-This patch changes the image name in the =Job= resource to =service_discovery_sql=, the same name as the first =custom_build= image in the =Tiltfile=. Tilt will update the image with the latest tag, which it sets as =$EXPECTED_REF= in the environment of the Docker build command in =custom_build=, and rerun the =Job=. This way while =service_discovery= is running in the local Kubernetes if a new migration is added it will automatically be picked up and run on the database, keeping our development cluster in sync with our local development.
+This patch changes the image name in the =Job= resource to =service_discovery_sql=, the same name as the first =custom_build= image in the =Tiltfile=. Tilt will update the image with the latest tag, which it sets as =$EXPECTED_REF= in the environment of the Docker build command in =custom_build=, and reruns the =Job=. This way while =service_discovery= is running in the local Kubernetes if a new migration is added it will automatically be picked up and run on the database, keeping our development cluster in sync with our local development.
 
 After running =tilt=:
 
