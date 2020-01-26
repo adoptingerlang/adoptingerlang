@@ -3535,7 +3535,7 @@ There are a few open source options for working with Kubernetes resources. The t
 #+begin_admonition
 <p>Even if Helm is not used for deployment of your project itself it can still be useful for deployment of dependencies. There are a lot of <a href="https://github.com/helm/charts">Helm Charts</a> available and is likely how you would want to offer your project to the outside world if it was not simply for internal usage.</p>
 
-<p>There were a number of issues with Helm aside from the templating that we won't get into here, except to say that they are being worked out in the next major release, <a href="https://v3.helm.sh/">Helm v3</a>. As of this writing in November 2019 has release candidates available. So I would still suggest taking a look at the latest offering from Helm.</p>
+<p>There were a number of issues with Helm aside from the templating that we won't get into here, except to say that they are being worked out in the latest major release, <a href="https://v3.helm.sh/">Helm v3</a>, that had its first stable release in November 2019. So I would still suggest taking a look at the latest offering from Helm for yourself.</p>
 #+end_admonition
 
 [[https://kustomize.io/][Kustomize]] is a =kubectl= built-in tool (as of v1.14.0) that provides a template-free way to customize Kubernetes YAML resources. We will use it to create different configurations for various environments, starting with a development environment, =dev=, which will then be used in the next section, [[Tilt for Local Development]], to run =service_discovery= locally.
