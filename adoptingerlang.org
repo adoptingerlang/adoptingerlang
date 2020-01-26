@@ -3212,13 +3212,13 @@ With containers and Kubernetes we have common methods of deployment, discovery, 
 
 *** Running Kubernetes
 
-In order to develop and test the Kubernetes deploy, we will need to run Kubernetes locally for testing purposes, and then briefly discuss options for production deployments.
+In order to develop and test the Kubernetes deploy, we will need to run Kubernetes locally for testing purposes. The following sections were written with [[https://microk8s.io/][microk8s]] as the local test Kubernetes but should work on any of the local or cloud options for running Kubernetes. When necessary to give specific instructions around local testing, =microk8s= will be used. Instructions for Continuous Integration and deployment to production will use Google Kubernetes Engine. But the majority of the content should work easily with any of the offerings in the following two sections.
 
 **** Locally
 
 - [[https://microk8s.io/][microk8s]]: An offering from the company behind Ubuntu, Canonical, but runs on many [[https://snapcraft.io/docs/installing-snapd][Linux distros]], [[https://multipass.run/#install][Windows]] and [[https://multipass.run/#install][MacOS]]. microk8s is simple to install and get started with, and it runs locally, not within a VM like minikube, so is less of a resource hog.
 - [[https://github.com/kubernetes/minikube][minikube]]: The oldest and most flexible option, that is also now an official part of the Kubernetes project. =minikube= offers support for various hypervisors and has an option to run without creating a new virtual machine, but it still suggests doing so within a Linux VM.
-- [[https://snapcraft.io/docs/installing-snapd][k3s]] and [[https://github.com/rancher/k3d][k3d]]: k3s is lightweight Kubernetes from [[https://rancher.com/][Rancher Labs]]. k3s removes legacy and non-default features to cut down on size and replaces etcd with SQLite3, making k3s a good option for CI and local testing. k3d is a helper for running k3s in Docker.
+- [[https://k3s.io/][k3s]] and [[https://github.com/rancher/k3d][k3d]]: k3s is lightweight Kubernetes from [[https://rancher.com/][Rancher Labs]]. k3s removes legacy and non-default features to cut down on size and replaces etcd with SQLite3, making k3s a good option for CI and local testing. k3d is a helper for running k3s in Docker.
 - [[https://kind.sigs.k8s.io/][kind]]: Kubernetes in Docker is a projected backed by a [[https://github.com/kubernetes-sigs][Kubernetes SIG]] for running Kubernetes in Docker originally for testing Kubernetes itself.
 - [[https://docs.docker.com/docker-for-mac/#kubernetes][Docker for Mac Kubernetes]]: The easiest to get going with when running on MacOS.
 
