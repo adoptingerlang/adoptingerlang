@@ -3548,19 +3548,17 @@ deployment
 ├── base
 │   ├── default.env
 │   ├── deployment.yaml
+│   ├── init_validation.yaml
 │   ├── kustomization.yaml
 │   ├── namespace.yaml
 │   └── service.yaml
 ├── overlays
 │   ├── dev
 │   │   ├── dev.env
-│   │   ├── flyway_job_patch.yaml
 │   │   └── kustomization.yaml
 │   └── stage
 │       ├── kustomization.yaml
 │       └── stage.env
-├── patches
-│   └── init_migrations.yaml
 └── postgres
     ├── flyway-job.yaml
     ├── kustomization.yaml
@@ -3639,7 +3637,8 @@ With Kustomize's =configMapGenerator= we can declare that the =ConfigMap= be gen
 #+BEGIN_SRC yaml
 configMapGenerator:
 - name: configmap
-  env: dev.env
+  envs:
+  - dev.env
 #+END_SRC
 
 The content of =dev.env= is:
@@ -3684,7 +3683,7 @@ This command will generate the resources based on the =dev= overlay and apply th
 
 **** Jobs
 
-A Kubernetes =Job= creates one or more =Pods= and runs them until the specified number of them complete successfully. In the case of database migrations for =service_discovery= the =Job= is one =Pod= with a container running [[https://flywaydb.org/][Flyway]] sharing a =Volume= with an =initContainer= which copies over the =SQL= files from the image of =service_discovery= being deployed.
+A Kubernetes =Job= creates one or more =Pods= and runs them until the specified number of them complete successfully. In the case of database migrations for =service_discovery= the =Job= is one =Pod= with a container running [[https://flywaydb.org/][Flyway]] sharing a =Volume= with an =initContainer= which copies over the =SQL= files from the image of =service_discovery= being deployed. Being =initContainers= means they must all run to completion and succeed (finish with a status code of 0) before the main containers of the =Pod= are started. So before =flyway migrate= can be run by the main container of the =Job='s =Pod= the container with the migrations, it is actually the same image with the full =service_discovery= release we use to run the =Deployment=, must have successfully copied the migration to the shared =Volume= under directory =/flyway/sql=:
 
 #+BEGIN_SRC yaml
 apiVersion: batch/v1
@@ -3737,7 +3736,9 @@ Since the =ttlSecondsAfterFinished= options is still an alpha feature and requir
 
 An advantage of running the =Job= separately from the main =kubectl apply= is the deployment can be stopped if the =Job= failed.
 
-**** Init Containers
+**** Validating the Migration
+
+If we want to be sure our =service_discovery= container does not start until the database has been successfully migrated the =flyway= command =validate= can be used. The container running =flyway validate= will succeed once the database it is checking has run all the migrations. The resulting container setup is essentially the same as in the last section when we did the migrations, but instead of =migrate= the command is =validate= and both the =flyway= container and the container copying the migrations to the shared volume are =initContainers= in this case:
 
 #+BEGIN_SRC yaml
 apiVersion: apps/v1
@@ -3753,6 +3754,14 @@ spec:
         emptyDir:
           medium: Memory
       initContainers:
+      - name: service-discovery-sql
+        image: service_discovery
+        volumeMounts:
+          - name: migrations
+            mountPath: /flyway/sql
+        command: ["/bin/sh"]
+        args: ["-c", "cp /opt/service_discovery/sql/* /flyway/sql"]
+
       - args:
         - "-url=jdbc:postgresql://$(POSTGRES_SERVICE):5432/discovery"
         - -user=discovery
@@ -3764,15 +3773,9 @@ spec:
         volumeMounts:
         - name: migrations
           mountPath: /flyway/sql
-
-      - name: service-discovery-sql
-        image: service_discovery-sql
-        volumeMounts:
-          - name: migrations
-            mountPath: /flyway/sql
-        command: ["/bin/sh"]
-        args: ["-c", "cp /opt/service_discovery/sql/* /flyway/sql"]
 #+END_SRC
+
+Each init container is run in order to completion before the next is started, which makes the order in this case very important. If the container which copies the migration files to =/flyway/sql= were not first in the list of =initContainers=, and required by Kubernetes to run to successful completion before the next container is started, the migrations would not be copied to the volume before =flyway= is run.
 
 *** Tilt for Local Development
 
