@@ -3363,7 +3363,7 @@ env:
       divisor: 1
 #+END_SRC
 
-The =fieldRef= =status.podIP= will return the current Pod's IP when it is created and the =resourceFieldRef= of =limits.cpu= with a =divisor= of =1= will return the CPU limit in a unit of CPU cores.
+The =status.podIP= declaration under =fieldRef= will return the current Pod's IP when it is created and the =resourceFieldRef= of =limits.cpu= with a =divisor= of =1= will return the CPU limit in a unit of CPU cores.
 
 The user-defined environment variables like =LOGGER_LEVEL= can be better tracked in a Kubernetes resource specifically for configuration called a =ConfigMap=. A =ConfigMap= contains key-value pairs and can be populated from files, directories of files or literal values. Here we will use a literal value to set =LOGGER_LEVEL= to =error=:
 
