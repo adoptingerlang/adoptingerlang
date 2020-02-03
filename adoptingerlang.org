@@ -3288,7 +3288,7 @@ First, the =Pod= metadata sets the label to match with the =selector= from the =
 
 #+attr_shortcode: danger "The Zombie Killer!"
 #+begin_admonition
-<p>The issue of zombie processes (processes who exit but their PID sticks around because the parent hasn't called <code>wait()</code>) discussed in the <a href="/docs/production/docker/#running-a-container">Docker chapter</a> applies to running containers with Kubernetes as well. One way to protect against them, and the one used in the <code>service_discovery</code> project is to use a shared process namespace between containers in the Pod.</p>
+<p>The issue of zombie processes (processes who exit but their PID sticks around because the parent hasn't called <code>wait()</code>) discussed in the <a href="/docs/production/docker/#running-a-container">Docker chapter</a> applies to running containers with Kubernetes as well. One way to protect against them, and the one used in the <code>service&#95;discovery</code> project is to use a shared process namespace between containers in the Pod.</p>
 
 <p>This is done with <code>shareProcessNamespace: true</code> in the Pod spec. This setting means the process started in the container will not be PID 1. Instead, PID 1 is the Kubernetes <a href="https://github.com/kubernetes/kubernetes/tree/master/build/pause">pause container</a>. The pause container is always the parent container in a Pod but with this setting, making it PID 1 for all processes in the Pod, it is able to reap zombies processes that might result from any container in the Pod.</p>
 
@@ -3325,11 +3325,11 @@ In order to disable the scheduler busy waiting and to set the number of schedule
 +S ${SCHEDULERS}
 #+END_SRC
 
-#+attr_shortcode: note "OTP-23"
+#+attr_shortcode: note "Upcoming in OTP-23"
 #+begin_admonition
 <p>With OTP-23, coming out in 2020, the Erlang VM will be "container aware" and will handle setting the proper number of active schedulers automatically. Meaning the <code>+S</code> argument will eventually be unneeded for the simple case of having the number of active schedulers equal the container's CPU limit.</p>
 
-<p>Additionally, <code>+sbwt</code> will default to <code>very_short</code>. This is an improvement but it is likely you still want to set the value to <code>none</code> when running in Kubernetes, or similar environment. But, as always is the case, be sure to benchmark to find the optimal value for your particular workload.</p>
+<p>Additionally, <code>+sbwt</code> will default to <code>very&#95;short</code>. This is an improvement but it is likely you still want to set the value to <code>none</code> when running in Kubernetes, or similar environment. But, as always is the case, be sure to benchmark to find the optimal value for your particular workload.</p>
 #+end_admonition
 
 
