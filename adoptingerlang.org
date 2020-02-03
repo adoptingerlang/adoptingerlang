@@ -3402,8 +3402,6 @@ Now all the variables defined in the ConfigMap will be added to the container wi
 Updating a value in a <code>ConfigMap</code> will <b>not</b> trigger the <code>Deployments</code> that have references to the <code>ConfigMap</code> to restart their containers with the new environment variables. Instead, the way to update the containers when the configuration changes is to create a new <code>ConfigMap</code> with the necessary changes and a new name, then modify the name of the <code>ConfigMap</code> referenced by the <code>Deployment</code> under <code>configMapRef</code>. The old <code>ConfigMaps</code> will eventually be garbage collected by Kubernetes since they are not referenced anywhere and the <code>Deployment</code> will recreate its <code>Pods</code> with the new configuration.
 #+end_admonition
 
-[TODO: show how to have a crashdump saved to a persistent volume]
-
 **** Init Containers
 
 Our release of =service_discovery= depends on a Postgres database for storing state, to ensure the database is properly setup before running our containers we will use an [[https://kubernetes.io/docs/concepts/workloads/pods/init-containers/][Init Container]]. Each =Init Container= is a container that runs to completion before any of the main containers in a Pod are run. The database migration tool =flyway= we are using for running migrations is used to validate the database is up to date before allowing the main containers to run:
@@ -3923,8 +3921,6 @@ Tilt will also automatically open a page in the browser showing the same informa
 
 [[./static/img/tilt-webui.png]]
 
-TODO: show getting the IP from Tilt UI instead of kubectl
-
 Using =kubectl= the IP of =service_discovery= can be found:
 
 #+BEGIN_SRC shell
@@ -3958,6 +3954,7 @@ Coming soon...
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 *** Remote access
+*** How to have a crashdump saved to a persistent volume
 *** Metrics
 **** VM
 **** Libraries
