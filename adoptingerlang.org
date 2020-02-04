@@ -3200,7 +3200,7 @@ In this chapter we built images for our service and finished off by creating a C
 #+END_EXPORT
 
 ** DONE Kubernetes
-CLOSED: [2020-01-05 Sun 09:06]
+CLOSED: [2020-02-04 Tue 10:21]
 :PROPERTIES:
 :EXPORT_FILE_NAME: kubernetes
 :EXPORT_HUGO_MENU: :menu main :parent production
@@ -3573,8 +3573,6 @@ kind: Kustomization
 namespace: service-discovery
 commonLabels:
   app: service-discovery
-commonAnnotations:
-  oncallPager: 800-555-1212
 resources:
 - namespace.yaml
 - deployment.yaml
