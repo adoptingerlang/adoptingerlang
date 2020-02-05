@@ -4094,7 +4094,7 @@ Term ordering: =number < atom < reference < fun < port < pid < tuple < map < nil
 %% You can "import" functions from another module, but
 %% for clarity's sake (and because there's no namespaces)
 %% nobody really does that
--include(module, [y/0]).
+-import(module, [y/0]).
 
 %% .hrl files contain headers, and are imported directly
 %% within the module.
