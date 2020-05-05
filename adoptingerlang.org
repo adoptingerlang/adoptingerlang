@@ -2149,17 +2149,17 @@ Name = "James",
 The final data structure here looks like =[<<"Good Morning">>, ", ", "James", 33]= which is a mixed list containing binary subsections, literal codepoints, strings, or other IoData structures. But the VM mechanisms all support handling it as if it were a flat binary string: The IO systems (both network and disk access), and the modules named in the previous section all seamlessly handle this string as =Good Morning, James!= with full Unicode support.
 
 
-So while you can't mutate strings, you can append and match a bunch of them in constant time, no matter the type they initially had. This has interesting implications if you're writing libraries that do string handling. For example, if I want to replace all instances of =&= by =&amp;=, and I started with =<<"https://example.org/?abc=def&ghi=jkl"/ut8>>=, I might instead just return the following linked list:
+So while you can't mutate strings, you can append and match a bunch of them in constant time, no matter the type they initially had. This has interesting implications if you're writing libraries that do string handling. For example, if I want to replace all instances of =&= by =&amp;=, and I started with =<<"https://example.org/?abc=def&ghi=jkl"/utf8>>=, I might instead just return the following linked list:
 
 #+NAME: url_sublists
 #+BEGIN_SRC erlang
 % a list
 [%% a slice of the original unmutated URL
- <<"https://example.org/?abc=def">>,
+ <<"https://example.org/?abc=def"/utf8>>,
  %% a literal list with the replacement content
  "&amp;amp",
  %% the remaining sub-slice
- <<"ghi=jkl">>
+ <<"ghi=jkl"/utf8>>
 ]
 #+END_SRC
 
