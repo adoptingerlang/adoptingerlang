@@ -4054,7 +4054,7 @@ Identify people who have prior knowledge of functional languages; they won't kno
 
 Have everyone do bits of development and getting used to the feel of the language, getting involved with things in the community, and leverage the code already existing out there. Here are a few ideas:
 
-- look into existing code, and do a show-and-tell of various libraries and their approaches; dig to figure out how they are structured.
+- look into existing code, and do a show-and-tell of various libraries and their approaches; dig in to figure out how they are structured.
 - if you can't figure out why an open-source library does what it does, feel free to ask their authors in an issue, or people on slack, mailing lists, or a forum. Get the real answer, and show it out there
 - do code reviews on the code you have written, where the main objective is everyone discussing some things where you (so far) had not had agreements. This may include syntax and alignment, but will more likely include things like just how much do you document, the better testing approaches you'd prefer to normalize on, and so on.
 - when you get stumped, have a quick chat to figure out what approaches are possible to work around issues, what you will do to experiment, and finally figure out how to make a decision to move ahead.
