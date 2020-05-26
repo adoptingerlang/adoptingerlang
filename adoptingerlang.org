@@ -3991,7 +3991,7 @@ No business works only with code; it is way more frequent to hear about projects
 </div>
 #+END_EXPORT
 
-** DONE Who to Put on The Team
+** TODO Who to Put on The Team
 :PROPERTIES:
 :EXPORT_FILE_NAME: on_the_team
 :EXPORT_HUGO_MENU: :menu main :parent team-building
