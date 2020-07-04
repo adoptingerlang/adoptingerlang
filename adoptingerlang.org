@@ -647,7 +647,7 @@ In this chapter, we'll cover the Erlang virtual machine and the core concepts of
 
 The foundational block for everything is the Erlang virtual machine itself, called BEAM. BEAM is technically a single implementation of the Erlang virtual machine, as there could be others. For example, Erllvm is an implementation over LLVM (using some custom patches to make everything possible), and an older implementation in the 90s was called JAM. The Erlang VM is implemented in C, and contains a lot of fancy stuff: schedulers to run processes, garbage collection, memory allocators, a timer wheel for events, a bunch of smart switches to abstract over operating system features and provide unified interfaces (such as over time management, file-handling drivers, and so on), a few built-in functions that go faster than what Erlang can do on its own (BIFs) and an interface for functions implemented natively in other languages (NIFs) along with special schedulers for them. There's obviously a lot more, but you can think of all that stuff the way you would with the kernel in BSD or Linux: low level stuff that you need in order to build fancier stuff.
 
-If all you have is the virtual machine with nothing else, you can't run Erlang code. You don't have a standard library, you don't have libraries to even load code. To get it all going, there's some tricky bootstrapping going on that we don't need to understand. Just know that there's a limited set of pre-loaded Erlang modules that ship with the virtual machine, and those can be used to set up networking and file-handling stuff that allows to further load and run modules. If you're interested in knowing more though, please consult [[https://happi.github.io/theBeamBook/][The BEAM Book]] or [[http://beam-wisdoms.clau.se/en/latest/][BEAM Wisdoms]].
+If all you have is the virtual machine with nothing else, you can't run Erlang code. You don't have a standard library, you don't have libraries to even load code. To get it all going, there's some tricky bootstrapping going on that we don't need to understand. Just know that there's a limited set of pre-loaded Erlang modules that ship with the virtual machine, and those can be used to set up networking and file-handling stuff, which is in turn used to further load and run modules. If you're interested in knowing more though, please consult [[https://happi.github.io/theBeamBook/][The BEAM Book]] or [[http://beam-wisdoms.clau.se/en/latest/][BEAM Wisdoms]].
 
 If you take the virtual machine and the pre-loaded stuff, along with all the little utilities that make code-loading possible, you have what is essentially called the _Erlang Run-Time System_ (ERTS). The Run-Time System, when starting, follows the instructions of a thing called a _boot script_ (which nobody writes by hand) that specifies what to start.
 
@@ -1018,7 +1018,7 @@ We'll see how to do this in a moment, but first, let's review how supervisors wo
 
 *** What's in a Supervisor
 
-Supervisors are one of the simplest behaviours in all of Erlang/OTP on the surface. They take a single =init/1= callback, and that's about it. The callback allows to define the children of each supervisor, and some basic policies in how they react to failures of many kind.
+Supervisors are one of the simplest behaviours in all of Erlang/OTP on the surface. They take a single =init/1= callback, and that's about it. The callback is used to define the children of each supervisor, and to configure some basic policies in how they react to failures of many kind.
 
 There are 3 types of policies to handle:
 
@@ -2079,7 +2079,7 @@ If you edit the text in a text editor that traditionally has good support for lo
 
 This means that no matter which programming language you are using, if strings look like arrays where you can grab "characters" by position or through some index, you are likely to have serious problems.
 
-Worse than this, some "characters" have more than one acceptable encoding in Unicode. The character =é= can be created by encoding a single code point (=U+00E9=), or as the letter =e= (=U+0065=) followed by =´= (=U+0301=). This will logically be the same letter =é= in French, but two strings using the two different forms will not compare equal. Unicode therefore introduces concepts such as [[http://unicode.org/reports/tr15/][Normalization]], which allows to standardize the representation of strings according to four possible standards: NFC, NFD, NFKC, and NFKD (if you don't know which one to use, stick to NFC).
+Worse than this, some "characters" have more than one acceptable encoding in Unicode. The character =é= can be created by encoding a single code point (=U+00E9=), or as the letter =e= (=U+0065=) followed by =´= (=U+0301=). This will logically be the same letter =é= in French, but two strings using the two different forms will not compare equal. Unicode therefore introduces concepts such as [[http://unicode.org/reports/tr15/][Normalization]], which specifies how to coerce the representation of strings according to four possible standards: NFC, NFD, NFKC, and NFKD (if you don't know which one to use, stick to NFC).
 
 Sorting strings also introduces concepts such as [[http://unicode.org/reports/tr10/][Collations]], which require knowing the current language being used when sorting.
 
@@ -2214,7 +2214,7 @@ This means that it is to be expected that the time on your computer might just j
 
 **** Handling Time in Erlang
 
-The way your computer handles time is based on the previously mentioned clocks that simply increment by counting microseconds or milliseconds (depending on hardware and operating systems). To represent time in units that makes sense to us humans, a conversion is done from some _epoch_ (an arbitrary starting point) to some time standard (UTC). Because computer clocks drift and shift with time, an _offset_ value is kept that allows to correct the local ever-increasing clock so that it makes sense to people. This is usually all hidden, and unless you know where to look, you won't know it happens.
+The way your computer handles time is based on the previously mentioned clocks that simply increment by counting microseconds or milliseconds (depending on hardware and operating systems). To represent time in units that makes sense to us humans, a conversion is done from some _epoch_ (an arbitrary starting point) to some time standard (UTC). Because computer clocks drift and shift with time, an _offset_ value is kept that enables correcting the local ever-increasing clock so that it makes sense to people. This is usually all hidden, and unless you know where to look, you won't know it happens.
 
 Erlang's runtime system uses the same kind of mechanisms, but makes them explicit. It exposes two clocks:
 
@@ -4538,7 +4538,7 @@ Not all OTP behaviours are listed here, only thee most frequently-used ones.
 | Trigger | Called By | Handled By | Return | Description |
 |---------+-----------+------------+--------+-------------|
 | =application:start/1-2= | client or booting VM | =start(Type, Args)= | <code>{ok, pid()} \vert {ok, pid(), State}</code> | should start the root supervisor |
-| ={start_phases, [{Phase, Args}]}= in app file | =kernel= booting the app | =start_phase(Phase, Type, Args)= | <code>ok \vert {error, Reason}</code> | Optional. Allows to isolate specific steps of initialization |
+| ={start_phases, [{Phase, Args}]}= in app file | =kernel= booting the app | =start_phase(Phase, Type, Args)= | <code>ok \vert {error, Reason}</code> | Optional. Can isolate specific steps of initialization |
 | =application:stop/1= | app shutting down | =prop_stop(State)= | =State= | Optional. Called before the supervision tree is shut down |
 | =application:stop/1= | app shutting down | =stop(State)= | =term()= | called once the app is done running to clean things up |
 | Hot code update | SASL's release handler | =config_change(Changed::[{K,V}], New::[{K,V}], Removed::[K])= | =ok= | Called after a hot code update using the VM's relup functionality, if the configuration values changed |
@@ -4557,9 +4557,9 @@ Not all OTP behaviours are listed here, only thee most frequently-used ones.
 | =gen_server:call/2-3= | client | =handle_call(Msg, From, State)= | <code>{Type::reply \vert noreply, State [, Option]} \vert {stop, Reason [, Reply], State}code> | Request/response pattern. A message is received and expects an answer |
 | =gen_server:cast/2= | client | =handle_cast(Msg, State)= | <code>{noreply, State [, Option]} \vert {stop, Reason, State}</code> | Information sent to the process; fire and forget |
 | =Pid ! Msg= | client | =handle_info(Msg, State)= | same as =handle_cast/2= | Out-of-band messages, including monitor signals and ='EXIT'= messages when trappig exit |
-| Setting an =Option= value to ={continue, Val}= | the server itself | =handle_continue(Val, State)= | same as =handle_cast/2= | Allows to break longer operations into triggerable internal events |
+| Setting an =Option= value to ={continue, Val}= | the server itself | =handle_continue(Val, State)= | same as =handle_cast/2= | Used to break longer operations into triggerable internal events |
 | =gen_server:stop/1,3= | client or supervisor | =terminate(Reason, State)= | =term()= | Called when the process is shutting down willingly or through errors. If the process does not trap exits, this callback may be omitted |
-| =sys:get_status/2-3=, crash logs | client, the server itself | <code>format_status(normal \vert terminate, [PDict, State])</code> | =[{data, [{"State", Term}]}]= | Allows to add or remove information that would make it to debugging calls or error logs |
+| =sys:get_status/2-3=, crash logs | client, the server itself | <code>format_status(normal \vert terminate, [PDict, State])</code> | =[{data, [{"State", Term}]}]= | Used to add or remove information that would make it to debugging calls or error logs |
 | N/A | supervisor | =code_change(OldVsn, State, Extra)= | ={ok, NewState}= | called to update a stateful process if the proper instructions are given during a hot code upgrade with releases |
 
 **** gen_statem
@@ -4571,7 +4571,7 @@ Not all OTP behaviours are listed here, only thee most frequently-used ones.
 | =gen_statem:start_link/3-4= | supervisor | =init(Arg)= | <code>{ok, State, Data [, Actions]} \vert ignore \vert {stop, Reason}</code> | Sets the initial state and data for the state machine |
 | N/A | internal | =callback_mode()= | <code>[state_functions \vert handle_event_function [, state_enter]]</code> | Defines the type of FSM and whether entering a state triggers a special internal event |
 | =gen_statem:stop/1,3= | client or supervisor | =terminate(Reason, State, Data)= | =term()= | Called when the process is shutting down willingly or through errors. If the process does not trap exits, this callback may be omitted |
-| =sys:get_status/2-3=, crash logs | client, the server itself | <code>format_status(normal \vert terminate, [PDict, State, Data])</code> | =[{data, [{"State", Term}]}]= | Allows to add or remove information that would make it to debugging calls or error logs |
+| =sys:get_status/2-3=, crash logs | client, the server itself | <code>format_status(normal \vert terminate, [PDict, State, Data])</code> | =[{data, [{"State", Term}]}]= | Used to add or remove information that would make it to debugging calls or error logs |
 | N/A | supervisor | =code_change(OldVsn, State, Data, Extra)= | ={ok, NewState, NewData}= | called to update a stateful process if the proper instructions are given during a hot code upgrade with releases |
 
 ***** State handling and transitions
