@@ -880,7 +880,7 @@ This is essentially a metadata file that describes everything about the applicat
 
 By far, the most critical field to keep up to date in there is the =applications= tuple. It lets Erlang libraries know the order in which OTP applications must be started to work, and also allows build tools to build a dependency graph between all available OTP applications to know which to keep and which to remove from the distribution when building a release.
 
-A more subtle thing to notice is that even if what we have here is a _library_, and it therefore has no processes to run, we still have the ability to define some configuration values (see the [[/docs/development/configuration][Configuration chapter]]), and dependencies must be respected. It is possible, for example, that our library is stateless, but uses a stateful HTTP client: the Erlang VM will then need to know when your code may or may not be safe to call.
+A more subtle thing to notice is that even if what we have here is a _library_, and it therefore has no processes to run, we still have the ability to define some configuration values (to be covered in the not yet written Configuration chapter), and dependencies must be respected. It is possible, for example, that our library is stateless, but uses a stateful HTTP client: the Erlang VM will then need to know when your code may or may not be safe to call.
 
 For now, let's focus on what exactly is the difference between a stateless and a stateful application.
 
@@ -3195,7 +3195,7 @@ In this chapter we built images for our service and finished off by creating a C
 #+BEGIN_EXPORT html
 <div class="pagination">
   <div><a href="/docs/production/releases/">← Prev</a></div>
-  <div><a href="/docs/team_building/">Next →</a></div>
+  <div><a href="/docs/production/kubernetes/">Next →</a></div>
 </div>
 #+END_EXPORT
 
@@ -3987,7 +3987,7 @@ No business works only with code; it is way more frequent to hear about projects
 #+BEGIN_EXPORT html
 <div class="pagination">
   <div><a href="/docs/production">← Prev</a></div>
-  <div><a href="/docs/cheat_sheets/">Next →</a></div>
+  <div><a href="/docs/team_building/">Next →</a></div>
 </div>
 #+END_EXPORT
 
