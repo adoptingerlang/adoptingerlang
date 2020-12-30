@@ -506,9 +506,15 @@ $ rebar3 local upgrade # this can be used to update to the latest stable copy
 
 *** Configuring Editors
 
+**** Editor-agnostic (via a Language Server)
+
+A [[https://langserver.org][language server]] is an editor-agnostic solution which provides language features such as code completion, jump to definition and inline diagnostics. The [[https://erlang-ls.github.io/][Erlang LS]] language server implements those features for the Erlang programming language. It integrates with Emacs, VS Code, Sublime Text 3, Vim and probably many more text editors and IDEs which adhere to the [[https://microsoft.github.io/language-server-protocol/][LSP protocol]].
+
+To get started with Erlang LS with a specific text editor, please refer to the "editors" section of the [[https://erlang-ls.github.io/][documentation]].
+
 **** Visual Studio Code
 
-Although there exists a [[https://github.com/erlang/sourcer][language server]] with its own [[https://github.com/vladdu/vscode-erlang-lsp][extension]], they are at the time of this writing only at an experimental stage. Instead, the [[https://marketplace.visualstudio.com/items?itemName=pgourlain.erlang][Erlang extension]] by Pierrick Gourlain is recommended.
+The [[https://marketplace.visualstudio.com/items?itemName=pgourlain.erlang][Erlang extension]] by Pierrick Gourlain is recommended.
 
 To configure the extension, go to the =Preferences= and then =Settings= menu. Within the VS Code window, unroll the =Extensions= menu until the =erlang configuration= section. Make sure that all the values are right, particularly the Erlang path and the Rebar3 path. With this in place, you can mix and match all the other extensions you'd like and things should be ready to go.
 
