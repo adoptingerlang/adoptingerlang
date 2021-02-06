@@ -2,17 +2,17 @@ version: 2.1
 jobs:
   export:
     docker:
-      - image: silex/emacs:26.2-alpine
+      - image: silex/emacs:27.1-ci
     steps:
       - restore_cache:
           keys:
-            - emacs-packages-v1
+            - emacs-packages-v2
       - checkout
       - run: |
           emacs -batch adoptingerlang.org -q -l export.el
 
       - save_cache:
-          key: emacs-packages-v1
+          key: emacs-packages-v2
           paths:
             - /root/.emacs.d
 
