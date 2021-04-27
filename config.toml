@@ -4,7 +4,9 @@ title = "Adopting Erlang"
 theme = "custom"
 
 pygmentsCodeFences=true
+disableKinds=["taxonomy", "taxonomyTerm"]
 
 [params]
 BookMenuBundle="/docs/menu"
 # BookSection="chapters"
+images = ["/img/cover.png"]
