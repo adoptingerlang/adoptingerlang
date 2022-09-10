@@ -1266,7 +1266,7 @@ If, on the other hand, your database is on a remote host, you should expect the 
 
 The reconnection to the database can then be done using whatever cooldown or backoff strategy you believe is optimal, without impacting the stability of the system. It can be attempted in the initialization phase as an optimization, but the process should be able to reconnect later on if anything ever disconnects.
 
-If you expect failure to happen on an external service, do not make its presence a guarantee of your system. We're dealing with the real world here, and failure of external dependencies is always an option. 
+If you expect failure to happen on an external service, do not make its presence a guarantee of your system. We're dealing with the real world here, and failure of external dependencies is always an option.
 
 Of course, the libraries and processes that call the client will then error out if they didn't expect to work without a database. That's an entirely different issue in a different problem space, but not one that is always impossible to work around. For example, let's pretend the client is to a statistics service for Ops people—then the code that calls that client could very well ignore the errors without adverse effects to the system as a whole. In other cases, an event queue could be added in front of the client to avoid losing state when things go sour.
 
@@ -1300,7 +1300,7 @@ This is where a child's restart policy, combined with the supervisor's accepted 
 
 The temporary supervisor can be used to tolerate an acceptable restart frequency. It could say that it's normal for a worker to die every two minutes, for example. However, if we exceed this threshold, something bad is happening, and we want to stop retrying without risking to destabilize the node. The supervisor shuts down, and since it's temporary, the super-supervisor (above the square) will just stay there doing nothing.
 
-The manager can then look at whether the =sup= supervisor is alive or dead, and apply any policy it want when it comes to restarting it: use an exponential backoff, wait until a [[https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern][circuit breaker]] untrips, wait for an external service registry to say the dependent service is healthy again, or ask for user input on what to do. The manager can then ask its own parent supervisor to restart the temporary supervisor, which will then restart its own workers. 
+The manager can then look at whether the =sup= supervisor is alive or dead, and apply any policy it want when it comes to restarting it: use an exponential backoff, wait until a [[https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern][circuit breaker]] untrips, wait for an external service registry to say the dependent service is healthy again, or ask for user input on what to do. The manager can then ask its own parent supervisor to restart the temporary supervisor, which will then restart its own workers.
 
 This is one of the few _design patterns_ in Erlang. Because smart systems make stupid mistakes, we want to keep the supervisors as simple and predictable as they can be. The manager is us grafting a brain onto the supervisor, and making fancier decisions. This lets us separate policies for transient errors from policies for more major or persistent faults that can't just be dealt with through restarting.
 
@@ -1309,7 +1309,7 @@ This is one of the few _design patterns_ in Erlang. Because smart systems make s
 This pattern can be adapted however you want. The authors have, for example, used these two other variants for restart management:
 
 <ul>
-<li> Multiple supervision trees are nested into each other, each representing a worker pool for a physical device. Each physical device is allowed to fail, go offline, or lose power. The managing process would routinely compare the running subtrees to a configuration service that was off-site. It would then start all the subtrees that were missing, and shut down all those that no longer existed. This let the manager handle run-time configuration synchonisation while also handling restarts for tricky hardware failure scenarios.</li>
+<li> Multiple supervision trees are nested into each other, each representing a worker pool for a physical device. Each physical device is allowed to fail, go offline, or lose power. The managing process would routinely compare the running subtrees to a configuration service that was off-site. It would then start all the subtrees that were missing, and shut down all those that no longer existed. This let the manager handle run-time configuration synchronisation while also handling restarts for tricky hardware failure scenarios.</li>
 <li>The manager does nothing. However, the Erlang release shipped with a script that could be called by an operator. The script sent a message to the manager, asking it to restart the missing subtree. This variant was used because the subtree died only in the rarest of occasions (a whole region's storage going down) without wanting to kill the rest of the system, but upon recovery, operators could re-enable traffic that way.</li>
 </ul>
 
@@ -1324,7 +1324,7 @@ One exercise we would recommend you do is to take your system, and then draw its
 - How many crashes are too many for this supervisor?
 - If this part of the system is flat out broken, should the rest of it keep working or should we give up?
 
-Discuss these with your team. Shuffle supervisors around, adjust the strategies and policies. Add or remove supervision layers, and in some cases, add managers. 
+Discuss these with your team. Shuffle supervisors around, adjust the strategies and policies. Add or remove supervision layers, and in some cases, add managers.
 
 Repeat this exercise from time to time, and eventually do some [[https://principlesofchaos.org/][chaos engineering]] by killing Erlang processes on a running node to see if it behaves and recovers the way you think it should (you can of course do chaos engineering on entire nodes, as is more common). What you'll end up with is a fault tolerant piece of code. You will also build a team with a strong understanding of the failure semantics that are baked in their system, with a good mental model of how things should break down when they inevitably do. This is worth its weight in gold.
 
@@ -1890,7 +1890,7 @@ Tracing such a line in the sand is often a useful exercise to figure out how to 
 
 To use =service_discovery= as an example, there would technically be no strong requirement to make =service_discovery_storage= a distinct application from the main =service_discovery= application. However, we felt that it would make sense that the main application does not worry about specifics of the storage layer, whether it's generic, backed to disk, on another service, or in memory. It does not care. All that complexity and indirection can be handled in a very narrowly-defined application (=service_discovery_storage=), which can be configured with specific plugins (such as the =service_discovery_postgres= library).
 
-We simply felt that this isolation could be benificial in more clearly ensuring that the main app never gets to be concerned about storage-specific woes outside of calling them as a general abstraction. The complexity of switchable backends still exists, but has been isolated in one clearly-labelled area of the code, which we hoped would make maintenance simpler.
+We simply felt that this isolation could be beneficial in more clearly ensuring that the main app never gets to be concerned about storage-specific woes outside of calling them as a general abstraction. The complexity of switchable backends still exists, but has been isolated in one clearly-labelled area of the code, which we hoped would make maintenance simpler.
 
 In the end, the best way to structure and organize code and repositories is to pick the one you and your team finds the most effective given your current organisational context. The way we (the authors) prefer things is one way we've found to be a reasonable compromise across multiple organizations we have worked for over the last decade or so, but it might not be as effective as fully embracing what is currently provided to you.
 
@@ -2068,7 +2068,7 @@ Unicode, in a nutshell, is a set of standards about how text should be handled i
 
 Even without knowing all about Unicode, you can know _enough_ to be effective and avoiding all of the most glaring mistakes. To get started, we'll introduce a bit of terminology:
 
-- _character_: the word "character" is defined kind of vaguely in Unicode. Everytime you see the word "character", imagine that the person talking to you is using a very abstract term that can mean anything from a letter in a given alphabet, some drawings (like emojis), accents or letter modifiers (like =¸= and =c=, which becomes =ç=), control sequences (like "backspace"), and so on. It's mostly a common but inaccurate way to refer to bits of text, and you must not attach too much meaning to it. Unicode has better and exact definitions of its own.
+- _character_: the word "character" is defined kind of vaguely in Unicode. Every time you see the word "character", imagine that the person talking to you is using a very abstract term that can mean anything from a letter in a given alphabet, some drawings (like emojis), accents or letter modifiers (like =¸= and =c=, which becomes =ç=), control sequences (like "backspace"), and so on. It's mostly a common but inaccurate way to refer to bits of text, and you must not attach too much meaning to it. Unicode has better and exact definitions of its own.
 - _code point_: the Unicode standard defines all the possible basic fundamental "characters" you can have in a big list (and then some), each of which has a unique identifier. That identifier is the _code point_, often denoted =U+<hexadecimal number>=. For example, "M" has the code point =U+004D=, and ♻ has the code point =U+267B=. You can see [[https://unicode-table.com][the Unicode Table]] for the full list.
 - _encoding_: While code points are just integers that represent an index by which you can look up, this is not sufficient to represent text in programming languages. Historically, a lot of systems and programming languages used bytes (=0..255=) to represent all valid characters in a language. If you needed more characters, you had to switch languages. To be compatible with all kinds of systems, Unicode defines _encodings_, which allows people to represent sequences of code points under various schemes. _UTF-8_ is the most common one, using bytes for everything. Its representation shares the same basic structure as [[https://en.wikipedia.org/wiki/ASCII][ASCII]] or [[https://en.wikipedia.org/wiki/ISO/IEC_8859-1][Latin-1]] did, and so it became extremely popular in Latin and Germanic languages. _UTF-16_ and _UTF-32_ are two alternatives that represent on wider sequences (16 or 32 bits).
 - _code unit_: A code unit specifies the way a given code point is encoded in a given encoding. Each code point takes from 1 to 4 code units for UTF-8. For example, =F= takes only =46= as a code unit in UTF-8, =0046= in UTF-16, and =00000046= in UTF-32. By comparison, =©= has the code point =U+00A9=, but is representable as _two_ code units in UTF-8 (=C2= and =A9=), and one code unit in UTF-16 and UTF-32 (=00A9= and =000000A9= respectively).
@@ -2202,7 +2202,7 @@ If we want to be very reductionist, there are a few specific use cases for time 
 1. Knowing the duration between two given events, or "how long does something take?", which requires having a single value in a unit such as microseconds, hours, or years
 2. Placing an event on the timeline in a way we can pinpoint it and understand when it happened, or "when does something happen?", usually based on a [[https://en.wikipedia.org/wiki/ISO_8601][datetime]].
 
-Essentially those both have to do with time, but are not measured the same way. 
+Essentially those both have to do with time, but are not measured the same way.
 
 The short answer for Erlang is that you should use [[http://erlang.org/doc/man/erlang.html#monotonic_time-0][=erlang:monotonic_time/0-1=]] to calculate durations, and [[http://erlang.org/doc/man/erlang.html#system_time-0][=erlang:system_time/0-1=]] for the system time (such as a [[https://www.unixtimestamp.com/][UNIX timestamp]]). If you want to understand _why_, then you will want to read the rest of this chapter.
 
@@ -2257,7 +2257,7 @@ The last tool in the arsenal is a new type of monitor, usable to detect when the
 
 **** Time Warping
 
-If you use the previous functions in the right context, you'll almost never have a problem handling time. The only thing you have to care about now is how to handle weird cases such as the host computer going to sleep and waking up with a brand new clock, dealing with a system administrator playing with the time, having NTP force a clock forwards and backwards in time, and so on. Not caring for them can make your system behave in very weird ways. 
+If you use the previous functions in the right context, you'll almost never have a problem handling time. The only thing you have to care about now is how to handle weird cases such as the host computer going to sleep and waking up with a brand new clock, dealing with a system administrator playing with the time, having NTP force a clock forwards and backwards in time, and so on. Not caring for them can make your system behave in very weird ways.
 
 Fortunately, the Erlang VM lets you pick and choose from pre-established strategies, and as long as you stick with using the right functions at the right time (monotonic clocks for intervals and benchmarks, system time for pinpointing events in time), you can just choose whichever option you feel is more appropriate. Picking the right functions for the right use cases ensures that your code is [[http://erlang.org/doc/apps/erts/time_correction.html#Dos_and_Donts][time warp safe]].
 
@@ -2749,7 +2749,7 @@ CLOSED: [2019-09-28 Sat 09:32]
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 
-[[https://docker.com][Docker]] helped popularize Linux containers through its ease of use and registry of pre-built images, and became a word often used interchangably with "Linux container".
+[[https://docker.com][Docker]] helped popularize Linux containers through its ease of use and registry of pre-built images, and became a word often used interchangeably with "Linux container".
 
 Docker images contain multiple layers that are merged at runtime to make up the filesystem of the container. Docker creates the layers by running commands found in a =Dockerfile=, each command creates a new layer. Layers are shared between images, saving space, and can be used as a cache for speeding up the building of images. Additional space is saved, compared to other options like a virtual machine (VM), by not including the Linux kernel in the image. The size of the image is little larger than the size of the packaged Erlang release we are deploying.
 
@@ -2779,11 +2779,11 @@ $ mv buildx ~/.docker/cli-plugins/docker-buildx
 
 *** Building Images
 
-[[https://hub.docker.com/_/erlang/][Offical Erlang Docker images]] are published for each new OTP release. They include Rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of Rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for the base to your own repository, even if your repository is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability. This best practice is why in the examples to follow and the =service_discovery= repository use images from =docker.pkg.github.com/adoptingerlang/service_discovery/= and =us.gcr.io/adoptingerlang/=.
+[[https://hub.docker.com/_/erlang/][Official Erlang Docker images]] are published for each new OTP release. They include Rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of Rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for the base to your own repository, even if your repository is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability. This best practice is why in the examples to follow and the =service_discovery= repository use images from =docker.pkg.github.com/adoptingerlang/service_discovery/= and =us.gcr.io/adoptingerlang/=.
 
 **** Private Dependencies
 
-The first stumbling block many in a work environment encounter when building Docker images is access to private dependencies. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducable elsewhere, so the dependencies could be fetched with Rebar3 before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
+The first stumbling block many in a work environment encounter when building Docker images is access to private dependencies. If you have private git repos or [[https://hex.pm/docs/rebar3_private][Hex organization packages]] as dependencies they will not be able to be fetched in the Docker container during the build. Often this leads people to not include =_build= in =.dockerignore= and risk polluting the build with local artifacts, possibly not being reproducible elsewhere, so the dependencies could be fetched with Rebar3 before running =docker build=. The other option is copying the host SSH credentials and/or Hex apikey into the build container, but this is not recommended because it will be kept in the Docker layer and leaked anywhere you push the image. Instead, in recent Docker releases (18.06 and later) the abilities to mount secrets and SSH agent connections or keys in a secure manner. The data does not leak to the final image or any commands it is not explicitly mounted to.
 
 Since =service_discovery= has no private dependencies we will look at how to support them separately, before getting started with building the images for =service_discovery=.
 
@@ -2919,7 +2919,7 @@ FROM docker.pkg.github.com/adoptingerlang/service_discovery/erlang:22.1.1-alpine
 WORKDIR /app/src
 ENV REBAR_BASE_DIR /app/_build
 
-# Install git for fetching non-hex depenencies.
+# Install git for fetching non-hex dependencies.
 # Add any other Alpine libraries needed to compile the project here.
 # See https://wiki.alpinelinux.org/wiki/Local_APK_cache for details
 # on the local cache and need for the symlink
@@ -4026,7 +4026,7 @@ This should be a role of which they are fully aware, and which you discuss with 
 
 Once your team starts feeling comfortable enough on the basics, you'll be able to have your people start working on their first prototype of the system you want them to write and maintain in the long term. An interesting approach there is to actually use that first prototype as a training setup and nothing more. Everyone on board knows the prototype is not meant to reach production, and if it ever does, the first thing on the roadmap is to replace it once you have the proper experience.
 
-The prototype is important, though; by picking a problem they're familiar with, it becomes a test bed where your employees are free to experiment in order to get comfortable around the language and its peculiarities. This creates an opportunity for them to revisit their domain knowledge and to teach it to the expert, while the expert works with them to figure out how they could re-frame what they know within the context and semantics of Erlang. This will hopefully create a rapport and complicity between them, where the relationship shifts from "trainer and trainee" to just having a lot of people teaching things to eachother.
+The prototype is important, though; by picking a problem they're familiar with, it becomes a test bed where your employees are free to experiment in order to get comfortable around the language and its peculiarities. This creates an opportunity for them to revisit their domain knowledge and to teach it to the expert, while the expert works with them to figure out how they could re-frame what they know within the context and semantics of Erlang. This will hopefully create a rapport and complicity between them, where the relationship shifts from "trainer and trainee" to just having a lot of people teaching things to each other.
 
 As this prototyping work is being done, your expert should start guiding your team towards broader and more complex concepts: developing for fault tolerance (how do you structure supervision trees properly?), building and deploying OTP releases, and, finally, performance-related and production debugging concerns.
 
@@ -4240,7 +4240,7 @@ This section contains various reminders to jog your memory if you're not too fre
 | fun | anonymous function | =fun()=, =fun((ArgType) -> RetType)= | <code>fun(X) -> X end, fun F(0) -> []; F(N) -> [1 \vert F(N-1)] end</code> |
 | port | opaque type for a file descriptor | =port()= | N/A |
 | pid  | process identifier | =pid()= | =<0.213.0>= |
-| tuple | group a known set of elements | =tuple()=, ={A, B, C}= | ={celcius, 42=}, ={a, b, c}=, ={ok, {X, Y}}= |
+| tuple | group a known set of elements | =tuple()=, ={A, B, C}= | ={celsius, 42=}, ={a, b, c}=, ={ok, {X, Y}}= |
 | map  | a dictionary of terms | =map()=, ~#{KType => VType}~, ~#{specific_key := VType}~ | ~#{a => b, c => d}~, ~Existing#{key := Updated}~ |
 | nil  | an empty list | =[]= | =[]= |
 | list | recursive structure for a list of terms | =list()=, =[Type]= | =[a, b, c]=, <code>[a \vert [b \vert [c \vert []]]]</code>, ="a string is a list"= |
@@ -4359,9 +4359,9 @@ comfortable({celsius, X}) when X >= 18, X =< 26 -> % AND clauses
 comfortable({celsius, _}) ->
     false.
 
-incomfortable({celsius, X}) when X =< 18; X >= 26 -> % OR clauses
+uncomfortable({celsius, X}) when X =< 18; X >= 26 -> % OR clauses
     true;
-incomfortable({celsius, _}) ->
+uncomfortable({celsius, _}) ->
     false.
 
 %% difference with 'andalso' and 'orelse'
