@@ -837,7 +837,7 @@ mylib/
 
 The =_build/= directory is the build tool's playground, where it can stash all the artifacts it needs. You should never have to touch what is in there by hand, but should feel free to blow it away when you want. This directory is nonetheless interesting because it shows how Rebar3 structures things.
 
-Everything in =_build/= is split by [[https://www.rebar3.org/docs/profiles][profile]], which lets Rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in fact, you can define as many profiles as you want, and compose them together. The Rebar3 documentation explains how this works.
+Everything in =_build/= is split by [[https://www.rebar3.org/docs/configuration/profiles/][profile]], which lets Rebar3 build things differently (with different sets of dependencies and compiler options) whether they are built in the =default=, =test=, or =prod= profile—in fact, you can define as many profiles as you want, and compose them together. The Rebar3 documentation explains how this works.
 
 Within each profile, the =lib/= directory contains all the OTP applications that your project may use, outside of the standard distribution's libraries. You can see our =mylib= library replicated right there, but its directory structure is a bit different from what's directly at the project root:
 
@@ -1266,7 +1266,7 @@ If, on the other hand, your database is on a remote host, you should expect the 
 
 The reconnection to the database can then be done using whatever cooldown or backoff strategy you believe is optimal, without impacting the stability of the system. It can be attempted in the initialization phase as an optimization, but the process should be able to reconnect later on if anything ever disconnects.
 
-If you expect failure to happen on an external service, do not make its presence a guarantee of your system. We're dealing with the real world here, and failure of external dependencies is always an option. 
+If you expect failure to happen on an external service, do not make its presence a guarantee of your system. We're dealing with the real world here, and failure of external dependencies is always an option.
 
 Of course, the libraries and processes that call the client will then error out if they didn't expect to work without a database. That's an entirely different issue in a different problem space, but not one that is always impossible to work around. For example, let's pretend the client is to a statistics service for Ops people—then the code that calls that client could very well ignore the errors without adverse effects to the system as a whole. In other cases, an event queue could be added in front of the client to avoid losing state when things go sour.
 
@@ -1300,7 +1300,7 @@ This is where a child's restart policy, combined with the supervisor's accepted 
 
 The temporary supervisor can be used to tolerate an acceptable restart frequency. It could say that it's normal for a worker to die every two minutes, for example. However, if we exceed this threshold, something bad is happening, and we want to stop retrying without risking to destabilize the node. The supervisor shuts down, and since it's temporary, the super-supervisor (above the square) will just stay there doing nothing.
 
-The manager can then look at whether the =sup= supervisor is alive or dead, and apply any policy it want when it comes to restarting it: use an exponential backoff, wait until a [[https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern][circuit breaker]] untrips, wait for an external service registry to say the dependent service is healthy again, or ask for user input on what to do. The manager can then ask its own parent supervisor to restart the temporary supervisor, which will then restart its own workers. 
+The manager can then look at whether the =sup= supervisor is alive or dead, and apply any policy it want when it comes to restarting it: use an exponential backoff, wait until a [[https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern][circuit breaker]] untrips, wait for an external service registry to say the dependent service is healthy again, or ask for user input on what to do. The manager can then ask its own parent supervisor to restart the temporary supervisor, which will then restart its own workers.
 
 This is one of the few _design patterns_ in Erlang. Because smart systems make stupid mistakes, we want to keep the supervisors as simple and predictable as they can be. The manager is us grafting a brain onto the supervisor, and making fancier decisions. This lets us separate policies for transient errors from policies for more major or persistent faults that can't just be dealt with through restarting.
 
@@ -1324,7 +1324,7 @@ One exercise we would recommend you do is to take your system, and then draw its
 - How many crashes are too many for this supervisor?
 - If this part of the system is flat out broken, should the rest of it keep working or should we give up?
 
-Discuss these with your team. Shuffle supervisors around, adjust the strategies and policies. Add or remove supervision layers, and in some cases, add managers. 
+Discuss these with your team. Shuffle supervisors around, adjust the strategies and policies. Add or remove supervision layers, and in some cases, add managers.
 
 Repeat this exercise from time to time, and eventually do some [[https://principlesofchaos.org/][chaos engineering]] by killing Erlang processes on a running node to see if it behaves and recovers the way you think it should (you can of course do chaos engineering on entire nodes, as is more common). What you'll end up with is a fault tolerant piece of code. You will also build a team with a strong understanding of the failure semantics that are baked in their system, with a good mental model of how things should break down when they inevitably do. This is worth its weight in gold.
 
@@ -1370,21 +1370,21 @@ Some of the tricky decisions around open source work have been enshrined in Reba
 
 As such, Rebar3 has the following properties:
 
-- Rebar3 is a declarative build tool. You provide a configuration, and it executes code to satisfy that configuration. If you want to run custom scripts and extend the build, it specifically provides [[https://www.rebar3.org/docs/configuration#section-hooks][hooks]] or [[https://www.rebar3.org/docs/using-available-plugins][plugins]] interfaces to do so. There are also ways to gain [[https://www.rebar3.org/docs/dynamic-configuration][Dynamic Configuration]] to more flexibly populate config files.
+- Rebar3 is a declarative build tool. You provide a configuration, and it executes code to satisfy that configuration. If you want to run custom scripts and extend the build, it specifically provides [[https://www.rebar3.org/docs/configuration/configuration/#hooks][hooks]] or [[https://www.rebar3.org/docs/configuration/plugins/][plugins]] interfaces to do so. There are also ways to gain [[https://www.rebar3.org/docs/configuration/config_script/][Dynamic Configuration]] to more flexibly populate config files.
 - As part of that declarative approach, commands in Rebar3 are defined with dependency sequences. For example, the =rebar3 compile= task relies on =rebar3 get-deps= (or rather, a private form of it that locks dependencies), and will run it for you. The command =rebar3 tar= will implicitly call a sequence that includes =get-deps -> compile -> release -> tar= for you. Rebar3 therefore knows that to compile your project, its dependencies are needed.
 - Rebar3 defines its own working area within the =_build= directory; it expects to have control over what goes in there, and for you not to track that directory in source control nor rely on its internal structure. When it creates an artifact the user will want to use directly, it outputs the path to that artifact in the terminal. For example =rebar3 escriptize= will print the path to the generated escript in =_build/default/bin/= after each run, =rebar3 ct= prints the path to the Common Test HTML output if tests fail and =rebar3 tar= prints the path to the release tarball.
 - All projects are built locally within their own directory based on the Erlang runtime currently loaded in your environment, i.e. the =erl= found in =$PATH=.
 - All dependencies are fetched to the project's =_build= directory.
 - All dependencies can define their own dependencies, and Rebar3 will recognize this and fetch them to the root project's =_build= directory as well.
-- Since version numbers are unreliable (even with semantic versioning), we consider versions as information for humans, not build tools. In case of libraries that end up declared multiple times, the one closest to the project root is chosen, while [[https://www.rebar3.org/docs/dependencies][warnings]] are emitted during the first build (it knows it is the "first" because there is no lock for the dependency) to let the user know versions not being used, with the assumption that libraries declared closer to the root project are used more thoroughly.
+- Since version numbers are unreliable (even with semantic versioning), we consider versions as information for humans, not build tools. In case of libraries that end up declared multiple times, the one closest to the project root is chosen, while [[https://www.rebar3.org/docs/configuration/dependencies][warnings]] are emitted during the first build (it knows it is the "first" because there is no lock for the dependency) to let the user know versions not being used, with the assumption that libraries declared closer to the root project are used more thoroughly.
 - Circular dependencies are forbidden.
-- Rebar3 supports composable per-project [[https://www.rebar3.org/docs/profiles][_profiles_]] that let you segment or combine configuration settings, such as dependencies that are to only be used for tests or only in a specific environment (say on a specific target OS). There are no restrictions on the number or names of profiles, but there are four profiles, =default=, =test=, =docs=, and =prod=, which are used by Rebar3 automatically for specific tasks.
+- Rebar3 supports composable per-project [[https://www.rebar3.org/docs/configuration/profiles][_profiles_]] that let you segment or combine configuration settings, such as dependencies that are to only be used for tests or only in a specific environment (say on a specific target OS). There are no restrictions on the number or names of profiles, but there are four profiles, =default=, =test=, =docs=, and =prod=, which are used by Rebar3 automatically for specific tasks.
 - Builds are meant to be repeatable. Dependencies are locked, and only upgraded when specifically asked to. The version in =rebar.lock= takes precedence of whatever version is declared in =rebar.config= until =rebar3 upgrade= is called to update the lock file.
 - Dependencies are always built with the =prod= profile applied. Rebar3 will always check that they match the lock file and that build artifacts are present, but will not detect code changes done by hand within a dependency.
 - Rebar3 assumes that you'll sometimes need to tweak the configuration of libraries you do not control and supports [[https://www.rebar3.org/docs/configuration#section-overrides][overrides]] for this purpose.
 - The tool assumes you're developing with a source control mechanism such as =git= or =hg= (mercurial), which means that switching branches may switch dependency versions in the lock file. Since Rebar3 verifies dependencies before each build, it will automatically re-fetch libraries to get the locked version for the current branch if there is a change when switching branches.
 - To ease contribution and publishing, Rebar3 does not natively support ways to use relative paths to declare libraries, since this could make builds brittle, non-repeatable, and non-portable when publishing code.
-- Knowing relative paths are very common when making changes within the dependencies of a project, [[https://www.rebar3.org/docs/dependencies#section-checkout-dependencies][=_checkouts=]] allow for an automatic way to temporary override of a dependency with a local copy. For other use cases [[https://www.rebar3.org/docs/using-available-plugins#section-vendoring-dependencies][plugins]] allow the creation of [[https://www.rebar3.org/docs/custom-dep-resources][custom resource types]].
+- Knowing relative paths are very common when making changes within the dependencies of a project, [[https://www.rebar3.org/docs/configuration/dependencies/#checkout-dependencies][=_checkouts=]] allow for an automatic way to temporary override of a dependency with a local copy. For other use cases [[https://www.rebar3.org/docs/configuration/plugins/#recommended-plugins][plugins]] allow the creation of [[https://www.rebar3.org/docs/extending/custom_dep_resources/][custom resource types]].
 - Rebar3 is not an installer or runner of end-user applications and does not support anything related to that; it aims to generate build artifacts that you can then install through the correct dedicated channels. Rebar3 does not expect or need to ever be on a production device or server.
 - Rebar3 is not a sandbox. While it will make sure all dependencies you download match the right signatures and provides repeatable builds, it cannot guarantee that script files invoked during builds or [[https://stackoverflow.com/questions/2416192/is-there-a-good-complete-tutorial-on-erlang-parse-transforms-available][parse transforms]] run during compilation are ever going to be safe, and has no intention of taking on that responsibility. Plugins are also not locked automatically, and it is up to library authors to pin versions in cases where they impact compilation.
 
@@ -1413,7 +1413,7 @@ The following formats are valid:
 ]}.
 #+END_SRC
 
-Additionally, plugins allow to define [[https://www.rebar3.org/docs/custom-dep-resources][custom resource definitions]] that let you add new types of dependencies to projects.
+Additionally, plugins allow to define [[https://www.rebar3.org/docs/extending/custom_dep_resources/][custom resource definitions]] that let you add new types of dependencies to projects.
 
 Let's see how this would work with a project we've created specifically for this book, [[https://adoptingerlang.org/gh/servicediscovery][service_discovery]]. Open up the =rebar.config= file and you'll see:
 
@@ -1649,7 +1649,7 @@ The Rebar3 lock file is created at the root of your project, the directory from 
 
 The lock file represents the flattened tree of all dependencies as desired at the time of the build. It will not be modified unless you ask for it to be changed, or unless you delete it, forcing a new resolution to be done from scratch. This strictness is on purpose, and is part of how Rebar3 can guarantee repeatable builds under all circumstances.
 
-The hashes in the file mean that even if the dependencies are fetched by multiple layered [[https://www.rebar3.org/docs/configuration#section-hex-repos-and-indexes][mirrors]], and some malevolent person alters the packages in one or more of the various hex indices or git sources you might use, Rebar3 will be able to find that the information is not as expected, and error out because of it.
+The hashes in the file mean that even if the dependencies are fetched by multiple layered [[https://www.rebar3.org/docs/configuration/configuration/#hex-repos-and-indexes][mirrors]], and some malevolent person alters the packages in one or more of the various hex indices or git sources you might use, Rebar3 will be able to find that the information is not as expected, and error out because of it.
 
 You should, therefore, only update the lock file as required. You can do so by using the following operations:
 
@@ -1698,7 +1698,7 @@ For many years, the Elixir and Erlang road was a one way street. You could inclu
 
 The way to do it is to first install Elixir. For this you might want to follow the steps [[https://elixir-lang.org/install.html][on the official Elixir website]]. Most Elixir developers use =asdf= as a tool to manage versions. As described in [[Setup]], =kerl= options for Erlang can be used with the Erlang plugin for =asdf=, so that can give you a complete setup.
 
-With Elixir in place, add the [[https://www.rebar3.org/docs/using-available-plugins#section-elixir-dependencies][rebar_mix]] plugin to your library or project:
+With Elixir in place, add the [[https://www.rebar3.org/docs/configuration/plugins/#elixir-dependencies][rebar_mix]] plugin to your library or project:
 
 #+NAME: rebar_mix.config
 #+BEGIN_SRC erlang
@@ -1756,7 +1756,7 @@ If you work in a corporate environment with a monorepo where all private librari
 
 Various commercial users who rely on Rebar3 despite using monorepos have reported obtaining successful builds with a combination of using =_checkouts= dependencies, along with re-configuring the =_build= directory. However, we cannot recommend this approach at this time, and no official support is provided for monorepos.
 
-Another option is to vendor dependencies, which can be done through plugins such as [[https://www.rebar3.org/docs/using-available-plugins#section-vendoring-dependencies][=rebar3_path_deps=]].
+Another option is to vendor dependencies, which can be done through plugins such as [[https://www.rebar3.org/docs/configuration/plugins/#vendoring-dependencies][=rebar3_path_deps=]].
 
 With all this in place, you should be set to manage the lifecycle of your project's dependencies.
 
@@ -1863,7 +1863,7 @@ Until Rebar3 (and other tools) can manage to catch-up to monorepos, you might wa
 
 - Make one multi-app repository per larger project, such as a service or micro-service
 - All your common libraries that are shared across larger projects are maintained and published individually, and pulled in when required by specific projects
-- Use [[https://www.rebar3.org/docs/using-templates#section-plugin-templates][templates]] stored in some general [[https://www.rebar3.org/docs/plugins][plugin]] that your teammates will install globally to automate the layout and specification of services, web APIs, CI configurations, and so on
+- Use [[https://www.rebar3.org/docs/tutorials/templates/#section-plugin-templates][templates]] stored in some general [[https://www.rebar3.org/docs/configuration/plugins/][plugin]] that your teammates will install globally to automate the layout and specification of services, web APIs, CI configurations, and so on
 
 If at some point a library from a multi-app project becomes useful to other users within your organization, it becomes easy to just take it out into its own repository, publish it, and reimport it as a dependency. Similarly, orphaned libraries or forked libraries can then be maintain locally within each project.
 
@@ -2202,7 +2202,7 @@ If we want to be very reductionist, there are a few specific use cases for time 
 1. Knowing the duration between two given events, or "how long does something take?", which requires having a single value in a unit such as microseconds, hours, or years
 2. Placing an event on the timeline in a way we can pinpoint it and understand when it happened, or "when does something happen?", usually based on a [[https://en.wikipedia.org/wiki/ISO_8601][datetime]].
 
-Essentially those both have to do with time, but are not measured the same way. 
+Essentially those both have to do with time, but are not measured the same way.
 
 The short answer for Erlang is that you should use [[http://erlang.org/doc/man/erlang.html#monotonic_time-0][=erlang:monotonic_time/0-1=]] to calculate durations, and [[http://erlang.org/doc/man/erlang.html#system_time-0][=erlang:system_time/0-1=]] for the system time (such as a [[https://www.unixtimestamp.com/][UNIX timestamp]]). If you want to understand _why_, then you will want to read the rest of this chapter.
 
@@ -2257,7 +2257,7 @@ The last tool in the arsenal is a new type of monitor, usable to detect when the
 
 **** Time Warping
 
-If you use the previous functions in the right context, you'll almost never have a problem handling time. The only thing you have to care about now is how to handle weird cases such as the host computer going to sleep and waking up with a brand new clock, dealing with a system administrator playing with the time, having NTP force a clock forwards and backwards in time, and so on. Not caring for them can make your system behave in very weird ways. 
+If you use the previous functions in the right context, you'll almost never have a problem handling time. The only thing you have to care about now is how to handle weird cases such as the host computer going to sleep and waking up with a brand new clock, dealing with a system administrator playing with the time, having NTP force a clock forwards and backwards in time, and so on. Not caring for them can make your system behave in very weird ways.
 
 Fortunately, the Erlang VM lets you pick and choose from pre-established strategies, and as long as you stick with using the right functions at the right time (monotonic clocks for intervals and benchmarks, system time for pinpointing events in time), you can just choose whichever option you feel is more appropriate. Picking the right functions for the right use cases ensures that your code is [[http://erlang.org/doc/apps/erts/time_correction.html#Dos_and_Donts][time warp safe]].
 
