@@ -108,7 +108,9 @@ CLOSED: [2019-08-08 Thu 08:05]
 
 *** Tristan Sloughter
 
-Tristan is a long time Erlang programmer, having picked it up for fun while in college and then professionally for various companies, Orbitz Worldwide, eCDMarket, Heroku, SpaceTime Insight, and currently as a senior software engineer at Postmates, Inc.
+Tristan is a long time Erlang programmer, having picked it up for fun while in
+college and then professionally for various companies, Orbitz Worldwide,
+eCDMarket, Heroku, SpaceTime Insight, Postmates and currently as a senior software engineer at Splunk.
 
 While at Heroku, Tristan, along with Fred, started the build tool Rebar3 after seeing the struggles involved in onboarding new developers to Erlang projects. He is also a maintainer of the release tool Relx.
 
