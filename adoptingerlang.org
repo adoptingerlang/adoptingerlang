@@ -123,7 +123,7 @@ Tristan also created the website [[https://howistart.org/][How I Start]] which c
 
 Fred is the author of [[https://learnyousomeerlang.com][_Learn You Some Erlang_]], [[https://erlang-in-anger.com][_Erlang in Anger_]], and more recently, [[https://propertesting.com][_Property-Based Testing with PropEr, Erlang, and Elixir_]]. He is a maintainer of Rebar3, and of libraries such as recon, pobox, vmstats, and backoff.
 
-He is a senior infrastructure developer at Honeycomb. Previously, he was a Systems Architect at Genetec, a company offering video systems, access control, case management, and IoT integration systems, and was also a principal member of technical staff on the Heroku platform, worked in real-time bidding, and provided Erlang training.
+He is a Staff SRE at Honeycomb, helping with systems reliability, incident response, and tooling. He previously held various senior and staff roles on engineering teams as a software developer most often working with Erlang at companies such as Postmates, Genetec, and Heroku.
 
 - [[https://twitter.com/mononcqc][@mononcqc]]
 - [[https://ferd.ca][blog]]
