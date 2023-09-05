@@ -3,10 +3,10 @@
   command = "hugo --gc --minify"
 
 [context.production.environment]
-  HUGO_VERSION = "0.59"
+  HUGO_VERSION = "0.111.2"
 
 [context.deploy-preview.environment]
-  HUGO_VERSION = "0.59"
+  HUGO_VERSION = "0.111.2"
 
 [[headers]]
   for = "/img/*"

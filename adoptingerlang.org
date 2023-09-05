@@ -39,7 +39,7 @@ CLOSED: [2019-08-08 Thu 08:05]
 :EXPORT_FILE_NAME: _index
 :EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Introduction"
-:EXPORT_HUGO_MENU: :menu main :weight 1001
+:EXPORT_HUGO_MENU: :menu main :weight 1001 :identifier introduction
 :END:
 
 #+BEGIN_EXPORT html
@@ -163,7 +163,7 @@ CLOSED: [2019-08-08 Thu 08:05]
 :EXPORT_FILE_NAME: _index
 :EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Development"
-:EXPORT_HUGO_MENU: :menu main :weight 2001
+:EXPORT_HUGO_MENU: :menu main :weight 2001 :identifier development
 :END:
 
 #+BEGIN_EXPORT html
@@ -2304,7 +2304,7 @@ CLOSED: [2019-08-08 Thu 08:05]
 :EXPORT_FILE_NAME: _index
 :EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Production"
-:EXPORT_HUGO_MENU: :menu main :weight 3001
+:EXPORT_HUGO_MENU: :menu main :weight 3001  :identifier production
 :END:
 
 #+BEGIN_EXPORT html
@@ -3978,7 +3978,7 @@ CLOSED: [2019-08-08 Thu 08:06]
 :EXPORT_FILE_NAME: _index
 :EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Team Building"
-:EXPORT_HUGO_MENU: :menu main :weight 4001
+:EXPORT_HUGO_MENU: :menu main :weight 4001 :identifier team_building
 :END:
 
 #+BEGIN_EXPORT html
@@ -4002,7 +4002,7 @@ No business works only with code; it is way more frequent to hear about projects
 ** DONE Who to Put on The Team
 :PROPERTIES:
 :EXPORT_FILE_NAME: on_the_team
-:EXPORT_HUGO_MENU: :menu main :parent team-building
+:EXPORT_HUGO_MENU: :menu main :parent team_building
 :END:
 
 In this chapter, we'll look into the best ways to set up your team for success when getting started. We're not talking about tools, but rather about who is going to be on that team. Don't worry, you shouldn't need to fire or replace anyone; however, you'll have to create expertise in a new area where you currently have little.
@@ -4091,7 +4091,7 @@ With these broad lines covered, we can start exploring the processes and practic
 ** TODO Processes
 :PROPERTIES:
 :EXPORT_FILE_NAME: processes
-:EXPORT_HUGO_MENU: :menu main :parent team-building
+:EXPORT_HUGO_MENU: :menu main :parent team_building
 :END:
 
 *** Code Reviews
@@ -4102,7 +4102,7 @@ With these broad lines covered, we can start exploring the processes and practic
 ** TODO How To Hire
 :PROPERTIES:
 :EXPORT_FILE_NAME: how_to_hire
-:EXPORT_HUGO_MENU: :menu main :parent team-building
+:EXPORT_HUGO_MENU: :menu main :parent team_building
 :END:
 
 *** It Takes One to Know One
@@ -4112,7 +4112,7 @@ With these broad lines covered, we can start exploring the processes and practic
 ** DONE How to Do Polyglot Right
 :PROPERTIES:
 :EXPORT_FILE_NAME: how_to_polyglot
-:EXPORT_HUGO_MENU: :menu main :parent team-building
+:EXPORT_HUGO_MENU: :menu main :parent team_building
 :END:
 
 You're adopting Erlang; unless you're a new company with no existing code base, that means that you're planning to become a polyglot organisation. Even if your roadmap plans for a total replacement of all existing code, there will be a transition period during which you will have to be polyglot. Therefore, you should plan to properly support polyglot workflows.
@@ -4212,7 +4212,7 @@ In short, let's focus on how people learn and help them do it, rather than prete
 ** TODO Selling and Defending Erlang
 :PROPERTIES:
 :EXPORT_FILE_NAME: selling_and_defending
-:EXPORT_HUGO_MENU: :menu main :parent team-building
+:EXPORT_HUGO_MENU: :menu main :parent team_building
 :END:
 
 Just adding notes:
@@ -4223,9 +4223,26 @@ also https://twitter.com/mononcqc/status/1265295824092893185
 
 * Appendix 1: Erlang/OTP Cheat Sheets
 :PROPERTIES:
-:EXPORT_FILE_NAME: cheat_sheets
+:EXPORT_HUGO_SECTION: docs/cheat_sheets
+:END:
+
+** DONE Index
+CLOSED: [2019-08-08 Thu 08:06]
+:PROPERTIES:
+:EXPORT_FILE_NAME: _index
+:EXPORT_HUGO_FRONT_MATTER_KEY_REPLACE: title>label
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER: :title "Appendix 1: Erlang/OTP Cheat Sheets"
 :EXPORT_HUGO_MENU: :menu main :weight 5001
 :END:
+
+#+BEGIN_EXPORT html
+<header>
+  <h1>Cheat Sheets</h1>
+  <h5>
+    <strong>April 28, 2021</strong>
+  </h5>
+</header>
+#+END_EXPORT
 
 This section contains various reminders to jog your memory if you're not too fresh on basic Erlang data, types, or syntax.
 
@@ -4633,7 +4650,7 @@ The boot file has variables that must be set properly in order to find libraries
 * TODO Appendix 4: Systemd
 :PROPERTIES:
 :EXPORT_FILE_NAME: systemd
-:EXPORT_FILE_NAME: cheat_sheets
+:EXPORT_FILE_NAME: systemd
 :EXPORT_HUGO_MENU: :menu main :weight 6001
 :END:
 
