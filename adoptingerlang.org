@@ -2658,10 +2658,10 @@ In the =relx= configuration we use =vm_args_src= and =sys_config_src= to include
        ]}.
 #+END_SRC
 
-In the Docker and Kubernetes chapters we will discuss why we need to set the number of Erlang schedulers manually, but for now we just care about how it would be done in =vm.args.src=:
+In the Docker and Kubernetes chapters we will discuss why we need to set =sbwt=, but for now we just care about how it would be done in =vm.args.src=:
 
 #+BEGIN_SRC shell
-+S ${SCHEDULERS}
++sbwt ${SBWT}
 #+END_SRC
 
 In =sys.config.src= we will make the =logger= level a variable as well, so we could, for example, turn on =debug= or =info= level logging to get more details when investigating the deployed service:
@@ -2673,7 +2673,7 @@ In =sys.config.src= we will make the =logger= level a variable as well, so we co
 Now when running the release we must set these variables or the release will fail to start.
 
 #+BEGIN_SRC shell
-$ DB_HOST=localhost LOGGER_LEVEL=debug SCHEDULERS=1 \
+$ DB_HOST=localhost LOGGER_LEVEL=debug SBWT=none \
   _build/prod/rel/service_discovery/bin/service_discovery console
 Erlang/OTP 22 [erts-10.5] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:30] [hipe]
 
@@ -2683,7 +2683,7 @@ Erlang/OTP 22 [erts-10.5] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads
 The errors produced when running without the necessary environment variables set can be confusing. There is currently no validation done to check that all environment variables used in the configuration files are set and then print out which are missing. Instead the missing variables are replaced with empty strings. If the variable is used in a string, like ="${DB_HOST}"= the applications will start but be unable to connect to the database. When the missing variable creates a =sys.config= that is not able to be parsed, like in the case of =${LOGGER_LEVEL}=, there will be a syntax error:
 
 #+BEGIN_SRC shell
-$ DB_HOST=localhost SCHEDULERS=1 \
+$ DB_HOST=localhost SBWT=none \
   _build/prod/rel/service_discovery/bin/service_discovery console
 {"could not start kernel pid",application_controller,"error in config file \"/app/src/_build/prod/rel/service_discovery/releases/71e109d8f34ef5e5ccfcd666e0d9e544836044f1/sys.config\" (48): syntax error before: ','"}
 could not start kernel pid (application_controller) (error in config file "/home/tristan/Devel/service_discovery/_build/prod/rel/service_discovery/releases/71e109d8f34ef5e5ccfcd666e0d9e544836044f1/sys
@@ -2691,12 +2691,12 @@ could not start kernel pid (application_controller) (error in config file "/home
 Crash dump is being written to: erl_crash.dump...done
 #+END_SRC
 
-When a value in =vm.args= is missing you will likely see an error about the argument given to a flag. For =+S ${SCHEDULERS}= it results in attempting to use the next line as the argument to =+S=, in this case it is =+C multi_time_warp= producing a boot error that =+C= is not a valid amount of schedulers:
+When a value in =vm.args= is missing you will likely see an error about the argument given to a flag. For =+sbwt ${SBWT}= it results in attempting to use the next line as the argument to =+sbwt=, in this case it is =+C multi_time_warp= producing a boot error that =+C= is not a valid :
 
 #+BEGIN_SRC shell
 $ DB_HOST=localhost LOGGER_LEVEL=debug \
   _build/prod/rel/service_discovery/bin/service_discovery console
-bad amount of schedulers +C
+bad scheduler busy wait threshold: +C
 Usage: service_discovery [flags] [ -- [init_args] ]
 The flags are:
 ...
@@ -2710,7 +2710,7 @@ To get a feel for what we will be doing in the next chapters, copy =_build/prod/
 
 #+BEGIN_SRC shell
 $ export LOGGER_LEVEL=debug
-$ export SCHEDULERS=1
+$ export SBWT=none
 $ export DB_HOST=localhost
 $ mkdir /tmp/service_discovery
 $ cp _build/prod/rel/service_discovery/service_discovery-c9e1c805d57a78d9eb18af1124962960abe38e70.tar.gz /tmp/service_discovery
@@ -2728,7 +2728,7 @@ Running with =console= gives an interactive Erlang shell. To run the release wit
 
 #+BEGIN_SRC shell
 $ export LOGGER_LEVEL=debug
-$ export SCHEDULERS=1
+$ export SBWT=none
 $ export DB_HOST=localhost
 $ bin/service_discovery remote_console
 ...
@@ -3011,7 +3011,7 @@ ENV COOKIE=service_discovery \
     # service_discovery specific env variables to act as defaults
     DB_HOST=127.0.0.1 \
     LOGGER_LEVEL=debug \
-    SCHEDULERS=1
+    SBWT=none
 
 EXPOSE 8053
 EXPOSE 3000
@@ -3325,23 +3325,22 @@ If the limit is exceeded during a period, the kernel will throttle the process b
 
 A busy wait is a tight loop an Erlang scheduler will enter waiting for more work to do before eventually going to sleep. This tight loop burns CPU just waiting to do actual work and can lead to much worse performance because your Erlang program will be likely to get throttled by the kernel scheduler. Then when there is actual work to be done, it may happen in a period the Erlang VM gets no CPU slices at all. This will be even worse if the VM is running more schedulers than CPUs it is allocated. The CPU limit of =2000m=, which we think of as meaning 2 CPU cores, does not actually restrict the process to 2 cores. If 8 schedulers are being used and there are the same number of cores on the node, those 8 will still spread across all the cores and run in parallel. But the quota is still =200000= and more likely to be exceeded when 8 schedulers are taking time on 8 cores. Even without the busy wait, a scheduler must do work of its own and can be unnecessary overhead when trying to stay within some CPU usage constraints.
 
-In order to disable the scheduler busy waiting and to set the number of schedulers the VM spawns we set the VM arguments =+sbwt= and =+S= in =vm.args.src= as shown here:
+In order to disable the scheduler busy waiting we set the VM arguments =+sbwt= in =vm.args.src= as shown here:
 
 #+BEGIN_SRC shell
-+sbwt none
-
-+S ${SCHEDULERS}
++sbwt ${SBWT}
 #+END_SRC
 
-#+attr_shortcode: note "Upcoming in OTP-23"
+#+attr_shortcode: note "As of OTP-23"
 #+begin_admonition
-<p>With OTP-23, coming out in 2020, the Erlang VM will be "container aware" and will handle setting the proper number of active schedulers automatically. Meaning the <code>+S</code> argument will eventually be unneeded for the simple case of having the number of active schedulers equal the container's CPU limit.</p>
+<p>With OTP-23, released in 2020, the Erlang VM is "container aware" and will s
+the proper number of active schedulers automatically based on the containers
+allocated resources. Before OTP-23 the <code>+S</code> argument was needed to
+set the number of active schedulers equal the container's CPU limit.</p>
 
-<p>Additionally, <code>+sbwt</code> will default to <code>very&#95;short</code>. This is an improvement but it is likely you still want to set the value to <code>none</code> when running in Kubernetes, or similar environment. But, as always is the case, be sure to benchmark to find the optimal value for your particular workload.</p>
+<p>Additionally, <code>+sbwt</code> defaults to <code>very&#95;short</code>
+since OTP-23. This is an improvement but it is likely you still want to set the value to <code>none</code> when running in Kubernetes, or similar environment. But, as always is the case, be sure to benchmark to find the optimal value for your particular workload.</p>
 #+end_admonition
-
-
-In the next section we will see how using the environment variable =${SCHEDULERS}=, set through Kubernetes' [[https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api][Downward API]], makes it easy to adjust the number of schedulers when we want to change the CPU limits in the Kubernetes resource.
 
 **** Container Environments and ConfigMaps
 
@@ -3351,11 +3350,13 @@ As we've seen in the Releases chapter, runtime configuration is done through env
 env:
 - name: LOGGER_LEVEL
   value: error
+- name: SBWT
+  value: none
 #+END_SRC
 
 This configuration would result in the environment variable =LOGGER_LEVEL= with value =error=.
 
-There are other environment variables that must be set based on the state of the container that is running. Two examples of this are setting the =NODE_IP= variable based on the IP of the Pod and setting the =SCHEDULERS= based on the CPU limits using Kubernetes' [[https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api][Downward API]]:
+There are other environment variables that must be set based on the state of the container that is running. An example of this is setting the =NODE_IP= variable based on the IP of the Pod:
 
 #+BEGIN_SRC yaml
 env:
@@ -3363,15 +3364,9 @@ env:
   valueFrom:
     fieldRef:
       fieldPath: status.podIP
-- name: SCHEDULERS
-  valueFrom:
-    resourceFieldRef:
-      containerName: service-discovery
-      resource: limits.cpu
-      divisor: 1
 #+END_SRC
 
-The =status.podIP= declaration under =fieldRef= will return the current Pod's IP when it is created and the =resourceFieldRef= of =limits.cpu= with a =divisor= of =1= will return the CPU limit in a unit of CPU cores.
+The =status.podIP= declaration under =fieldRef= will return the current Pod's IP when it is created.
 
 The user-defined environment variables like =LOGGER_LEVEL= can be better tracked in a Kubernetes resource specifically for configuration called a =ConfigMap=. A =ConfigMap= contains key-value pairs and can be populated from files, directories of files or literal values. Here we will use a literal value to set =LOGGER_LEVEL= to =error=:
 
