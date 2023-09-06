@@ -1,13 +1,16 @@
+;;; install necessary packages and convert org mode files to markdown for hugo
 (require 'package)
 
 (package-initialize)
+
+(package-install 'tomelr)
+
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("melpa-stable" . "https://stable.melpa.org/packages/")
-                         ("org" . "http://orgmode.org/elpa/")))
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 (package-refresh-contents)
 
-(package-install 'org-plus-contrib)
+(package-install 'org)
 (package-install 'ox-hugo)
 
 (require 'org)

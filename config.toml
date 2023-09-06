@@ -10,3 +10,6 @@ disableKinds=["taxonomy", "taxonomyTerm"]
 BookMenuBundle="/docs/menu"
 # BookSection="chapters"
 images = ["/img/cover.png"]
+
+[markup.goldmark.renderer]
+unsafe= true
