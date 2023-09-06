@@ -3446,41 +3446,64 @@ The volume =migrations= exists only in memory and is used to copy the current SQ
 
 **** Readiness and Liveness Probes
 
-Kubernetes has multiple configurable probes to know when to restart a container and when a container is in a state it can accept traffic. The main two are the liveness and readiness probes, which respectively handle container restart and whether traffic can be forwarded. A startup probe can be added to delay when the liveness and readiness probes start being checked.
+Each container in a =Pod= can define a =readiness=, =liveness= and =startup= probe. The
+=liveness= probe . A startup probe can be added to delay when the =liveness= and
+=readiness= probes start being checked.
 
-Probes are defined either as a command to execute in the container, as an HTTP =GET= request made to a given port and path, or as an attempt to open a TCP connection to a specific port.
+Probes are defined either as a command to execute in the container, as an HTTP
+=GET= request made to a given port and path, or as an attempt to open a TCP
+connection to a specific port.
 
-A =livenessProbe= is optional; if the process in the container crashes or stops for any reason, it will be restarted. The probe ensures that if our node does not crash but for some reason has deadlocked and can not respond to requests, it will also be restarted.
+A =livenessProbe= is not required to ensure restart of failed containers. If the
+process in the container crashes or stops for any reason, it will already be
+restarted. The probe should only be used for cases our node does not crash but
+for some reason has deadlocked and can not respond to requests. For this reason
+if a =livenessProbe= is included it should be kept extremely simple. It is more
+often than not safer to leave out the =livenessProbe= entirely and rely on the
+node crashes, metric based alerting and auto-scaling.
 
-In =service_discovery= a =livenessProbe= is included that starts probing =/healthz= with an HTTP request after an initial delay of 3 seconds and then does so every 15 seconds.
+One part of auto-scaling is based on the =readinessProbe=. The =readinessProbe=
+tells Kubernetes the =Pod= is ready to receive traffic. Being able to receive
+traffic is the requirement used by the Horizontal Pod Auto-Scaler (to be covered
+in a future section). When a =Pod= becomes =unready= because a container is failing
+the =readinessProbe= then a new =Pod= will be started.
 
-#+BEGIN_SRC yaml
-livenessProbe:
-  httpGet:
-    path: /healthz
-    port: http
-  initialDelaySeconds: 3
-  periodSeconds: 15
-#+END_SRC
+Not using the =livenessProbe= for this purpose means the containers are still
+available, since they aren't killed, and the reason for failing the check can be
+examined. This may mean attaching a debugger if it isn't completely frozen or
+forcing a crash dump to be written. In a very resource constrained environment
+you may prefer to have the =livenessProbe= in order to have deadlocked containers
+and their =Pods= cleaned up right away.
 
-The =readinessProbe= is checked by Kubernetes to know if requests should be routed to a container. If the application needs to do some heavy lifting on startup, or periodically, where it won't be able to serve requests, it should return a =503= status response for readiness.
+Another use for the =readinessProbe= is if the application has to periodically do work
+where you don't want to be handling requests, or have to do some sort of
+maintenance, it can return a =503= status response for readiness causing it to be
+removed from the =Service= backends.
 
-Another use is to begin sending =503= status responses after receiving the =SIGTERM= signal from Kubernetes that tells the node to shutdown. It isn't required because Kubernetes will remove the =Pod= from the routes either way if it has sent it a shutdown signal, but this removal is not done before sending the signal, so for a period there will still be requests and readiness checks after the node has received the signal.
+Nothing special is needed to have a graceful shutdown, for any reason, whether
+it is during a rolling deploy or scale down. Erlang will call =init:stop()= when
+the signal is sent by Kubernetes to shutdown, so each individual OTP Application
+should perform any necessary shutdown work in their =stop= function of the
+Application behaviour module as usual. In the case of =service_discovery= there is no
+shutdown work aside from trying to complete ongoing requests successfully. The
+Applications =service_discovery_http= and =service_discovery_grpc= can implement
+logic to delay the return from =stop= until active requests have been handled.
 
-The only necessary thing to do for graceful shutdown is to delay =init:stop()= from running until the =Pod= is removed from the =kube-proxy= =Endpoint=. The process can wait up to 30 seconds before Kubernetes sends a =SIGKILL= signal that will force the process to terminate.
+By default the process can wait up to 30 seconds (configurable with the
+=terminationGracePeriodSeconds= =PodSpec= option) before Kubernetes sends a =SIGKILL=
+signal that will force the process to terminate.
 
-In =service_discovery= the =readinessProbe= is on a separate path, =/ready=, and with a higher frequency, every 5 seconds.
+In the =service_discovery= project only =readinessProbe= is defined for the purpose
+of signaling the auto-scaler without killing the container:
 
 #+BEGIN_SRC yaml
 readinessProbe:
   httpGet:
     path: /ready
     port: http
-  initialDelaySeconds: 3
-  periodSeconds: 5
+  initialDelaySeconds: 1
+  periodSeconds: 10
 #+END_SRC
-
-The =readinessProbe= is also important to having successful rolling deployments with no downtime for the service.
 
 **** Rolling Deployments
 
