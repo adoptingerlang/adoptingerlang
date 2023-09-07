@@ -142,6 +142,7 @@ Evan has been writing Erlang professionally since 2012 and in various other lang
 * Development
 :PROPERTIES:
 :EXPORT_HUGO_SECTION: docs/development
+:EXPORT_HUGO_PAIRED_SHORTCODES: %admonition
 :END:
 #+latex_header: \usepackage[utf8]{inputenc}
 #+latex_header: \usepackage{pmboxdraw} % for directory listings
@@ -227,7 +228,9 @@ As you can see, the =Patch= version is not mentioned when no patch is required. 
 
 #+attr_shortcode: info
 #+begin_admonition
+#+begin_export html
 Backwards incompatible changes are usually going through a cycle of deprecation before being removed, which tends to leave ample time to adapt. The policy is described in the <a href='http://erlang.org/doc/system_principles/misc.html'>Support, Compatibility, Deprecations, and Removal</a> document published by the OTP team at Ericsson.
+#+end_export
 #+end_admonition
 
 In some rare scenarios, hard-and-fast deprecations do happen (mostly by accident), and it may take a few weeks for the community to come up with workarounds.
@@ -667,7 +670,9 @@ What we have described so far is equivalent to an operating system's kernel. We 
 
 #+attr_shortcode: note
 #+begin_admonition
+#+begin_export html
 OTP stands for _Open Telecom Platform_, which is literally a meaningless name that was used to get the stuff open-sourced back in the old days of Erlang at Ericsson.
+#+end_export
 #+end_admonition
 
 Erlang/OTP systems are structured through components named _OTP Applications_. Every Erlang version you have installed or system built with it that you use ships with a few OTP Applications. There are basically two variants of OTP applications: _Library Applications_, which are just collections of modules, and _Runnable Applications_, which contain a collection of modules, but also specify a stateful process structure stored under a supervision tree. For the sake of clarity, we're going to use the following terminology for OTP Applications for this entire book:
@@ -965,11 +970,13 @@ But all in all, this little additional =mod= line in the app file and the presen
 
 #+attr_shortcode: tip
 #+begin_admonition
+#+begin_export html
 If you do not want to care for a supervision tree and are only interested in getting a <code>main()</code> function to get going like you would in most other programming languages, <code>escript</code> might be a good option for you.
 
 <code>escript</code> is a special C program that wraps the Erlang virtual machine. In wrapping it, it also introduces a small shim that retrofits the idea of a <code>main()</code> function to the release structure, by calling your code into the root Erlang process of the virtual machine.
 
 The net result is that you can run interpreted code without having to bother about releases, OTP Applications, or supervision tree. You can read more about escripts in <a href='http://erlang.org/doc/man/escript.html'>the official Erlang documentation</a>. Rebar3 also <a href='https://www.rebar3.org/docs/commands#escriptize'>has a command to create complex escript bundles</a>.
+#+end_export
 #+end_admonition
 
 You now understand most of the weird stuff about Erlang/OTP's project structure and everything that has to do with these mysterious "OTP Applications". Starting with next chapter, we'll start digging a bit in supervision trees, so that you know how to set things up in a stateful runnable application.
@@ -1308,6 +1315,7 @@ This is one of the few _design patterns_ in Erlang. Because smart systems make s
 
 #+attr_shortcode: note
 #+begin_admonition
+#+begin_export html
 This pattern can be adapted however you want. The authors have, for example, used these two other variants for restart management:
 
 <ul>
@@ -1315,7 +1323,10 @@ This pattern can be adapted however you want. The authors have, for example, use
 <li>The manager does nothing. However, the Erlang release shipped with a script that could be called by an operator. The script sent a message to the manager, asking it to restart the missing subtree. This variant was used because the subtree died only in the rarest of occasions (a whole region's storage going down) without wanting to kill the rest of the system, but upon recovery, operators could re-enable traffic that way.</li>
 </ul>
 
-While it would be difficult to bake that kind of functionality in a generic supervisor, a manager can easily provide the flexibility required for tailor-made solutions of this kind.
+While it would be difficult to bake that kind of functionality in a generic
+supervisor, a manager can easily provide the flexibility required for
+tailor-made solutions of this kind.
+#+end_export
 #+end_admonition
 
 One exercise we would recommend you do is to take your system, and then draw its supervision tree on a white board. Go through all the workers and supervisors, and ask the following questions:
@@ -2142,7 +2153,9 @@ On top of that, binaries larger than 64 bytes can be shared across process heaps
 
 #+attr_shortcode: warning
 #+begin_admonition
+#+begin_export html
 Binary sharing is often a great way to gain performance in a program. However, there exist some pathological usage patterns where binary sharing can lead to memory leaks. If you want to know more, take a look at <a href='https://www.erlang-in-anger.com/'>Erlang In Anger's</a> chapter on memory leaks, particularly section 7.2
+#+end_export
 #+end_admonition
 
 The real cool thing though comes from the IoData representation where you combine the list approach with binaries. It's how you get really cheap composition of immutable strings:
@@ -2250,7 +2263,9 @@ This means that in Erlang, you'll want to use the following functions for specif
 
 #+attr_shortcode: tip
 #+begin_admonition
+#+begin_export html
 The functions handling time in the <code>erlang</code> module almost all take a <code>Unit</code> argument, which can be one of <code>second</code>, <code>millisecond</code>, <code>microsecond</code>, <code>nanosecond</code>, or <code>native</code>. By default, the type of timestamp returned is in the native format. The unit is determined at run time, and <code>erlang:convert&#95;time&#95;unit(Time, FromUnit, ToUnit)</code> may be used to convert between time units. For example, <code>erlang:convert&#95;time&#95;unit(1, seconds, native)</code> returns <code>1000000000</code>.
+#+end_export
 #+end_admonition
 
 The [[http://erlang.org/doc/man/calendar.html][=calendar=]] module also contains more utility functions, such as [[http://erlang.org/doc/man/calendar.html#valid_date-1][date validation]], conversion [[http://erlang.org/doc/man/calendar.html#system_time_to_rfc3339-1][to]] and [[http://erlang.org/doc/man/calendar.html#rfc3339_to_system_time-1][from]] RFC3339 datetime strings (=2018-02-01T16:17:58+01:00=), time differences, and conversions to days, weeks, or detecting leap years.
@@ -2408,7 +2423,9 @@ The first =relx= step seen in the output is "Resolving OTP Applications" followe
 
 #+attr_shortcode: note
 #+begin_admonition
+#+begin_export html
 The application <code>sasl</code> is not included in the <code>relx</code> config's list of applications. By default in the Rebar3 template it is in the list. This is because <code>sasl</code> is required for certain release operations. The <code>sasl</code> application includes <code>release&#95;handler</code> which provides functionality for performing release upgrades and downgrades. Since we are focused here on creating containers which are replaced instead of live upgraded <code>sasl</code> does not need to be included.
+#+end_export
 #+end_admonition
 
 Because this release is built with ={dev_mode, true}=, symlinks are created in the release's lib directory that point to each application instead of being copied:
@@ -2430,7 +2447,9 @@ This allows for a faster feedback loop when running our release for local testin
 
 #+attr_shortcode: warning
 #+begin_admonition
+#+begin_export html
 On Windows the <code>dev&#95;mode</code> of relx won't necessary work but it will fallback to copying.
+#+end_export
 #+end_admonition
 
 The full filesystem tree of the development release now looks like:
@@ -2481,7 +2500,9 @@ The last directory, =sql=, is created by an =overlay=, ={copy, "apps/service_dis
 
 #+attr_shortcode: info
 #+begin_admonition
+#+begin_export html
 The OTP release structure supports having multiple versions of the same release. They share the same <code>lib</code> directory but could have different versions of each application and even different <code>erts</code>. This is why there is a <code>releases</code> directory with a version number directory under it and the file <code>RELEASES</code>. Having the SQL files in a directory shared by all versions of the release could be problematic in such an environment. But since we are focused on building self contained releases that will run separately from any other in a container we can assume there is only ever one version.
+#+end_export
 #+end_admonition
 
 Since the release uses the Postgres storage backend,a database needs to be running and accessible before starting the release. Running Docker Compose at the top level of the project will bring up a database and run the migrations:
@@ -2492,7 +2513,9 @@ $ docker-compose up
 
 #+attr_shortcode: tip
 #+begin_admonition
+#+begin_export html
 You don't have to start everything to get an Erlang shell from your release. Every release built with Rebar3 comes with a boot script called <code>start&#95;clean</code> which only starts the <code>kernel</code> and <code>stdlib</code> applications. This can be run with the command <code>console&#95;clean</code> and can be useful for debugging purposes.
+#+end_export
 #+end_admonition
 
 To boot the development release to an interactive Erlang shell run the extended start script with command =console=:
@@ -2766,7 +2789,9 @@ Advantages of containers running with filesystem and network isolation are not h
 
 #+attr_shortcode: note
 #+begin_admonition
+#+begin_export html
 You might notice we will not be using the <code>latest</code> tag at all when using Docker. This tag is commonly misunderstood and misused. It is assigned to the last image used without a specific tag, it is not the latest created image. It should rarely, if ever, be relied on, unless you really don't care what version of an image will be used.
+#+end_export
 #+end_admonition
 
 In this chapter we will cover efficiently building images for running the [[https://adoptingerlang.org/gh/servicediscovery][service_discovery]] project as well as images for running tests and dialyzer. Then, we will update the continuous integration pipeline to build and publish new images.
@@ -2905,7 +2930,9 @@ With =buildx= a cache manifest is built that will include information about prev
 
 #+attr_shortcode: danger "Caching and Security Updates"
 #+begin_admonition
+#+begin_export html
 <p>There is a security concern to keep in mind when using layer caching. For example, since the <code>RUN</code> command only reruns if the text of the command changes, or a previous layer invalidated the cache, any system package installed will remain the same version even if a security fix has been released. For this reason it is good to occasionally run Docker with <code>--no-cache</code> which will not reuse any layers when building the image.</p>
+#+end_export
 #+end_admonition
 
 **** Multi-Stage Build
@@ -2944,6 +2971,7 @@ The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= 
 
 #+attr_shortcode: info "Old Docker Caching"
 #+begin_admonition
+#+begin_export html
 <p>For remote caching using the old <code>--cache-from</code>, as described in the previous section,  the <code>builder</code> stage would be built and tagged with an identifier that lets us reference the image based on the Rebar3 dependencies it contains. To do this we can use the command <code>cksum</code> on <code>rebar.config</code> and <code>rebar.lock</code>. This acts similarly to what Docker does before choosing to invalidate its cache or not.</p>
 
 <code><pre>
@@ -2955,6 +2983,7 @@ $ docker push service&#95;discovery:builder-${CHKSUM}
 <p>When building any stage that uses <code>FROM builder</code> we would include <code>--cache-from=service&#95;discovery:builder-${CHKSUM}</code> to pull the previously built dependencies.</p>
 
 <p>It is common for developers to be working on concurrent branches of the same project, potentially with varying dependencies, using a checksum of the current Rebar3 config and lock files when defining the image to use as a cache allows for multiple sets of dependencies for a project to be cached and the correct set to be used when building.</p>
+#+end_export
 #+end_admonition
 
 The next stage, named =releaser=, uses the =prod_compiled= image as its base:
@@ -2994,7 +3023,9 @@ The profile having =include_erts= set to =true= means the tarball contains the E
 
 #+attr_shortcode: question "Why tar the release at all?"
 #+begin_admonition
+#+begin_export html
 You might notice that a tarball of the release is created only to be untarred immediately. This is done, instead of copying the contents of the release directory, for two reasons. First, it ensures only what is explicitly defined to be in this version of the release is used. This is less important when building in a docker image since no previous release builds will be in the <code>&#95;build/prod/rel</code> directory, but still good to do. Second, there are some changes made to the release when tarring that are required to use tools like <code>release&#95;handler</code>, for example the boot script is renamed from <code>RelName.boot</code> to <code>start.boot</code>. For more details see the <a href='http://erlang.org/doc/man/systools.html#make&#95;tar-1'>systools</a> documentation.
+#+end_export
 #+end_admonition
 
 Finally, the deployable image uses a regular OS image (=alpine:3.10=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
@@ -3110,11 +3141,13 @@ This can be a useful command for easily inspecting what your release is writing 
 
 #+attr_shortcode: danger "Beware Zombies!"
 #+begin_admonition
+#+begin_export html
 <p>As of Erlang/OTP 19.3 an Erlang node will gracefully shutdown with <code>init:stop()</code> when a <code>TERM</code> signal is received, as is used by Docker and Kubernetes for shutting down containers.</p>
 
 <p>But there are still potential issues you will encounter with zombies in a container. When using <code>docker exec</code> to run <code>remote&#95;console</code>, or any other release script command like <code>ping</code>, will leave zombie processes behind unless the container is started with the argument <code>--init</code> that Docker offers for starting a small init before your entrypoint.</p>
 
 <p>This is usually not an issue, but like with atoms, it certainly can be if the uses aren't limited. An example of something to avoid for this reason, unless running with <code>--init</code> or some other tiny init as pid 0, would be using <code>ping</code> as a health check which is run periodically during the life of a container by the container runtime. A long running container like this will eventually have the kernel process table run out of slots and it will not be possible to create new processes.</p>
+#+end_export
 #+end_admonition
 
 *** Building and Publishing Images in CI
@@ -3296,11 +3329,13 @@ First, the =Pod= metadata sets the label to match with the =selector= from the =
 
 #+attr_shortcode: danger "The Zombie Killer!"
 #+begin_admonition
+#+begin_export html
 <p>The issue of zombie processes (processes who exit but their PID sticks around because the parent hasn't called <code>wait()</code>) discussed in the <a href="/docs/production/docker/#running-a-container">Docker chapter</a> applies to running containers with Kubernetes as well. One way to protect against them, and the one used in the <code>service&#95;discovery</code> project is to use a shared process namespace between containers in the Pod.</p>
 
 <p>This is done with <code>shareProcessNamespace: true</code> in the Pod spec. This setting means the process started in the container will not be PID 1. Instead, PID 1 is the Kubernetes <a href="https://github.com/kubernetes/kubernetes/tree/master/build/pause">pause container</a>. The pause container is always the parent container in a Pod but with this setting, making it PID 1 for all processes in the Pod, it is able to reap zombies processes that might result from any container in the Pod.</p>
 
 <p>Read more about <a href="https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/">shared process namespaces in the Kubernetes docs</a>.</p>
+#+end_export
 #+end_admonition
 
 **** Container Resources
@@ -3333,6 +3368,7 @@ In order to disable the scheduler busy waiting we set the VM arguments =+sbwt= i
 
 #+attr_shortcode: note "As of OTP-23"
 #+begin_admonition
+#+begin_export html
 <p>With OTP-23, released in 2020, the Erlang VM is "container aware" and will s
 the proper number of active schedulers automatically based on the containers
 allocated resources. Before OTP-23 the <code>+S</code> argument was needed to
@@ -3340,6 +3376,7 @@ set the number of active schedulers equal the container's CPU limit.</p>
 
 <p>Additionally, <code>+sbwt</code> defaults to <code>very&#95;short</code>
 since OTP-23. This is an improvement but it is likely you still want to set the value to <code>none</code> when running in Kubernetes, or similar environment. But, as always is the case, be sure to benchmark to find the optimal value for your particular workload.</p>
+#+end_export
 #+end_admonition
 
 **** Container Environments and ConfigMaps
@@ -3402,7 +3439,9 @@ Now all the variables defined in the ConfigMap will be added to the container wi
 
 #+attr_shortcode: tip
 #+begin_admonition
+#+begin_export html
 Updating a value in a <code>ConfigMap</code> will <b>not</b> trigger the <code>Deployments</code> that have references to the <code>ConfigMap</code> to restart their containers with the new environment variables. Instead, the way to update the containers when the configuration changes is to create a new <code>ConfigMap</code> with the necessary changes and a new name, then modify the name of the <code>ConfigMap</code> referenced by the <code>Deployment</code> under <code>configMapRef</code>. The old <code>ConfigMaps</code> will eventually be garbage collected by Kubernetes since they are not referenced anywhere and the <code>Deployment</code> will recreate its <code>Pods</code> with the new configuration.
+#+end_export
 #+end_admonition
 
 **** Init Containers
@@ -3534,9 +3573,11 @@ There are a few open source options for working with Kubernetes resources. The t
 
 #+attr_shortcode: note "Helm 3"
 #+begin_admonition
+#+begin_export html
 <p>Even if Helm is not used for deployment of your project itself it can still be useful for deployment of dependencies. There are a lot of <a href="https://github.com/helm/charts">Helm Charts</a> available and is likely how you would want to offer your project to the outside world if it was not simply for internal usage.</p>
 
 <p>There were a number of issues with Helm aside from the templating that we won't get into here, except to say that they are being worked out in the latest major release, <a href="https://v3.helm.sh/">Helm v3</a>, that had its first stable release in November 2019. So I would still suggest taking a look at the latest offering from Helm for yourself.</p>
+#+end_export
 #+end_admonition
 
 [[https://kustomize.io/][Kustomize]] is a =kubectl= built-in tool (as of v1.14.0) that provides a template-free way to customize Kubernetes YAML resources. We will use it to create different configurations for various environments, starting with a development environment, =dev=, which will then be used in the next section, [[Tilt for Local Development]], to run =service_discovery= locally.
@@ -4012,7 +4053,9 @@ The easiest way to gain expertise into a new technology or a new business domain
 
 #+attr_shortcode: info "Hiring an Expert"
 #+begin_admonition
+#+begin_export html
 For this section, we'll more or less assume you know how to find an expert on your own, and will focus on structuring the team and figuring out what such an expert will need to help you with. For help on actually hiring people, we'll add a "How to Hire" chapter that should help clear things up.
+#+end_export
 #+end_admonition
 
 At the time of this writing, the average tenure time in the industry is below 5 years. This means that a team willing to be sustainable would be hiring expert after expert with no end in sight. The secret is to train your own experts after having found your first one. We consider it healthier for a company to be able to consistently hire more junior employees and see them leave as experts over the years than it would be to just poach experts and senior-level employees all the time and see them leave all the same.
@@ -4044,7 +4087,9 @@ Doing the full learning experiment may take a few months, but even after a few w
 
 #+attr_shortcode: tip
 #+begin_admonition
+#+begin_export html
 Regardless of how you run things at that point, make sure that from time to time your expert sits down with the rest of the team, and asks them about the various points of friction they have. Figure out what annoys them about the toolings, the language, and so on. This will help everyone re-calibrate and improve things. It's otherwise frequent for newcomers to just assume "this is how it is" and they may end up living with far more annoyances than they otherwise would.
+#+end_export
 #+end_admonition
 
 *** Building Without an Expert
