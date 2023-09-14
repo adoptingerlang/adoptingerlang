@@ -2255,7 +2255,7 @@ If the offset is a constant 0, then the VM's monotonic and system times will be 
 
 This means that in Erlang, you'll want to use the following functions for specific use cases:
 
-- [[http://erlang.org/doc/man/erlang.html#monotonic_time-0][=erlang:monotonic_time/0-1=]] for the Erlang monotonic time. It may return very low negative numbers, but they'll never get more negative. You can use something like =T0=erlang:monotonic_time(millisecond), do_something(), T1=erlang:monotonic_time(millisecond)= and get the total duration of the operation by calculating =T1 - T2=. Note that the time units should be the same across comparisons (see notice).
+- [[http://erlang.org/doc/man/erlang.html#monotonic_time-0][=erlang:monotonic_time/0-1=]] for the Erlang monotonic time. It may return very low negative numbers, but they'll never get more negative. You can use something like =T0=erlang:monotonic_time(millisecond), do_something(), T1=erlang:monotonic_time(millisecond)= and get the total duration of the operation by calculating =T1 - T0=. Note that the time units should be the same across comparisons (see notice).
 - [[http://erlang.org/doc/man/erlang.html#system_time-0][=erlang:system_time/0-1=]] for the Erlang system time (after the offset has been applied) when you need a UNIX timestamp
 - [[http://erlang.org/doc/man/erlang.html#time_offset-0][=erlang:time_offset/0-1=]] to figure out the difference between the Erlang monotonic and Erlang system clocks
 - [[http://erlang.org/doc/man/calendar.html#local_time-0][=calendar:local_time/0=]] to return the system time converted to the operating system's current clock (meaning in the user's current timezone and daylight saving times) in a ={{Year, Month, Day}, {Hour, Minute, Second}}= format
