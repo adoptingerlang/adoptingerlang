@@ -2794,8 +2794,7 @@ Since =service_discovery= has no private dependencies we will look at how to sup
 Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/rebar3/hex.config=. Using the experimental Dockerfile syntax =--mount=type=secret= the config can be mounted into the container for just the compile command. The file is mounted to a separate tmpfs filesystem and excluded from the build cache:
 
 #+BEGIN_SRC dockerfile
-# syntax = docker/dockerfile:experimental
-
+# syntax=docker/dockerfile:1.2
 RUN --mount=type=secret,id=hex.config,target=/root/.config/rebar3/hex.config rebar3 compile
 #+END_SRC
 
@@ -2810,9 +2809,8 @@ $ docker build --secret id=hex.config,src=~/.config/rebar3/hex.config .
 You could use the secret mount from the last section for mounting SSH keys, but Docker added a better solution with a mount type specifically for dealing with SSH. A =RUN= command that needs SSH access can use =--mount=type=ssh=:
 
 #+BEGIN_SRC dockerfile
-# syntax = docker/dockerfile:experimental
-
-RUN apk add --no-cache openssh-client git && \
+# syntax=docker/dockerfile:1.2
+RUN apt install --no-cache openssh-client git && \
     mkdir -p -m 0600 ~/.ssh && \
     ssh-keyscan github.com >> ~/.ssh/known_hosts && \
     git config --global url."git@github.com:".insteadOf "https://github.com/"
@@ -2860,10 +2858,14 @@ Use of =COPY . .= is discouraged because it makes it more likely to invalidate t
 
 Copying files into an image and caching layers are no longer the only options for efficiency when building a Docker image. Caching the built dependencies in a layer is all well and good but that layer also contains the Hex package cache Rebar3 creates under =~/.cache/rebar3/hex=. Any change to =rebar.config= or =rebar.lock= will result in all the packages having to not only be rebuilt but also be re-fetched from Hex. Additionally, the instruction to copy in the whole project, creating an additional layer with all the source is wasteful since we only care about the build artifacts.
 
-These issues are resolved as of Docker 19.03 through an experimental syntax for mounting files to the context of a =RUN= command. To enable the experimental syntax the environment variable =DOCKER_BUILDKIT= must be set or ={"features":{"buildkit": true}}= be set in =/etc/docker/daemon.json=, and =# syntax = docker/dockerfile:experimental= used as the first line of the Dockerfile:
+These issues are resolved as of Docker 19.03 through an experimental syntax for
+mounting files to the context of a =RUN= command. To enable the experimental
+syntax the environment variable =DOCKER_BUILDKIT= must be set or
+={"features":{"buildkit": true}}= be set in =/etc/docker/daemon.json=, and =#
+syntax=docker/dockerfile:1.2= used as the first line of the Dockerfile:
 
 #+BEGIN_SRC dockerfile
-# syntax = docker/dockerfile:experimental
+# syntax=docker/dockerfile:1.2
 
 [...]
 
@@ -2915,8 +2917,8 @@ For an Erlang project we are going to need an image with the built release and t
 We will step through the stages in the =service_discovery= project's [[https://github.com/adoptingerlang/service_discovery/blob/docker-chapter/Dockerfile][Dockerfile]]. The first stage is named =builder=:
 
 #+BEGIN_SRC dockerfile
-# syntax = docker/dockerfile:experimental
-FROM docker.pkg.github.com/adoptingerlang/service_discovery/erlang:22.1.1-alpine as builder
+# syntax=docker/dockerfile:1.2
+FROM ghcr.io/adoptingerlang/service_discovery/erlang:26.0.2 as builder
 
 WORKDIR /app/src
 ENV REBAR_BASE_DIR /app/_build
@@ -2940,7 +2942,7 @@ RUN --mount=target=. \
     rebar3 as prod compile
 #+END_SRC
 
-The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a base image to =FROM= in later stages.
+The =builder= stage starts with the base image =erlang:26.0.2=. =as builder= names the stage so we can use it as a base image to =FROM= in later stages.
 
 #+attr_shortcode: info "Old Docker Caching"
 #+begin_admonition
@@ -3444,7 +3446,7 @@ initContainers:
 
 The volume =migrations= exists only in memory and is used to copy the current SQL migration files from the release image to a shared directory that the =flyway= container will use to run validation. The =emptyDir= type of volume with =medium= =memory= is used because we are not using this volume to persist any data, only to share between two =Init Containers=. If =medium: Memory= was not included, the =emptyDir= is created on the host file system but it is still empty initially for each new =Pod=, and is removed when the =Pod= is deleted.
 
-**** Readiness and Liveness Probes
+**** Readiness, Liveness and Startup Probes
 
 Each container in a =Pod= can define a =readiness=, =liveness= and =startup= probe. The
 =liveness= probe . A startup probe can be added to delay when the =liveness= and
@@ -3456,24 +3458,25 @@ connection to a specific port.
 
 A =livenessProbe= is not required to ensure restart of failed containers. If the
 process in the container crashes or stops for any reason, it will already be
-restarted. The probe should only be used for cases our node does not crash but
-for some reason has deadlocked and can not respond to requests. For this reason
-if a =livenessProbe= is included it should be kept extremely simple. It is more
-often than not safer to leave out the =livenessProbe= entirely and rely on the
-node crashes, metric based alerting and auto-scaling.
+restarted. The probe should only be used for cases the process does not crash
+but for some reason has deadlocked and can not respond to requests. For this
+reason if a =livenessProbe= is included it should be kept extremely simple. It is
+more often than not safer to leave out the =livenessProbe= entirely and rely on
+the node crashes, metric based alerting and auto-scaling.
 
 One part of auto-scaling is based on the =readinessProbe=. The =readinessProbe=
-tells Kubernetes the =Pod= is ready to receive traffic. Being able to receive
-traffic is the requirement used by the Horizontal Pod Auto-Scaler (to be covered
-in a future section). When a =Pod= becomes =unready= because a container is failing
-the =readinessProbe= then a new =Pod= will be started.
+tells Kubernetes the =Pod= is ready to receive traffic. When a =Pod= becomes =unready=
+because a container is failing the =readinessProbe=, it is removed from the
+=Service= resulting in traffic being directed at the existing =Pods=, increasing
+their load, then a new =Pod= will be started.
 
 Not using the =livenessProbe= for this purpose means the containers are still
 available, since they aren't killed, and the reason for failing the check can be
-examined. This may mean attaching a debugger if it isn't completely frozen or
+examined. This may mean attaching a shell if it isn't completely frozen or
 forcing a crash dump to be written. In a very resource constrained environment
 you may prefer to have the =livenessProbe= in order to have deadlocked containers
-and their =Pods= cleaned up right away.
+and their =Pods= cleaned up right away, instead of waiting for manual intervention
+and the auto-scaler to scale down after load falls.
 
 Another use for the =readinessProbe= is if the application has to periodically do work
 where you don't want to be handling requests, or have to do some sort of
@@ -3482,12 +3485,13 @@ removed from the =Service= backends.
 
 Nothing special is needed to have a graceful shutdown, for any reason, whether
 it is during a rolling deploy or scale down. Erlang will call =init:stop()= when
-the signal is sent by Kubernetes to shutdown, so each individual OTP Application
-should perform any necessary shutdown work in their =stop= function of the
-Application behaviour module as usual. In the case of =service_discovery= there is no
-shutdown work aside from trying to complete ongoing requests successfully. The
-Applications =service_discovery_http= and =service_discovery_grpc= can implement
-logic to delay the return from =stop= until active requests have been handled.
+=SIGTERM= is sent by Kubernetes to signal shutdown, so each individual OTP
+Application should perform any necessary shutdown work in their =stop/1= function
+of the Application behaviour module as usual. In the case of =service_discovery=
+there is no shutdown work aside from trying to complete ongoing requests
+successfully. The Applications =service_discovery_http= and =service_discovery_grpc=
+can implement logic to delay the return from =stop= until active requests have
+been handled.
 
 By default the process can wait up to 30 seconds (configurable with the
 =terminationGracePeriodSeconds= =PodSpec= option) before Kubernetes sends a =SIGKILL=
