@@ -3456,10 +3456,9 @@ Probes are defined either as a command to execute in the container, as an HTTP
 =GET= request made to a given port and path, or as an attempt to open a TCP
 connection to a specific port.
 
-A =livenessProbe= is not required to ensure restart of failed containers. If the
-process in the container crashes or stops for any reason, it will already be
-restarted. The probe should only be used for cases the process does not crash
-but for some reason has deadlocked and can not respond to requests. For this
+While kubernetes will restart any failed container, there are some times where a
+process becomes unresponsive, such as deadlocks. A =livenessProbe= can be
+used for such cases, where stopping to respond prompts a restart. For this
 reason if a =livenessProbe= is included it should be kept extremely simple. It is
 more often than not safer to leave out the =livenessProbe= entirely and rely on
 the node crashes, metric based alerting and auto-scaling.
