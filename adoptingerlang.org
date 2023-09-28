@@ -3448,10 +3448,7 @@ The volume =migrations= exists only in memory and is used to copy the current SQ
 
 **** Readiness, Liveness and Startup Probes
 
-Each container in a =Pod= can define a =readiness=, a =liveness=, and a =startup= probe. The
-=liveness= probe . A startup probe can be added to delay when the =liveness= and
-=readiness= probes start being checked when the pod starts.
-
+Each container in a =Pod= can define a =readiness=, a =liveness=, and a =startup= probe.
 Probes are defined either as a command to execute in the container, as an HTTP
 =GET= request made to a given port and path, or as an attempt to open a TCP
 connection to a specific port.
