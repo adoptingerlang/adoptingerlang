@@ -3506,9 +3506,29 @@ readinessProbe:
   httpGet:
     path: /ready
     port: http
-  initialDelaySeconds: 1
+  initialDelaySeconds: 0
   periodSeconds: 10
 #+END_SRC
+
+With this configuration we expect the initial check to fail at least once
+because the actual startup time before the =service_discovery_http= Application
+has bound to a port to listen for HTTP requests is more than =0= seconds. This
+will result in a =connection refused= error handled by the =Probe=:
+
+#+BEGIN_SRC
+service-disc… │ [event: pod service-discovery-dev/service-discovery-dev-645659d699-plxfw] Readiness probe failed: Get "http://10.244.0.114:3000/ready": dial tcp 10.244.0.114:3000: connect: connection refused
+#+END_SRC
+
+To be as simple as possible, the =readinessProbe= is defined in =service_discovery_http= as:
+
+#+BEGIN_SRC erlang
+handle('GET', [<<"ready">>], _Req) ->
+    {ok, [], <<>>};
+#+END_SRC
+
+Meaning it matches on a =GET= request to =/ready= and returns a =200= response
+immediately. There are no additional checks of functionality of the service
+except that it is able to receive and respond to HTTP requests.
 
 **** Rolling Deployments
 
