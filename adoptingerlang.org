@@ -3499,7 +3499,7 @@ never passes its =readinessProbe= then =Pods= from the previous version of the
 deployment that are =Ready= remain until they do.
 
 In the =service_discovery= project only =readinessProbe= is defined for the purpose
-of signaling the auto-scaler without killing the container:
+of removing the =Pod= from =Service= backends without killing the container:
 
 #+BEGIN_SRC yaml
 readinessProbe:
