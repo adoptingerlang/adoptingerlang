@@ -3466,7 +3466,7 @@ the node crashes, metric based alerting and auto-scaling.
 One part of auto-scaling is based on the =readinessProbe=. The =readinessProbe=
 tells Kubernetes the =Pod= is ready to receive traffic. When a =Pod= becomes =unready=
 because a container is failing the =readinessProbe=, it is removed from the
-=Service= resulting in traffic being directed at the existing =Pods=, increasing
+=Service= resulting in traffic being directed at the remaining =Pods=, increasing
 their load, then a new =Pod= will be started.
 
 Not using the =livenessProbe= for this purpose means the containers are still
