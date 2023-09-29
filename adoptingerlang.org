@@ -3479,15 +3479,12 @@ where you don't want to be handling requests, or have to do some sort of
 maintenance, it can return a =503= status response for readiness causing it to be
 removed from the =Service= backends.
 
-Nothing special is needed to have a graceful shutdown, for any reason, whether
-it is during a rolling deploy or scale down. Erlang will call =init:stop()= when
-=SIGTERM= is sent by Kubernetes to signal shutdown, so each individual OTP
-Application should perform any necessary shutdown work in their =stop/1= function
-of the Application behaviour module as usual. In the case of =service_discovery=
-there is no shutdown work aside from trying to complete ongoing requests
-successfully. The Applications =service_discovery_http= and =service_discovery_grpc=
-can implement logic to delay the return from =stop= until active requests have
-been handled.
+In the =Pod= configuration nothing special is needed to have a graceful shutdown,
+whether it is during a deploy, =livenessProbe= failure or scale down. Erlang will
+call =init:stop()= when =SIGTERM= is sent by Kubernetes to signal shutdown. As
+discussed in [[Releases]], each Applications will be stopped in the reverse they
+were started and each Application's supervision tree terminates children in
+reverse order.
 
 By default the process can wait up to 30 seconds (configurable with the
 =terminationGracePeriodSeconds= =PodSpec= option) before Kubernetes sends a =SIGKILL=
