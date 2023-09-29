@@ -3520,6 +3520,13 @@ will result in a =connection refused= error handled by the =Probe=:
 service-disc… │ [event: pod service-discovery-dev/service-discovery-dev-645659d699-plxfw] Readiness probe failed: Get "http://10.244.0.114:3000/ready": dial tcp 10.244.0.114:3000: connect: connection refused
 #+END_SRC
 
+Despite failing and =periodSeconds= being =10= it likely won't take 10 seconds for
+the =Pod= to be ready. With an =initialDelaySeconds= of =0= the =readinessProbe= is
+checked immediately during startup and does not wait the configured
+=periodSeconds= to check a second time. Because the service does little on startup
+it will pass the second check. If it doesn't it will then wait the =periodSeconds=
+until it is checked again and the =Pod= becomes ready.
+
 To be as simple as possible, the =readinessProbe= is defined in =service_discovery_http= as:
 
 #+BEGIN_SRC erlang
