@@ -3494,9 +3494,10 @@ By default the process can wait up to 30 seconds (configurable with the
 signal that will force the process to terminate.
 
 An important note about deployments and =readinessProbe= is the behaviour if a
-=readinessProbe= never passes. During a deployment if the container in the =Pod=
-never passes its =readinessProbe= then =Pods= from the previous version of the
-deployment that are =Ready= remain until they do.
+=readinessProbe= never passes. During deployment if the =Pod= never passes its
+=readinessProbe= then, depending on the deployment strategy, =Pods= from the
+previous version of the deployment that are =Ready= may remain until they do. This
+is covered more in the follow section [[Rolling Deployments]].
 
 In the =service_discovery= project only =readinessProbe= is defined for the purpose
 of removing the =Pod= from =Service= backends without killing the container:
