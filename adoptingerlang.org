@@ -2819,8 +2819,7 @@ Since =service_discovery= has no private dependencies we will look at how to sup
 Rebar3 keeps the access keys for private Hex dependencies in a file =~/.config/rebar3/hex.config=. Using the experimental Dockerfile syntax =--mount=type=secret= the config can be mounted into the container for just the compile command. The file is mounted to a separate tmpfs filesystem and excluded from the build cache:
 
 #+BEGIN_SRC dockerfile
-# syntax = docker/dockerfile:experimental
-
+# syntax=docker/dockerfile:1.2
 RUN --mount=type=secret,id=hex.config,target=/root/.config/rebar3/hex.config rebar3 compile
 #+END_SRC
 
@@ -2835,9 +2834,8 @@ $ docker build --secret id=hex.config,src=~/.config/rebar3/hex.config .
 You could use the secret mount from the last section for mounting SSH keys, but Docker added a better solution with a mount type specifically for dealing with SSH. A =RUN= command that needs SSH access can use =--mount=type=ssh=:
 
 #+BEGIN_SRC dockerfile
-# syntax = docker/dockerfile:experimental
-
-RUN apk add --no-cache openssh-client git && \
+# syntax=docker/dockerfile:1.2
+RUN apt install --no-cache openssh-client git && \
     mkdir -p -m 0600 ~/.ssh && \
     ssh-keyscan github.com >> ~/.ssh/known_hosts && \
     git config --global url."git@github.com:".insteadOf "https://github.com/"
@@ -2885,10 +2883,14 @@ Use of =COPY . .= is discouraged because it makes it more likely to invalidate t
 
 Copying files into an image and caching layers are no longer the only options for efficiency when building a Docker image. Caching the built dependencies in a layer is all well and good but that layer also contains the Hex package cache Rebar3 creates under =~/.cache/rebar3/hex=. Any change to =rebar.config= or =rebar.lock= will result in all the packages having to not only be rebuilt but also be re-fetched from Hex. Additionally, the instruction to copy in the whole project, creating an additional layer with all the source is wasteful since we only care about the build artifacts.
 
-These issues are resolved as of Docker 19.03 through an experimental syntax for mounting files to the context of a =RUN= command. To enable the experimental syntax the environment variable =DOCKER_BUILDKIT= must be set or ={"features":{"buildkit": true}}= be set in =/etc/docker/daemon.json=, and =# syntax = docker/dockerfile:experimental= used as the first line of the Dockerfile:
+These issues are resolved as of Docker 19.03 through an experimental syntax for
+mounting files to the context of a =RUN= command. To enable the experimental
+syntax the environment variable =DOCKER_BUILDKIT= must be set or
+={"features":{"buildkit": true}}= be set in =/etc/docker/daemon.json=, and =#
+syntax=docker/dockerfile:1.2= used as the first line of the Dockerfile:
 
 #+BEGIN_SRC dockerfile
-# syntax = docker/dockerfile:experimental
+# syntax=docker/dockerfile:1.2
 
 [...]
 
@@ -2942,8 +2944,8 @@ For an Erlang project we are going to need an image with the built release and t
 We will step through the stages in the =service_discovery= project's [[https://github.com/adoptingerlang/service_discovery/blob/docker-chapter/Dockerfile][Dockerfile]]. The first stage is named =builder=:
 
 #+BEGIN_SRC dockerfile
-# syntax = docker/dockerfile:experimental
-FROM docker.pkg.github.com/adoptingerlang/service_discovery/erlang:22.1.1-alpine as builder
+# syntax=docker/dockerfile:1.2
+FROM ghcr.io/adoptingerlang/service_discovery/erlang:26.0.2 as builder
 
 WORKDIR /app/src
 ENV REBAR_BASE_DIR /app/_build
@@ -2967,7 +2969,7 @@ RUN --mount=target=. \
     rebar3 as prod compile
 #+END_SRC
 
-The =builder= stage starts with the base image =erlang:22-alpine=. =as builder= names the stage so we can use it as a base image to =FROM= in later stages.
+The =builder= stage starts with the base image =erlang:26.0.2=. =as builder= names the stage so we can use it as a base image to =FROM= in later stages.
 
 #+attr_shortcode: info "Old Docker Caching"
 #+begin_admonition
@@ -3478,43 +3480,94 @@ initContainers:
 
 The volume =migrations= exists only in memory and is used to copy the current SQL migration files from the release image to a shared directory that the =flyway= container will use to run validation. The =emptyDir= type of volume with =medium= =memory= is used because we are not using this volume to persist any data, only to share between two =Init Containers=. If =medium: Memory= was not included, the =emptyDir= is created on the host file system but it is still empty initially for each new =Pod=, and is removed when the =Pod= is deleted.
 
-**** Readiness and Liveness Probes
+**** Readiness, Liveness and Startup Probes
 
-Kubernetes has multiple configurable probes to know when to restart a container and when a container is in a state it can accept traffic. The main two are the liveness and readiness probes, which respectively handle container restart and whether traffic can be forwarded. A startup probe can be added to delay when the liveness and readiness probes start being checked.
+Each container in a =Pod= can define a =readiness=, a =liveness=, and a =startup= probe.
+Probes are defined either as a command to execute in the container, as an HTTP
+=GET= request made to a given port and path, or as an attempt to open a TCP
+connection to a specific port.
 
-Probes are defined either as a command to execute in the container, as an HTTP =GET= request made to a given port and path, or as an attempt to open a TCP connection to a specific port.
+While kubernetes will restart any failed container, there are some times where a
+process becomes unresponsive, such as deadlocks. A =livenessProbe= can be
+used for such cases, where stopping to respond prompts a restart. For this
+reason if a =livenessProbe= is included it should be kept extremely simple. It is
+more often than not safer to leave out the =livenessProbe= entirely and rely on
+the node crashes, metric based alerting and auto-scaling.
 
-A =livenessProbe= is optional; if the process in the container crashes or stops for any reason, it will be restarted. The probe ensures that if our node does not crash but for some reason has deadlocked and can not respond to requests, it will also be restarted.
+One part of auto-scaling is based on the =readinessProbe=. The =readinessProbe=
+tells Kubernetes the =Pod= is ready to receive traffic. When a =Pod= becomes =unready=
+because a container is failing the =readinessProbe=, it is removed from the
+=Service= resulting in traffic being directed at the remaining =Pods=, increasing
+their load, then a new =Pod= will be started.
 
-In =service_discovery= a =livenessProbe= is included that starts probing =/healthz= with an HTTP request after an initial delay of 3 seconds and then does so every 15 seconds.
+Not using the =livenessProbe= for this purpose means the containers are still
+available, since they aren't killed, and the reason for failing the check can be
+examined. This may mean attaching a shell if it isn't completely frozen or
+forcing a crash dump to be written. In a very resource constrained environment
+you may prefer to have the =livenessProbe= in order to have deadlocked containers
+and their =Pods= cleaned up right away, instead of waiting for manual intervention
+and the auto-scaler to scale down after load falls.
 
-#+BEGIN_SRC yaml
-livenessProbe:
-  httpGet:
-    path: /healthz
-    port: http
-  initialDelaySeconds: 3
-  periodSeconds: 15
-#+END_SRC
+Another use for the =readinessProbe= is if the application has to periodically do work
+where you don't want to be handling requests, or have to do some sort of
+maintenance, it can return a =503= status response for readiness causing it to be
+removed from the =Service= backends.
 
-The =readinessProbe= is checked by Kubernetes to know if requests should be routed to a container. If the application needs to do some heavy lifting on startup, or periodically, where it won't be able to serve requests, it should return a =503= status response for readiness.
+In the =Pod= configuration nothing special is needed to have a graceful shutdown,
+whether it is during a deploy, =livenessProbe= failure or scale down. Erlang will
+call =init:stop()= when =SIGTERM= is sent by Kubernetes to signal shutdown. As
+discussed in [[Releases]], each Applications will be stopped in the reverse they
+were started and each Application's supervision tree terminates children in
+reverse order.
 
-Another use is to begin sending =503= status responses after receiving the =SIGTERM= signal from Kubernetes that tells the node to shutdown. It isn't required because Kubernetes will remove the =Pod= from the routes either way if it has sent it a shutdown signal, but this removal is not done before sending the signal, so for a period there will still be requests and readiness checks after the node has received the signal.
+By default the process can wait up to 30 seconds (configurable with the
+=terminationGracePeriodSeconds= =PodSpec= option) before Kubernetes sends a =SIGKILL=
+signal that will force the process to terminate.
 
-The only necessary thing to do for graceful shutdown is to delay =init:stop()= from running until the =Pod= is removed from the =kube-proxy= =Endpoint=. The process can wait up to 30 seconds before Kubernetes sends a =SIGKILL= signal that will force the process to terminate.
+An important note about deployments and =readinessProbe= is the behaviour if a
+=readinessProbe= never passes. During deployment if the =Pod= never passes its
+=readinessProbe= then, depending on the deployment strategy, =Pods= from the
+previous version of the deployment that are =Ready= may remain until they do. This
+is covered more in the follow section [[Rolling Deployments]].
 
-In =service_discovery= the =readinessProbe= is on a separate path, =/ready=, and with a higher frequency, every 5 seconds.
+In the =service_discovery= project only =readinessProbe= is defined for the purpose
+of removing the =Pod= from =Service= backends without killing the container:
 
 #+BEGIN_SRC yaml
 readinessProbe:
   httpGet:
     path: /ready
     port: http
-  initialDelaySeconds: 3
-  periodSeconds: 5
+  initialDelaySeconds: 0
+  periodSeconds: 10
 #+END_SRC
 
-The =readinessProbe= is also important to having successful rolling deployments with no downtime for the service.
+With this configuration we expect the initial check to fail at least once
+because the actual startup time before the =service_discovery_http= Application
+has bound to a port to listen for HTTP requests is more than =0= seconds. This
+will result in a =connection refused= error handled by the =Probe=:
+
+#+BEGIN_SRC
+service-disc… │ [event: pod service-discovery-dev/service-discovery-dev-645659d699-plxfw] Readiness probe failed: Get "http://10.244.0.114:3000/ready": dial tcp 10.244.0.114:3000: connect: connection refused
+#+END_SRC
+
+Despite failing and =periodSeconds= being =10= it likely won't take 10 seconds for
+the =Pod= to be ready. With an =initialDelaySeconds= of =0= the =readinessProbe= is
+checked immediately during startup and does not wait the configured
+=periodSeconds= to check a second time. Because the service does little on startup
+it will pass the second check. If it doesn't it will then wait the =periodSeconds=
+until it is checked again and the =Pod= becomes ready.
+
+To be as simple as possible, the =readinessProbe= is defined in =service_discovery_http= as:
+
+#+BEGIN_SRC erlang
+handle('GET', [<<"ready">>], _Req) ->
+    {ok, [], <<>>};
+#+END_SRC
+
+Meaning it matches on a =GET= request to =/ready= and returns a =200= response
+immediately. There are no additional checks of functionality of the service
+except that it is able to receive and respond to HTTP requests.
 
 **** Rolling Deployments
 
