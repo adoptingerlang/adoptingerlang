@@ -2806,7 +2806,7 @@ $ mv buildx ~/.docker/cli-plugins/docker-buildx
 
 *** Building Images
 
-[[https://hub.docker.com/_/erlang/][Official Erlang Docker images]] are published for each new OTP release. They include Rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of Rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to mirror the Erlang image used for the base to your own repository, even if your repository is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability. This best practice is why in the examples to follow and the =service_discovery= repository use images from =docker.pkg.github.com/adoptingerlang/service_discovery/= and =us.gcr.io/adoptingerlang/=.
+[[https://hub.docker.com/_/erlang/][Official Erlang Docker images]] are published for each new OTP release. They include Rebar3 and come in [[https://alpinelinux.org/][Alpine]] and [[https://www.debian.org/][Debian]] flavors -- the images are updated for new releases of Rebar3 and Alpine/Debian as well. Because the tagged images are updated for new releases it is recommended to both use the =sha256= digest of the image and to mirror the images used to your own repository, even if your repository is also on Docker Hub. Having a copy ensures the base image does not change without developer intervention and having a mirror in a registry separate from Docker Hub means you are not dependent on its availability. This best practice is why in the examples to follow and the =service_discovery= repository use images from =ghcr.io/adoptingerlang/service_discovery/= and =us.gcr.io/adoptingerlang/=.
 
 **** Private Dependencies
 
@@ -2875,7 +2875,11 @@ COPY . .
 RUN rebar3 compile
 #+END_SRC
 
-Because of the order of operations in the Dockerfile each run of =docker build .= only compiles the project's source, assuming there is a change, otherwise an existing layer is used here as well. Any command that does not need to be rerun when there are changes to the project need to come before either of the =COPY= commands. For example, installing Alpine packages, =RUN apk add git= and =WORKDIR /app/src= for setting the working directory.
+Because of the order of operations in the Dockerfile each run of =docker build
+.= only compiles the project's source, assuming there is a change, otherwise an
+existing layer is used here as well. Any command that does not need to be rerun
+when there are changes to the project need to come before either of the =COPY=
+commands. For example, installing Debian packages, =RUN apt install git= and =WORKDIR /app/src= for setting the working directory.
 
 Use of =COPY . .= is discouraged because it makes it more likely to invalidate the cache. If possible it is better to copy only the files and directories needed for the build or having a =.dockerignore= file filter out files that are not needed. The =.git= directory is one that because of its size and the fact changes to the contents in it do not effect the build artifacts is good to ignore. However, in =service_discovery= we rely on git commands for setting the version of the release and the applications that make up the release. In projects that do not rely on this feature of Rebar3 it is recommended to add =.git= to =.dockerignore=.
 
@@ -2939,7 +2943,7 @@ With =buildx= a cache manifest is built that will include information about prev
 
 **** Multi-Stage Build
 
-For an Erlang project we are going to need an image with the built release and this image should not contain anything not required for running the release. Tools like Rebar3, the Erlang/OTP version used to build the project, git that was used for fetching dependencies from github, etc all must go. Instead of removing items after the build is complete, a multi-stage Dockerfile can be used to copy the final release, which bundles the Erlang runtime, from the stage it was built to a stage with an Alpine base and only the shared libraries necessary to run the release, such as OpenSSL.
+For an Erlang project we are going to need an image with the built release and this image should not contain anything not required for running the release. Tools like Rebar3, the Erlang/OTP version used to build the project, git that was used for fetching dependencies from github, etc all must go. Instead of removing items after the build is complete, a multi-stage Dockerfile can be used to copy the final release, which bundles the Erlang runtime, from the stage it was built to a stage with a Debian base and only the shared libraries necessary to run the release, such as OpenSSL.
 
 We will step through the stages in the =service_discovery= project's [[https://github.com/adoptingerlang/service_discovery/blob/docker-chapter/Dockerfile][Dockerfile]]. The first stage is named =builder=:
 
@@ -2950,12 +2954,13 @@ FROM ghcr.io/adoptingerlang/service_discovery/erlang:26.0.2 as builder
 WORKDIR /app/src
 ENV REBAR_BASE_DIR /app/_build
 
-# Install git for fetching non-hex dependencies.
-# Add any other Alpine libraries needed to compile the project here.
-# See https://wiki.alpinelinux.org/wiki/Local_APK_cache for details
-# on the local cache and need for the symlink
-RUN --mount=type=cache,id=apk,sharing=locked,target=/var/cache/apk \
-    apk add --update git
+RUN rm -f /etc/apt/apt.conf.d/docker-clean
+
+# Install git for fetching non-hex depenencies.
+# Add any other Debian libraries needed to compile the project here.
+RUN --mount=target=/var/lib/apt/lists,id=apt-lists,type=cache,sharing=locked \
+    --mount=type=cache,id=apt,target=/var/cache/apt \
+    apt update && apt install --no-install-recommends -y git
 
 # build and cache dependencies as their own layer
 COPY rebar.config rebar.lock .
@@ -2998,10 +3003,6 @@ WORKDIR /app/src
 # create the directory to unpack the release to
 RUN mkdir -p /opt/rel
 
-# tar for unpacking the target system
-RUN --mount=type=cache,id=apk,sharing=locked,target=/var/cache/apk \
-    apk add --update tar
-
 # build the release tarball and then unpack
 # to be copied into the image built in the next stage
 RUN --mount=target=. \
@@ -3030,11 +3031,11 @@ You might notice that a tarball of the release is created only to be untarred im
 #+end_export
 #+end_admonition
 
-Finally, the deployable image uses a regular OS image (=alpine:3.10=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
+Finally, the deployable image uses a regular OS image (=debian:bullseye=) as the base instead of a prior stage. Any shared libraries needed to run the release are installed first and then the unpacked release from the =releaser= stage is copied to =/opt/service_discovery=:
 
 #+attr_latex: :options label=Dockerfile
 #+BEGIN_SRC dockerfile
-FROM docker.pkg.github.com/adoptingerlang/service_discovery/alpine:3.10.2 as runner
+FROM ghcr.io/adoptingerlang/service_discovery/debian:bullseye as runner
 
 WORKDIR /opt/service_discovery
 
@@ -3046,14 +3047,12 @@ ENV COOKIE=service_discovery \
     LOGGER_LEVEL=debug \
     SBWT=none
 
-EXPOSE 8053
-EXPOSE 3000
-EXPOSE 8081
+RUN rm -f /etc/apt/apt.conf.d/docker-clean
 
-# install openssl, needed by the crypto app
-RUN --mount=type=cache,id=apk,sharing=locked,target=/var/cache/apk \
-    ln -vs /var/cache/apk /etc/apk/cache && \
-    apk add --update openssl ncurses
+# openssl needed by the crypto app
+RUN --mount=target=/var/lib/apt/lists,id=apt-lists,type=cache,sharing=locked \
+    --mount=type=cache,id=apt,sharing=locked,target=/var/cache/apt \
+    apt update && apt install --no-install-recommends -y openssl ncurses-bin
 
 COPY --from=releaser /opt/rel .
 
@@ -3458,16 +3457,27 @@ volumes:
 
 initContainers:
 - name: flyway
-  image: boxfuse/flyway:5.2.4
+  image: flyway/flyway:9.22
+  name: flyway-validate
   args:
-  - "-url=jdbc:postgresql://$(POSTGRES_SERVICE):5432/discovery"
-  - -user=discovery
-  - -password=password
-  - -connectRetries=60
+  - "-url=jdbc:postgresql://$(POSTGRES_SERVICE):5432/$(POSTGRES_DB)"
+  - "-user=$(POSTGRES_USER)"
+  - "-password=$(POSTGRES_PASSWORD)"
+  - "-connectRetries=60"
+  - "-skipCheckForUpdate"
   - validate
   volumeMounts:
   - name: migrations
     mountPath: /flyway/sql
+    env:
+    - name: POSTGRES_SERVICE
+      value: POSTGRES_SERVICE
+    - name: POSTGRES_DB
+      value: POSTGRES_DB
+    - name: POSTGRES_USER
+      value: POSTGRES_USER
+    - name: POSTGRES_PASSWORD
+      value: POSTGRES_PASSWORD
 
 - name: service-discovery-sql
   image: service_discovery
@@ -3786,8 +3796,6 @@ metadata:
     service: flyway
   name: flyway
 spec:
-  # alpha feature still as of 1.16
-  # deletes the job after it completes
   ttlSecondsAfterFinished: 0
   template:
     metadata:
@@ -3799,26 +3807,38 @@ spec:
       - name: migrations
         emptyDir:
           medium: Memory
+
       containers:
       - args:
-        - "-url=jdbc:postgresql://$(POSTGRES_SERVICE):5432/discovery"
-        - -user=discovery
-        - -password=password
+        - "-url=jdbc:postgresql://$(POSTGRES_SERVICE):5432/$(POSTGRES_DB)"
+        - -user=$(POSTGRES_USER)
+        - -password=$(POSTGRES_PASSWORD)
         - -connectRetries=60
+        - -skipCheckForUpdate
         - migrate
-        image: flyway/flyway:6-alpine
+        image: flyway/flyway:9.22
         name: flyway
         volumeMounts:
         - name: migrations
           mountPath: /flyway/sql
+        env:
+        - name: POSTGRES_SERVICE
+          value: POSTGRES_SERVICE
+        - name: POSTGRES_DB
+          value: POSTGRES_DB
+        - name: POSTGRES_USER
+          value: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          value: POSTGRES_PASSWORD
+
       initContainers:
       - name: service-discovery-sql
         image: service_discovery
+        command: ["/bin/sh"]
+        args: ["-c", "cp /opt/service_discovery/sql/* /flyway/sql"]
         volumeMounts:
           - name: migrations
             mountPath: /flyway/sql
-        command: ["/bin/sh"]
-        args: ["-c", "cp /opt/service_discovery/sql/* /flyway/sql"]
 #+END_SRC
 
 The trouble with using a =Job= for migrations is applying a set of Kubernetes YAML resources can not update the image of a completed =Job= and cause it to be rerun. Applying a =Job= of the same name with a different =service_discovery= image will result in an error. There are a couple options to deal with this limitation.
@@ -3844,8 +3864,7 @@ spec:
     spec:
       volumes:
       - name: migrations
-        emptyDir:
-          medium: Memory
+        emptyDir: {}
       initContainers:
       - name: service-discovery-sql
         image: service_discovery
@@ -3855,17 +3874,27 @@ spec:
         command: ["/bin/sh"]
         args: ["-c", "cp /opt/service_discovery/sql/* /flyway/sql"]
 
-      - args:
-        - "-url=jdbc:postgresql://$(POSTGRES_SERVICE):5432/discovery"
-        - -user=discovery
-        - -password=password
-        - -connectRetries=60
-        - validate
-        image: boxfuse/flyway:5.2.4
+      - image: flyway/flyway:9.22
         name: flyway-validate
+        args:
+        - "-url=jdbc:postgresql://$(POSTGRES_SERVICE):5432/$(POSTGRES_DB)"
+        - "-user=$(POSTGRES_USER)"
+        - "-password=$(POSTGRES_PASSWORD)"
+        - "-connectRetries=60"
+        - "-skipCheckForUpdate"
+        - validate
         volumeMounts:
         - name: migrations
           mountPath: /flyway/sql
+        env:
+        - name: POSTGRES_SERVICE
+          value: POSTGRES_SERVICE
+        - name: POSTGRES_DB
+          value: POSTGRES_DB
+        - name: POSTGRES_USER
+          value: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          value: POSTGRES_PASSWORD
 #+END_SRC
 
 Each init container is run in order to completion before the next is started, which makes the order in this case very important. If the container which copies the migration files to =/flyway/sql= were not first in the list of =initContainers=, and required by Kubernetes to run to successful completion before the next container is started, the migrations would not be copied to the volume before =flyway= is run.
