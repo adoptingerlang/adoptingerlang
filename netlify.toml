@@ -8,6 +8,9 @@
 [context.deploy-preview.environment]
   HUGO_VERSION = "0.127.0"
 
+[context.branch-deploy.environment]
+  HUGO_VERSION = "0.127.0"
+
 [[headers]]
   for = "/img/*"
   [headers.values]
