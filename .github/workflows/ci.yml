@@ -27,12 +27,14 @@ jobs:
         run: emacs -batch adoptingerlang.org -q -l export.el
 
       - name: Setup Hugo
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: '0.127.0'
           extended: true
 
       - name: Hugo Build
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
         run: hugo --gc --minify
 
       - name: Deploy to Netlify
@@ -54,7 +56,9 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
         run: |
           export DEPLOY_BRANCH_NAME=${GITHUB_REF_NAME#snapshot-}
+          git config --global user.name 'Tristan Sloughter'
+          git config --global user.email 'tsloughter@users.noreply.github.com'
           git checkout -b ${DEPLOY_BRANCH_NAME}
-          git add --force --all public/
+          git add --force --all content/
           git commit -m "action: add built site in public/ to deploy to netlify in branch deploy"
           git push origin ${DEPLOY_BRANCH_NAME}:${DEPLOY_BRANCH_NAME}
