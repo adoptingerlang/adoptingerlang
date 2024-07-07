@@ -117,6 +117,7 @@ While at Heroku, Tristan, along with Fred, started the build tool Rebar3 after s
 
 Tristan also created the website [[https://howistart.org/][How I Start]] which collects articles for various languages from experienced developers on how they setup a new project and take it to completion, while also giving a peek at the tools and packages these top developers prefer.
 
+- [[https://sloughter.dev/][website]]
 - [[https://adoptingerlang.org/twitter/tsloughter][@t_sloughter]]
 - [[http://blog.erlware.org/][blog]]
 
