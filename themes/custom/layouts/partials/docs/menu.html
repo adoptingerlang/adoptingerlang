@@ -1,3 +1,11 @@
+<div>
+  <!-- I know, what I found online everywhere says not to do this, but I got tired of trying to do it without select/option -->
+  <select onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);"
+          style="display:block; margin: 10px auto;">
+    <option value="http://www.adoptingerlang.org" {{if eq .Site.Params.Version "main" }}selected{{end}}>main</option>
+    <option value="http://2024-06-06.adoptingerlang.org" {{if eq .Site.Params.Version "2024-06-06" }}selected{{end}} >2024-06-06</option>
+  </select>
+</div>
 <ul>
   {{ $currentPage := . }}
   {{ range .Site.Menus.main }}
