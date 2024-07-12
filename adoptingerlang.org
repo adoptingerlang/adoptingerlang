@@ -155,7 +155,7 @@ A snapshot is a copy of the site as it is on a date before some major changes
 were to be made. The first was done July 6, 2024, so any changes to the text
 before this date have to be seen through the [Github
 repo](https://github.com/adoptingerlang/adoptingerlang/) history or the [web
-archive](https://web.archive.org/web/https://www.adoptingerlang.org).
+archive](http://web.archive.org/web/20240000000000*/http://adoptingerlang.org).
 
 *** [Snapshot 2024-06-06](https://2024-06-06.adoptingerlang.org/)
 
