@@ -7,9 +7,13 @@ pygmentsCodeFences=true
 disableKinds=["taxonomy"]
 
 [params]
+version = "main"
 BookMenuBundle="/docs/menu"
 # BookSection="chapters"
 images = ["/img/cover.png"]
+
+BookRepo = 'https://github.com/adoptingerlang/adoptingerlang'
+BookCommitPath = 'commit'
 
 [markup.goldmark.renderer]
 unsafe= true

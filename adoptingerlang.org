@@ -117,6 +117,7 @@ While at Heroku, Tristan, along with Fred, started the build tool Rebar3 after s
 
 Tristan also created the website [[https://howistart.org/][How I Start]] which collects articles for various languages from experienced developers on how they setup a new project and take it to completion, while also giving a peek at the tools and packages these top developers prefer.
 
+- [[https://sloughter.dev/][website]]
 - [[https://adoptingerlang.org/twitter/tsloughter][@t_sloughter]]
 - [[http://blog.erlware.org/][blog]]
 
@@ -139,6 +140,31 @@ Evan has been writing Erlang professionally since 2012 and in various other lang
   <div><a href="/docs/development">Next →</a></div>
 </div>
 #+END_EXPORT
+
+** DONE Changelog
+CLOSED: [2024-06-07 Sun 12:30]
+:PROPERTIES:
+:EXPORT_FILE_NAME: changelog
+:EXPORT_HUGO_MENU: :menu main :parent introduction
+:END:
+
+This changelog tracks major changes to the text by snapshot version since Sept
+7, 2023.
+
+A snapshot is a copy of the site as it is on a date before some major changes
+were to be made. The first was done July 6, 2024, so any changes to the text
+before this date have to be seen through the [Github
+repo](https://github.com/adoptingerlang/adoptingerlang/) history or the [web
+archive](http://web.archive.org/web/20240000000000*/http://adoptingerlang.org).
+
+*** [Snapshot 2024-06-06](https://2024-06-06.adoptingerlang.org/)
+
+- [Switch docker images from alpine to
+  debian](https://github.com/adoptingerlang/adoptingerlang/pull/107)
+- [Update to OTP-26 and update liveness and readiness probe
+  descriptions](https://github.com/adoptingerlang/adoptingerlang/pull/106)
+- [remove unneeded parts about setting +S schedulers in
+  containers](https://github.com/adoptingerlang/adoptingerlang/pull/102)
 
 * Development
 :PROPERTIES:
