@@ -7,7 +7,7 @@ pygmentsCodeFences=true
 disableKinds=["taxonomy"]
 
 [params]
-version = "main"
+version = "2024-06-06"
 BookMenuBundle="/docs/menu"
 # BookSection="chapters"
 images = ["/img/cover.png"]
