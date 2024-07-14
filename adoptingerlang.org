@@ -157,6 +157,10 @@ before this date have to be seen through the [Github
 repo](https://github.com/adoptingerlang/adoptingerlang/) history or the [web
 archive](http://web.archive.org/web/20240000000000*/http://adoptingerlang.org).
 
+*** [main](https://www.adoptingerlang.org/)
+
+- [Switch to ctlptl and kind for local/test k8s cluster management](https://github.com/adoptingerlang/adoptingerlang/pull/112)
+
 *** [Snapshot 2024-06-06](https://2024-06-06.adoptingerlang.org/)
 
 - [Switch docker images from alpine to
@@ -3281,21 +3285,36 @@ With containers and Kubernetes we have common methods of deployment, discovery, 
 
 *** Running Kubernetes
 
-In order to develop and test the Kubernetes deploy, we will need to run Kubernetes locally for testing purposes. The following sections were written with [[https://microk8s.io/][microk8s]] as the local test Kubernetes but should work on any of the local or cloud options for running Kubernetes. When necessary to give specific instructions around local testing, =microk8s= will be used. Instructions for Continuous Integration and deployment to production will use Google Kubernetes Engine. But the majority of the content should work easily with any of the offerings in the following two sections.
+In order to develop and test the Kubernetes deploy, we will need to run
+Kubernetes locally for testing purposes. The following sections were written
+with [[https://kind.sigs.k8s.io][kind]] as the local test Kubernetes but should work on any of the local or
+cloud options for running Kubernetes. The tool [[https://github.com/tilt-dev/ctlptl][ctlptl]] is used for managing the
+test Kubernetes clusters in this text. It supports multiple bankends, making it
+even easier to swap out the one used here for your preferred solution.
+Instructions for Continuous Integration and deployment to production will use
+Google Kubernetes Engine. But the majority of the content should work easily
+with any of the offerings in the following two sections.
 
 **** Locally
 
-- [[https://microk8s.io/][microk8s]]: An offering from the company behind Ubuntu, Canonical, but runs on many [[https://snapcraft.io/docs/installing-snapd][Linux distros]], [[https://multipass.run/#install][Windows]] and [[https://multipass.run/#install][MacOS]]. microk8s is simple to install and get started with, and it runs locally, not within a VM like minikube, so is less of a resource hog.
+- [[https://kind.sigs.k8s.io/][kind]]: Kubernetes in Docker is a projected backed by a [[https://github.com/kubernetes-sigs][Kubernetes SIG]] for running Kubernetes in Docker originally for testing Kubernetes itself.
+- [[https://microk8s.io/][microk8s]]: An offering from Canonical, the company behind Ubuntu, but runs on many [[https://snapcraft.io/docs/installing-snapd][Linux distros]], [[https://multipass.run/#install][Windows]] and [[https://multipass.run/#install][MacOS]]. microk8s is simple to install and get started with, and it runs locally, not within a VM like minikube, so is less of a resource hog.
 - [[https://github.com/kubernetes/minikube][minikube]]: The oldest and most flexible option, that is also now an official part of the Kubernetes project. =minikube= offers support for various hypervisors and has an option to run without creating a new virtual machine, but it still suggests doing so within a Linux VM.
 - [[https://k3s.io/][k3s]] and [[https://github.com/rancher/k3d][k3d]]: k3s is lightweight Kubernetes from [[https://rancher.com/][Rancher Labs]]. k3s removes legacy and non-default features to cut down on size and replaces etcd with SQLite3, making k3s a good option for CI and local testing. k3d is a helper for running k3s in Docker.
-- [[https://kind.sigs.k8s.io/][kind]]: Kubernetes in Docker is a projected backed by a [[https://github.com/kubernetes-sigs][Kubernetes SIG]] for running Kubernetes in Docker originally for testing Kubernetes itself.
-- [[https://docs.docker.com/docker-for-mac/#kubernetes][Docker for Mac Kubernetes]]: The easiest to get going with when running on MacOS.
+- [[https://docs.docker.com/docker-for-mac/#kubernetes][Docker for Mac
+  Kubernetes]]: The easiest to get going with when running on MacOS.
+- [[https://docs.docker.com/desktop/kubernetes/][Docker for Windows]]: The easiest to get going with when running on Windows.
+
+All  of these, minus =microk8s=, is supported by =ctlptl=.
 
 **** Production
 
 All the big cloud providers offer managed Kubernetes clusters:
 
-- [[https://cloud.google.com/kubernetes-engine/][Google Kubernetes Engine]]: Google Cloud was used for this chapter when not using microk8s, because it offers [[https://cloud.google.com/free/][$300 of credit when signing up as a new user]]
+- [[https://cloud.google.com/kubernetes-engine/][Google Kubernetes Engine]]:
+  Google Cloud was used for this chapter when not using =kind=, because it
+  offers [[https://cloud.google.com/free/][$300 of credit when signing up as a
+  new user]]
 - [[https://www.digitalocean.com/products/kubernetes/][Digital Ocean Kubernetes]]
 - [[https://aws.amazon.com/eks/][AWS Elastic Container Service for Kubernetes]]
 - [[https://azure.microsoft.com/en-us/services/kubernetes-service/][Azure Kubernetes Service]]
@@ -3928,24 +3947,33 @@ Each init container is run in order to completion before the next is started, wh
 
 *** Tilt for Local Development
 
-[[https://tilt.dev/][Tilt]] is a tool for deploying and updating Docker images and Kubernetes deploys locally for development purposes. By default it will only build and deploy services against a local Kubernetes, such as =microk8s=, =minikube=, etc. to safe guard against accidentally sending your development environment into production!
+[[https://tilt.dev/][Tilt]] is a tool for deploying and updating Docker images and Kubernetes deploys
+locally for development purposes. By default it will only build and deploy
+services against a local Kubernetes, such as =kind=, =microk8s=, etc. to safe guard against accidentally sending your development environment into production!
 
-The easiest way to get started with Tilt is using a registry within the local Kubernetes cluster. For =microk8s= a registry can be enabled easily, we will need DNS as well so enable that at this time as well:
+The easiest way to get started with Tilt is using a registry within the local
+Kubernetes cluster. For =kind= with =ctlptl= a registry can be enabled easily:
+
+#+BEGIN_SRC
+apiVersion: ctlptl.dev/v1alpha1
+kind: Registry
+name: ctlptl-registry
+port: 5005
+---
+apiVersion: ctlptl.dev/v1alpha1
+kind: Cluster
+product: kind
+registry: ctlptl-registry
+name: kind-adoptingerlang
+#+END_SRC
+
+To create the cluster use `ctlptl apply`:
 
 #+BEGIN_SRC shell
-$ microk8s.enable registry
-$ microk8s.enable dns
+$ ctlptl apply -f cluster.yaml
 #+END_SRC
 
-To allow the host Docker to publish to this registry it must be added to =/etc/docker/daemon.json=:
 
-#+BEGIN_SRC json
-{
-  [...]
-  "insecure-registries" : ["localhost:32000"]
-  [...]
-}
-#+END_SRC
 
 Tilt works off of a file named =Tiltfile= at the root of the project. Stepping through the =Tiltfile= at the root of [[https://github.com/adoptingerlang/service_discovery][service_discovery]] it begins with:
 
