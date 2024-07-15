@@ -3949,7 +3949,7 @@ Each init container is run in order to completion before the next is started, wh
 
 [[https://tilt.dev/][Tilt]] is a tool for deploying and updating Docker images and Kubernetes deploys
 locally for development purposes. By default it will only build and deploy
-services against a local Kubernetes, such as =kind=, =microk8s=, etc. to safe guard against accidentally sending your development environment into production!
+services against a local Kubernetes, such as =kind=, =microk8s=, etc. to safeguard against accidentally sending your development environment into production!
 
 The easiest way to get started with Tilt is using a registry within the local
 Kubernetes cluster. For =kind= with =ctlptl= a registry can be enabled easily:
