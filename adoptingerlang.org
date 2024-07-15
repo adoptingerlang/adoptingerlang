@@ -3305,7 +3305,7 @@ with any of the offerings in the following two sections.
   Kubernetes]]: The easiest to get going with when running on MacOS.
 - [[https://docs.docker.com/desktop/kubernetes/][Docker for Windows]]: The easiest to get going with when running on Windows.
 
-All  of these, minus =microk8s=, is supported by =ctlptl=.
+All of these, minus =microk8s=, are supported by =ctlptl=.
 
 **** Production
 
