@@ -3951,8 +3951,11 @@ Each init container is run in order to completion before the next is started, wh
 locally for development purposes. By default it will only build and deploy
 services against a local Kubernetes, such as =kind=, =microk8s=, etc. to safeguard against accidentally sending your development environment into production!
 
-The easiest way to get started with Tilt is using a registry within the local
-Kubernetes cluster. For =kind= with =ctlptl= a registry can be enabled easily:
+The easiest way to get started with Tilt is using [[https://github.com/tilt-dev/ctlptl][ctlptl]] to create a [[https://kind.sigs.k8s.io][kind]]
+cluster which also runs a Docker image registry. This will be used for storing
+the images that get used by your Kubernetes Pods. For =kind= with [[https://github.com/tilt-dev/ctlptl][ctlptl]] a
+registry can be enabled easily through its support for a cluster configuration
+file:
 
 #+BEGIN_SRC
 apiVersion: ctlptl.dev/v1alpha1
@@ -3972,8 +3975,6 @@ To create the cluster use `ctlptl apply`:
 #+BEGIN_SRC shell
 $ ctlptl apply -f cluster.yaml
 #+END_SRC
-
-
 
 Tilt works off of a file named =Tiltfile= at the root of the project. Stepping through the =Tiltfile= at the root of [[https://github.com/adoptingerlang/service_discovery][service_discovery]] it begins with:
 
