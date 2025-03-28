@@ -3399,11 +3399,32 @@ resources:
     cpu: "2000m"
 #+END_SRC
 
-Additionally, CPU requests are translated to the cgroup property =cpu.shares=. Each CPU is considered 1024 slices and a CPU request tells the kernel how many of those slices to try to give to the process. But there is no upper bound to how much a process can ultimately take when only setting the shares. For throttling a process that is using too much CPU time we need the Kubernetes resource limits.
+Additionally, CPU requests are translated to the cgroup property =cpu.shares=.
+Shares are a relative weight that is used to calculate the share of the CPU's
+the cgroup will get. The default is =1024= but, since it is a relative weight,
+this tells us nothing without knowing the values of the other processes. If
+there are 2 processes, each with the default share of =1024= then each gets half
+the CPU time. If there are 3 processes, each with the default share of =1024= then
+they each get a third of the CPU time.
 
-The limits are translated to CPU bandwidth controls for the Linux kernel scheduler to enforce on the process. Bandwidth control has a period, which is some number of microseconds, and a quota, the maximum number of microseconds a process can use within a period. The period is always 100000 microseconds, so in the case of the example above with CPU limit set to =2000m= the cgroup quota set will be =200_000=, meaning 2 CPUs can be used every =100_000= microseconds.
+The limits are translated to the cgroup property =cpu.quota=. These are CPU
+bandwidth controls for the Linux kernel scheduler to enforce on the process.
+Bandwidth control has a period, which is some number of microseconds, and a
+quota, the maximum number of microseconds a process can use within a period. The
+period is always =100000= microseconds, so in the case of the example above with
+CPU limit set to =2000m= the cgroup quota set will be =200_000=, meaning 2 CPUs can
+be used every =100_000= microseconds.
 
-If the limit is exceeded during a period, the kernel will throttle the process by not allowing it to run again until the next period. This is why it is important to correctly set the number of Erlang VM schedulers that are used and to limit the amount of busy waiting done by the VM.
+If the limit is exceeded during a period, the kernel will throttle the process
+by not allowing it to run again until the next period. This can have a major
+impact on performance. There are a few main pieces of an Erlang program to be
+aware of to ensure you stay within your the allocated limit. The first is that
+the Erlang VM is multi-threaded. The VM creates threads for running schedulers
+that schedule the running of its internal processes. Running 2 threads when
+limited to 1 CPU core can easily run over the allocated quota. These schedulers
+won't simply hand back time to the kernel if they run out of processes to
+schedule either. Instead, to reduce latency in case something quickly becomes
+runnable again, the Erlang scheduler enters a busy wait loop.
 
 A busy wait is a tight loop an Erlang scheduler will enter waiting for more work to do before eventually going to sleep. This tight loop burns CPU just waiting to do actual work and can lead to much worse performance because your Erlang program will be likely to get throttled by the kernel scheduler. Then when there is actual work to be done, it may happen in a period the Erlang VM gets no CPU slices at all. This will be even worse if the VM is running more schedulers than CPUs it is allocated. The CPU limit of =2000m=, which we think of as meaning 2 CPU cores, does not actually restrict the process to 2 cores. If 8 schedulers are being used and there are the same number of cores on the node, those 8 will still spread across all the cores and run in parallel. But the quota is still =200000= and more likely to be exceeded when 8 schedulers are taking time on 8 cores. Even without the busy wait, a scheduler must do work of its own and can be unnecessary overhead when trying to stay within some CPU usage constraints.
 
@@ -4128,19 +4149,14 @@ Coming soon...
 
 Coming soon...
 
-** TODO Operations
+** TODO Observability
 :PROPERTIES:
 :EXPORT_FILE_NAME: operations
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 *** Remote access
 *** How to have a crashdump saved to a persistent volume
-*** Metrics
-**** VM
-**** Libraries
-**** Custom
-*** Logging
-*** Distributed tracing
+*** OpenTelemetry
 * Team Building
 :PROPERTIES:
 :EXPORT_HUGO_SECTION: docs/team_building
