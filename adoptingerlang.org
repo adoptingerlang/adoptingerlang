@@ -157,6 +157,10 @@ before this date have to be seen through the [Github
 repo](https://github.com/adoptingerlang/adoptingerlang/) history or the [web
 archive](http://web.archive.org/web/20240000000000*/http://adoptingerlang.org).
 
+*** [main](https://www.adoptingerlang.org/)
+
+- [Switch to ctlptl and kind for local/test k8s cluster management](https://github.com/adoptingerlang/adoptingerlang/pull/112)
+
 *** [Snapshot 2024-06-06](https://2024-06-06.adoptingerlang.org/)
 
 - [Switch docker images from alpine to
@@ -3281,21 +3285,36 @@ With containers and Kubernetes we have common methods of deployment, discovery, 
 
 *** Running Kubernetes
 
-In order to develop and test the Kubernetes deploy, we will need to run Kubernetes locally for testing purposes. The following sections were written with [[https://microk8s.io/][microk8s]] as the local test Kubernetes but should work on any of the local or cloud options for running Kubernetes. When necessary to give specific instructions around local testing, =microk8s= will be used. Instructions for Continuous Integration and deployment to production will use Google Kubernetes Engine. But the majority of the content should work easily with any of the offerings in the following two sections.
+In order to develop and test the Kubernetes deploy, we will need to run
+Kubernetes locally for testing purposes. The following sections were written
+with [[https://kind.sigs.k8s.io][kind]] as the local test Kubernetes but should work on any of the local or
+cloud options for running Kubernetes. The tool [[https://github.com/tilt-dev/ctlptl][ctlptl]] is used for managing the
+test Kubernetes clusters in this text. It supports multiple bankends, making it
+even easier to swap out the one used here for your preferred solution.
+Instructions for Continuous Integration and deployment to production will use
+Google Kubernetes Engine. But the majority of the content should work easily
+with any of the offerings in the following two sections.
 
 **** Locally
 
-- [[https://microk8s.io/][microk8s]]: An offering from the company behind Ubuntu, Canonical, but runs on many [[https://snapcraft.io/docs/installing-snapd][Linux distros]], [[https://multipass.run/#install][Windows]] and [[https://multipass.run/#install][MacOS]]. microk8s is simple to install and get started with, and it runs locally, not within a VM like minikube, so is less of a resource hog.
+- [[https://kind.sigs.k8s.io/][kind]]: Kubernetes in Docker is a projected backed by a [[https://github.com/kubernetes-sigs][Kubernetes SIG]] for running Kubernetes in Docker originally for testing Kubernetes itself.
+- [[https://microk8s.io/][microk8s]]: An offering from Canonical, the company behind Ubuntu, but runs on many [[https://snapcraft.io/docs/installing-snapd][Linux distros]], [[https://multipass.run/#install][Windows]] and [[https://multipass.run/#install][MacOS]]. microk8s is simple to install and get started with, and it runs locally, not within a VM like minikube, so is less of a resource hog.
 - [[https://github.com/kubernetes/minikube][minikube]]: The oldest and most flexible option, that is also now an official part of the Kubernetes project. =minikube= offers support for various hypervisors and has an option to run without creating a new virtual machine, but it still suggests doing so within a Linux VM.
 - [[https://k3s.io/][k3s]] and [[https://github.com/rancher/k3d][k3d]]: k3s is lightweight Kubernetes from [[https://rancher.com/][Rancher Labs]]. k3s removes legacy and non-default features to cut down on size and replaces etcd with SQLite3, making k3s a good option for CI and local testing. k3d is a helper for running k3s in Docker.
-- [[https://kind.sigs.k8s.io/][kind]]: Kubernetes in Docker is a projected backed by a [[https://github.com/kubernetes-sigs][Kubernetes SIG]] for running Kubernetes in Docker originally for testing Kubernetes itself.
-- [[https://docs.docker.com/docker-for-mac/#kubernetes][Docker for Mac Kubernetes]]: The easiest to get going with when running on MacOS.
+- [[https://docs.docker.com/docker-for-mac/#kubernetes][Docker for Mac
+  Kubernetes]]: The easiest to get going with when running on MacOS.
+- [[https://docs.docker.com/desktop/kubernetes/][Docker for Windows]]: The easiest to get going with when running on Windows.
+
+All of these, minus =microk8s=, are supported by =ctlptl=.
 
 **** Production
 
 All the big cloud providers offer managed Kubernetes clusters:
 
-- [[https://cloud.google.com/kubernetes-engine/][Google Kubernetes Engine]]: Google Cloud was used for this chapter when not using microk8s, because it offers [[https://cloud.google.com/free/][$300 of credit when signing up as a new user]]
+- [[https://cloud.google.com/kubernetes-engine/][Google Kubernetes Engine]]:
+  Google Cloud was used for this chapter when not using =kind=, because it
+  offers [[https://cloud.google.com/free/][$300 of credit when signing up as a
+  new user]]
 - [[https://www.digitalocean.com/products/kubernetes/][Digital Ocean Kubernetes]]
 - [[https://aws.amazon.com/eks/][AWS Elastic Container Service for Kubernetes]]
 - [[https://azure.microsoft.com/en-us/services/kubernetes-service/][Azure Kubernetes Service]]
@@ -3380,11 +3399,32 @@ resources:
     cpu: "2000m"
 #+END_SRC
 
-Additionally, CPU requests are translated to the cgroup property =cpu.shares=. Each CPU is considered 1024 slices and a CPU request tells the kernel how many of those slices to try to give to the process. But there is no upper bound to how much a process can ultimately take when only setting the shares. For throttling a process that is using too much CPU time we need the Kubernetes resource limits.
+Additionally, CPU requests are translated to the cgroup property =cpu.shares=.
+Shares are a relative weight that is used to calculate the share of the CPU's
+the cgroup will get. The default is =1024= but, since it is a relative weight,
+this tells us nothing without knowing the values of the other processes. If
+there are 2 processes, each with the default share of =1024= then each gets half
+the CPU time. If there are 3 processes, each with the default share of =1024= then
+they each get a third of the CPU time.
 
-The limits are translated to CPU bandwidth controls for the Linux kernel scheduler to enforce on the process. Bandwidth control has a period, which is some number of microseconds, and a quota, the maximum number of microseconds a process can use within a period. The period is always 100000 microseconds, so in the case of the example above with CPU limit set to =2000m= the cgroup quota set will be =200_000=, meaning 2 CPUs can be used every =100_000= microseconds.
+The limits are translated to the cgroup property =cpu.quota=. These are CPU
+bandwidth controls for the Linux kernel scheduler to enforce on the process.
+Bandwidth control has a period, which is some number of microseconds, and a
+quota, the maximum number of microseconds a process can use within a period. The
+period is always =100000= microseconds, so in the case of the example above with
+CPU limit set to =2000m= the cgroup quota set will be =200_000=, meaning 2 CPUs can
+be used every =100_000= microseconds.
 
-If the limit is exceeded during a period, the kernel will throttle the process by not allowing it to run again until the next period. This is why it is important to correctly set the number of Erlang VM schedulers that are used and to limit the amount of busy waiting done by the VM.
+If the limit is exceeded during a period, the kernel will throttle the process
+by not allowing it to run again until the next period. This can have a major
+impact on performance. There are a few main pieces of an Erlang program to be
+aware of to ensure you stay within your the allocated limit. The first is that
+the Erlang VM is multi-threaded. The VM creates threads for running schedulers
+that schedule the running of its internal processes. Running 2 threads when
+limited to 1 CPU core can easily run over the allocated quota. These schedulers
+won't simply hand back time to the kernel if they run out of processes to
+schedule either. Instead, to reduce latency in case something quickly becomes
+runnable again, the Erlang scheduler enters a busy wait loop.
 
 A busy wait is a tight loop an Erlang scheduler will enter waiting for more work to do before eventually going to sleep. This tight loop burns CPU just waiting to do actual work and can lead to much worse performance because your Erlang program will be likely to get throttled by the kernel scheduler. Then when there is actual work to be done, it may happen in a period the Erlang VM gets no CPU slices at all. This will be even worse if the VM is running more schedulers than CPUs it is allocated. The CPU limit of =2000m=, which we think of as meaning 2 CPU cores, does not actually restrict the process to 2 cores. If 8 schedulers are being used and there are the same number of cores on the node, those 8 will still spread across all the cores and run in parallel. But the quota is still =200000= and more likely to be exceeded when 8 schedulers are taking time on 8 cores. Even without the busy wait, a scheduler must do work of its own and can be unnecessary overhead when trying to stay within some CPU usage constraints.
 
@@ -3928,23 +3968,33 @@ Each init container is run in order to completion before the next is started, wh
 
 *** Tilt for Local Development
 
-[[https://tilt.dev/][Tilt]] is a tool for deploying and updating Docker images and Kubernetes deploys locally for development purposes. By default it will only build and deploy services against a local Kubernetes, such as =microk8s=, =minikube=, etc. to safe guard against accidentally sending your development environment into production!
+[[https://tilt.dev/][Tilt]] is a tool for deploying and updating Docker images and Kubernetes deploys
+locally for development purposes. By default it will only build and deploy
+services against a local Kubernetes, such as =kind=, =microk8s=, etc. to safeguard against accidentally sending your development environment into production!
 
-The easiest way to get started with Tilt is using a registry within the local Kubernetes cluster. For =microk8s= a registry can be enabled easily, we will need DNS as well so enable that at this time as well:
+The easiest way to get started with Tilt is using [[https://github.com/tilt-dev/ctlptl][ctlptl]] to create a [[https://kind.sigs.k8s.io][kind]]
+cluster which also runs a Docker image registry. This will be used for storing
+the images that get used by your Kubernetes Pods. For =kind= with [[https://github.com/tilt-dev/ctlptl][ctlptl]] a
+registry can be enabled easily through its support for a cluster configuration
+file:
 
-#+BEGIN_SRC shell
-$ microk8s.enable registry
-$ microk8s.enable dns
+#+BEGIN_SRC
+apiVersion: ctlptl.dev/v1alpha1
+kind: Registry
+name: ctlptl-registry
+port: 5005
+---
+apiVersion: ctlptl.dev/v1alpha1
+kind: Cluster
+product: kind
+registry: ctlptl-registry
+name: kind-adoptingerlang
 #+END_SRC
 
-To allow the host Docker to publish to this registry it must be added to =/etc/docker/daemon.json=:
+To create the cluster use `ctlptl apply`:
 
-#+BEGIN_SRC json
-{
-  [...]
-  "insecure-registries" : ["localhost:32000"]
-  [...]
-}
+#+BEGIN_SRC shell
+$ ctlptl apply -f cluster.yaml
 #+END_SRC
 
 Tilt works off of a file named =Tiltfile= at the root of the project. Stepping through the =Tiltfile= at the root of [[https://github.com/adoptingerlang/service_discovery][service_discovery]] it begins with:
@@ -4099,19 +4149,14 @@ Coming soon...
 
 Coming soon...
 
-** TODO Operations
+** TODO Observability
 :PROPERTIES:
 :EXPORT_FILE_NAME: operations
 :EXPORT_HUGO_MENU: :menu main :parent production
 :END:
 *** Remote access
 *** How to have a crashdump saved to a persistent volume
-*** Metrics
-**** VM
-**** Libraries
-**** Custom
-*** Logging
-*** Distributed tracing
+*** OpenTelemetry
 * Team Building
 :PROPERTIES:
 :EXPORT_HUGO_SECTION: docs/team_building
