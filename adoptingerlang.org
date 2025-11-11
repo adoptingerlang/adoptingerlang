@@ -23,6 +23,7 @@
 #+latex_header: \setminted{style=friendly, bgcolor=friendlybg, frame=lines, breaklines, breakanywhere}
 #+LATEX_HEADER: \newenvironment{admonition}{\begin{bclogo}}{\end{bclogo}}
 #+OPTIONS: ^:{}
+#+OPTIONS: broken-links:mark
 #+HUGO_BASE_DIR: .
 #+HUGO_SECTION: docs
 #+HUGO_PAIRED_SHORTCODES: %admonition
@@ -3564,18 +3565,19 @@ Probes are defined either as a command to execute in the container, as an HTTP
 =GET= request made to a given port and path, or as an attempt to open a TCP
 connection to a specific port.
 
-While kubernetes will restart any failed container, there are some times where a
-process becomes unresponsive, such as deadlocks. A =livenessProbe= can be
-used for such cases, where stopping to respond prompts a restart. For this
-reason if a =livenessProbe= is included it should be kept extremely simple. It is
-more often than not safer to leave out the =livenessProbe= entirely and rely on
-the node crashes, metric based alerting and auto-scaling.
+***** LivenessProbe
 
-One part of auto-scaling is based on the =readinessProbe=. The =readinessProbe=
-tells Kubernetes the =Pod= is ready to receive traffic. When a =Pod= becomes =unready=
-because a container is failing the =readinessProbe=, it is removed from the
-=Service= resulting in traffic being directed at the remaining =Pods=, increasing
-their load, then a new =Pod= will be started.
+While Kubernetes will restart any failed container, there are some times where a
+process becomes unresponsive but is still technically alive, such as deadlocks.
+A =livenessProbe= can be used for such cases, where failing to respond prompts a
+restart. But failing to respond in time could mean the process is busy doing
+useful work and inflicting additional churn on the Deployment by restarting
+those that are busy would only make the matter worse since that work will have to
+still be done by some Pod, potentially leading to a cascade of failures as
+containers are continually being restarted. For this reason if a =livenessProbe=
+is included it should be kept extremely simple and the timeout and threshold
+carefully chosen. It is more often than not safer to leave out the =livenessProbe=
+entirely and rely on node crashes, metric based alerting and auto-scaling.
 
 Not using the =livenessProbe= for this purpose means the containers are still
 available, since they aren't killed, and the reason for failing the check can be
@@ -3585,66 +3587,93 @@ you may prefer to have the =livenessProbe= in order to have deadlocked container
 and their =Pods= cleaned up right away, instead of waiting for manual intervention
 and the auto-scaler to scale down after load falls.
 
-Another use for the =readinessProbe= is if the application has to periodically do work
-where you don't want to be handling requests, or have to do some sort of
-maintenance, it can return a =503= status response for readiness causing it to be
-removed from the =Service= backends.
+***** ReadinessProbe
+
+A common misconception is that a =readinessProbe= is meant for keeping a =Pod= out
+of service until it is fully booted. This was not really the case and in
+Kubernetes 1.16 an additional probe, =startupProbe=, was added to handle this.
+Read more about =startupProbe= in the following section. A =readinessProbe= is also
+not needed for graceful shutdown. When a shutdown is initiated Kubernetes will
+have the =Pod= removed from service.
+
+The actual main use for the =readinessProbe= is if the application has to
+periodically do work that it can't be handling requests during or you have
+to do some sort of maintenance/inspection that also warrants a period of not
+receiving requests.
+
+In Erlang a =readinessProbe= manual toggle could be implemented with a
+=persistent_term= or any other way of sharing a value that allows the user to
+connect to a remote console and toggle it on/off. With a Horizontal Pod
+Auto-Scaler the =Deployment= would then be scaled up if needed as the other =Pods=
+would now be receiving additional traffic.
+
+=readinessProbe= is also important if the reason for not including the =livenessProbe= is
+to allow deadlocked nodes to be inspected. A deadlocked node will fail the
+=readinessProbe= until being removed from the service so users do not receive
+timeouts but the =Pod= remains available for inspection.
 
 In the =Pod= configuration nothing special is needed to have a graceful shutdown,
 whether it is during a deploy, =livenessProbe= failure or scale down. Erlang will
 call =init:stop()= when =SIGTERM= is sent by Kubernetes to signal shutdown. As
-discussed in [[Releases]], each Applications will be stopped in the reverse they
+discussed in [[/docs/productin/releases][Releases]], each Applications will be stopped in the reverse they
 were started and each Application's supervision tree terminates children in
-reverse order.
+reverse order. This doesn't mean Application shutdown doesn't have to be handled
+appropriately and carefully, only that the `Pod` configuration itself does not
+need a special setting to delay the Release from halting. Instead it is up to
+each Application to perform a graceful shutdown. For example, an Application
+that starts an HTTP server should wait until the open requests are handled
+before the `stop` callback returns.
 
-By default the process can wait up to 30 seconds (configurable with the
-=terminationGracePeriodSeconds= =PodSpec= option) before Kubernetes sends a =SIGKILL=
-signal that will force the process to terminate.
+However, there is a limit to how long shutdown can take. By default the shutdown
+can wait up to 30 seconds (configurable with the =terminationGracePeriodSeconds=
+=PodSpec= option) before Kubernetes sends a =SIGKILL= signal that will force the
+process to terminate.
 
-An important note about deployments and =readinessProbe= is the behaviour if a
-=readinessProbe= never passes. During deployment if the =Pod= never passes its
-=readinessProbe= then, depending on the deployment strategy, =Pods= from the
-previous version of the deployment that are =Ready= may remain until they do. This
-is covered more in the follow section [[Rolling Deployments]].
+***** StartupProbe
 
-In the =service_discovery= project only =readinessProbe= is defined for the purpose
-of removing the =Pod= from =Service= backends without killing the container:
+It can be preferred to be absolutely sure a client does not receive a
+"connection refused" error in response to a request while the application is
+booting and to do this =startupProbe= should be used instead of =readinessProbe=.
+Unlike =readinessProbe= the =startupProbe= will only be checked until it passes, not
+periodically for the life of the =Pod=. If startup doesn't take many seconds or
+minutes, and clients are not negatively effected by simply having to do retries
+it isn't needed. To do this in the =service_discovery= project uses a
+=startupProbe=:
 
 #+BEGIN_SRC yaml
-readinessProbe:
+startupProbe:
   httpGet:
     path: /ready
     port: http
-  initialDelaySeconds: 0
-  periodSeconds: 10
+  initialDelaySeconds: 3
+  periodSeconds: 2
 #+END_SRC
 
-With this configuration we expect the initial check to fail at least once
-because the actual startup time before the =service_discovery_http= Application
-has bound to a port to listen for HTTP requests is more than =0= seconds. This
-will result in a =connection refused= error handled by the =Probe=:
-
-#+BEGIN_SRC
-service-disc… │ [event: pod service-discovery-dev/service-discovery-dev-645659d699-plxfw] Readiness probe failed: Get "http://10.244.0.114:3000/ready": dial tcp 10.244.0.114:3000: connect: connection refused
-#+END_SRC
-
-Despite failing and =periodSeconds= being =10= it likely won't take 10 seconds for
-the =Pod= to be ready. With an =initialDelaySeconds= of =0= the =readinessProbe= is
-checked immediately during startup and does not wait the configured
-=periodSeconds= to check a second time. Because the service does little on startup
-it will pass the second check. If it doesn't it will then wait the =periodSeconds=
-until it is checked again and the =Pod= becomes ready.
-
-To be as simple as possible, the =readinessProbe= is defined in =service_discovery_http= as:
+Because the boot order of the Release ensures there are available connections to
+the database and DNS is up before the Elli server is started the probe only needs
+to be check that the HTTP server is up and is written as:
 
 #+BEGIN_SRC erlang
 handle('GET', [<<"ready">>], _Req) ->
     {ok, [], <<>>};
 #+END_SRC
 
-Meaning it matches on a =GET= request to =/ready= and returns a =200= response
+This function will match a =GET= request to =/ready= and returns a =200= response
 immediately. There are no additional checks of functionality of the service
 except that it is able to receive and respond to HTTP requests.
+
+The =startupProbe= becomes even more important if booting takes many seconds or
+minutes, especially if a =livenessProbe= is defined. In the case of
+=service_discovery= there could be a feature to load some or all DNS records into
+a local cache, which takes time. If this loading is resource intensive and would
+have negative impacts beyond simply meaning a request must go to the database
+instead of the cache until the load completes it may be beneficial to instead
+define a =startupProbe= and not have it pass until the loading is complete. When a
+=livenessProbe= is also defined it could mean the startup never completes because
+the =livessnessProbe= fails beyond its allowed =failureThreshold= and the =Pod= is
+killed, this would then happen to every =Pod= that attempts to boot and the
+=Deployment= would never succeed, or take much longer if sometimes the
+=livenessProbe= doesn't fail beyond its threshold.
 
 **** Rolling Deployments
 
@@ -3658,7 +3687,11 @@ strategy:
     maxSurge: 25%
 #+END_SRC
 
-=service_discovery= is configured with a =maxUnavailable= of =0= and =maxSurge= of =25%=. This means that if it has been scaled up to four replicas then during deployment one new =Pod= will be started, when the =readinessProbe= for that =Pod= is passing one of the old =Pods= will begin termination and a new =Pod= will be started. This process will continue four times.
+=service_discovery= is configured with a =maxUnavailable= of =0= and =maxSurge= of =25%=.
+This means that if the `Deployment` has 4 replicas one new =Pod= will be started,
+and when that =Pod= is ready one of the old =Pods= will begin termination, and
+this process will continue for each =Pod=. If probes are defined then to be
+ready first the =startupProbe= must pass and then the =readinessProbe=.
 
 *** Service
 
