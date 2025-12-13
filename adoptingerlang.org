@@ -1751,10 +1751,10 @@ With Elixir in place, add the [[https://www.rebar3.org/docs/configuration/plugin
 {provider_hooks, [{post, [{compile, {mix, consolidate_protocols}}]}]}.
 
 {relx, [
-    ...
+    % ...
     {overlay, [
         {copy, "{{base_dir}}/consolidated", "releases/{{release_version}}/consolidated"}
-    ]
+    ]}
 }.
 #+END_SRC
 
