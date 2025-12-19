@@ -657,15 +657,21 @@ Lastly, a couple packages that are not Erlang specific but are worth calling out
 
 Although absolutely fancy support for Erlang is possible in Vim—as the [[https://github.com/vim-erlang][vim-erlang group on Github]] allows—the authors of this book who use it tends to stick with the most minimal configuration possible.
 
-Simply stick with the default syntax highlighting in your =.vimrc= file, and make sure it's used in all the right file types:
+Simply stick with the default syntax highlighting in your =.vim/ftdetect/erlang.vim= (=.config/nvim/ftdetect/erlang.vim= in case of NeoVim) file, and make sure it's used in all the right file types:
 
 #+BEGIN_SRC vim
-"also erlang
-autocmd BufRead,BufNewFile *.erl,*.es.*.hrl,*.xrl,*.config setlocal expandtab noautoindent
-au BufNewFile,BufRead *.erl,*.es,*.hrl,*.xrl,*.config setf erlang
+autocmd BufNewFile,BufRead *.es,*.xrl,*.config,*.config.script,*.app.src setf erlang
 #+END_SRC
 
-This is the very basic stuff, obviously. Fancier integration is possible, but the one author who uses vim mostly uses only this, and relies on Rebar3 in a terminal to deal with the rest of the language.
+And in =.vim/after/ftplugin/erlang.vim= (=.config/nvim/after/ftplugin/erlang.vim= in case of NeoVim):
+
+#+BEGIN_SRC vim
+setlocal expandtab shiftwidth=4
+
+let b:undo_plugin = b:undo_plugin . " | setlocal et& sw&"
+#+END_SRC
+
+This is the very basic stuff, obviously. Fancier integration is possible, but the one author who uses Vim mostly uses only this, and relies on Rebar3 in a terminal to deal with the rest of the language.
 
 #+BEGIN_EXPORT html
 <div class="pagination">
